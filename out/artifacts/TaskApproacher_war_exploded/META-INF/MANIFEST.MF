@@ -1,0 +1,9 @@
+Manifest-Version: 1.0
+Created-By: IntelliJ IDEA
+Built-By: alexk
+Build-Jdk: Amazon Corretto version 18.0.2
+Implementation-Title: TaskApproacher
+Implementation-Version: 0.0.1-SNAPSHOT
+Implementation-Vendor-Id: com.taskapproacher
+Main-Class: ${start-class}
+
