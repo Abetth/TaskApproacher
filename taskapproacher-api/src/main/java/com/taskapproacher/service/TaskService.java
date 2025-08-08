@@ -27,12 +27,6 @@ public class TaskService {
         return task;
     }
 
-    public List<Task> findByTaskBoard(Long id) {
-        if (taskBoardService.findById(id) == null) {
-            throw new RuntimeException("Task board not found");
-        }
-        return taskDAO.findByRelatedBoard(id);
-    }
 
     public Task create(Task task) {
         if (task.getTaskBoard() == null || taskBoardService.findById(task.getTaskBoard().getId()) == null) {

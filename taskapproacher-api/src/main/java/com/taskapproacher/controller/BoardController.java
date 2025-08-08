@@ -1,5 +1,6 @@
 package com.taskapproacher.controller;
 
+import com.taskapproacher.entity.Task;
 import com.taskapproacher.entity.TaskBoard;
 import com.taskapproacher.service.TaskBoardService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,10 +28,19 @@ public class BoardController {
         }
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<TaskBoard> getById(@PathVariable Long id) {
+    @GetMapping("/{boardId}")
+    public ResponseEntity<TaskBoard> getById(@PathVariable Long boardId) {
         try {
-            return ResponseEntity.ok(taskBoardService.findById(id));
+            return ResponseEntity.ok(taskBoardService.findById(boardId));
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @GetMapping("/{boardId}/tasks")
+    public ResponseEntity<List<Task>> getByBoard(@PathVariable Long boardId) {
+        try {
+            return ResponseEntity.ok(taskBoardService.findByTaskBoard(boardId));
         } catch (RuntimeException e) {
             return ResponseEntity.notFound().build();
         }

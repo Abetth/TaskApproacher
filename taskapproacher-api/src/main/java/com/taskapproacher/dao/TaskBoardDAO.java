@@ -1,9 +1,11 @@
 package com.taskapproacher.dao;
 
+import com.taskapproacher.entity.Task;
 import com.taskapproacher.entity.TaskBoard;
 import com.taskapproacher.hibernate.HibernateSessionFactoryUtil;
 import com.taskapproacher.interfaces.GenericDAO;
 
+import com.taskapproacher.interfaces.RelatedEntityDAO;
 import jakarta.persistence.PersistenceException;
 
 import org.hibernate.HibernateException;
@@ -18,7 +20,7 @@ import java.util.List;
 import java.util.Objects;
 
 @Repository
-public class TaskBoardDAO implements GenericDAO<TaskBoard> {
+public class TaskBoardDAO implements GenericDAO<TaskBoard>, RelatedEntityDAO<Task, Long> {
 
     private final SessionFactory sessionFactory;
     List<TaskBoard> taskBoards;
@@ -57,6 +59,23 @@ public class TaskBoardDAO implements GenericDAO<TaskBoard> {
     }
 
     @Override
+    public List<Task> findRelatedEntities(Long id) {
+        Transaction transaction = null;
+        List<Task> tasks;
+
+        try (Session session = sessionFactory.openSession()) {
+            transaction = session.beginTransaction();
+            tasks = session.createQuery("from Task where taskBoard.id = :boardId", Task.class)
+                    .setParameter("boardId", id)
+                    .getResultList();
+            transaction.commit();
+        } catch (HibernateException e) {
+            throw new RuntimeException("Failed to get tasks", e);
+        }
+        return tasks;
+    }
+
+    @Override
     public void save(TaskBoard entity) {
         Transaction transaction = null;
 
@@ -80,12 +99,12 @@ public class TaskBoardDAO implements GenericDAO<TaskBoard> {
 
         try (Session session = sessionFactory.openSession()) {
             transaction = session.beginTransaction();
-
             if (Objects.isNull(session.find(TaskBoard.class, entity.getId()))) {
                 throw new RuntimeException("Database entry is missing");
             }
 
             try {
+                entity.setTasks(session.find(TaskBoard.class, entity.getId()).getTasks());
                 session.merge(entity);
                 transaction.commit();
             } catch (PersistenceException e) {
