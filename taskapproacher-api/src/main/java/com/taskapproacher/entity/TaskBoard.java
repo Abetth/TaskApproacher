@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.util.List;
+import java.util.UUID;
 
 @Getter
 @Entity
@@ -18,8 +19,8 @@ import java.util.List;
 public class TaskBoard {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private UUID id;
 
     @Setter
     @Column(name = "title", nullable = false)
@@ -35,7 +36,7 @@ public class TaskBoard {
     private List<Task> tasks;
 
     public TaskBoard(String title, boolean isSorted, List<Task> tasks) {
-        this.id = 0L;
+        this.id = new UUID(0L, 0L);
         this.title = title;
         this.isSorted = isSorted;
         this.tasks = tasks;
@@ -52,7 +53,7 @@ public class TaskBoard {
 
     @Override
     public int hashCode() {
-        return 11 + id.intValue() + title.hashCode() + tasks.hashCode();
+        return 11 + id.hashCode() + title.hashCode() + tasks.hashCode();
     }
 
     @Override

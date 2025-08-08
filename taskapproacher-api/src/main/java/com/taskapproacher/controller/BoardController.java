@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/boards")
@@ -29,7 +30,7 @@ public class BoardController {
     }
 
     @GetMapping("/{boardId}")
-    public ResponseEntity<TaskBoard> getById(@PathVariable Long boardId) {
+    public ResponseEntity<TaskBoard> getById(@PathVariable UUID boardId) {
         try {
             return ResponseEntity.ok(taskBoardService.findById(boardId));
         } catch (RuntimeException e) {
@@ -38,7 +39,7 @@ public class BoardController {
     }
 
     @GetMapping("/{boardId}/tasks")
-    public ResponseEntity<List<Task>> getByBoard(@PathVariable Long boardId) {
+    public ResponseEntity<List<Task>> getByBoard(@PathVariable UUID boardId) {
         try {
             return ResponseEntity.ok(taskBoardService.findByTaskBoard(boardId));
         } catch (RuntimeException e) {
@@ -66,7 +67,7 @@ public class BoardController {
     }
 
     @DeleteMapping("/{boardId}")
-    public ResponseEntity<TaskBoard> delete(@PathVariable Long boardId) {
+    public ResponseEntity<TaskBoard> delete(@PathVariable UUID boardId) {
         try {
             taskBoardService.delete(boardId);
             return ResponseEntity.noContent().build();

@@ -7,6 +7,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Objects;
+import java.util.UUID;
 
 @Service
 public class TaskService {
@@ -19,8 +21,8 @@ public class TaskService {
         this.taskBoardService = taskBoardService;
     }
 
-    public Task findById(Long id) {
-        Task task = taskDAO.findById(id);
+    public Task findById(UUID taskId) {
+        Task task = taskDAO.findById(taskId);
         if (task == null) {
             throw new RuntimeException("Task not found");
         }
@@ -42,11 +44,14 @@ public class TaskService {
     }
 
     public Task update(Task task) {
+        if (Objects.isNull(taskDAO.findById(task.getId()))) {
+            throw new RuntimeException("Entry is missing");
+        }
         taskDAO.update(task);
         return task;
     }
 
-    public void delete(Long id) {
-        taskDAO.delete(id);
+    public void delete(UUID taskId) {
+        taskDAO.delete(taskId);
     }
 }

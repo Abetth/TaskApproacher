@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
+import java.util.UUID;
 
 @Getter
 @NoArgsConstructor
@@ -19,8 +19,8 @@ import java.time.format.DateTimeFormatter;
 public class Task {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private UUID id;
 
     @Setter
     @Column(name = "title", nullable = false)
@@ -48,7 +48,7 @@ public class Task {
     private TaskBoard taskBoard;
 
     public Task(String title, String description, int priority, LocalDate deadline, boolean status, TaskBoard list) {
-        this.id = 0L;
+        this.id = new UUID(0L, 0L);
         this.title = title;
         this.description = description;
         this.priority = priority;
@@ -71,7 +71,7 @@ public class Task {
 
     @Override
     public int hashCode() {
-        return 11 + id.intValue() + title.hashCode() + description.hashCode() + priority + deadline.hashCode()
+        return 11 + id.hashCode() + title.hashCode() + description.hashCode() + priority + deadline.hashCode()
                 + taskBoard.hashCode();
     }
 

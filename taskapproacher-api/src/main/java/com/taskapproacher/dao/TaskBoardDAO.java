@@ -17,10 +17,10 @@ import org.hibernate.exception.DataException;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
-import java.util.Objects;
+import java.util.UUID;
 
 @Repository
-public class TaskBoardDAO implements GenericDAO<TaskBoard>, RelatedEntityDAO<Task, Long> {
+public class TaskBoardDAO implements GenericDAO<TaskBoard>, RelatedEntityDAO<Task, UUID> {
 
     private final SessionFactory sessionFactory;
     List<TaskBoard> taskBoards;
@@ -44,12 +44,12 @@ public class TaskBoardDAO implements GenericDAO<TaskBoard>, RelatedEntityDAO<Tas
     }
 
     @Override
-    public TaskBoard findById(Long id) {
+    public TaskBoard findById(UUID uuid) {
         TaskBoard taskBoard = null;
 
         try (Session session = sessionFactory.openSession()) {
             Transaction transaction = session.beginTransaction();
-            taskBoard = session.get(TaskBoard.class, id);
+            taskBoard = session.get(TaskBoard.class, uuid);
             transaction.commit();
         } catch (HibernateException e) {
             throw new RuntimeException("Failed to find task board by id", e);
@@ -59,14 +59,14 @@ public class TaskBoardDAO implements GenericDAO<TaskBoard>, RelatedEntityDAO<Tas
     }
 
     @Override
-    public List<Task> findRelatedEntities(Long id) {
+    public List<Task> findRelatedEntitiesByUUID(UUID uuid) {
         Transaction transaction = null;
         List<Task> tasks;
 
         try (Session session = sessionFactory.openSession()) {
             transaction = session.beginTransaction();
             tasks = session.createQuery("from Task where taskBoard.id = :boardId", Task.class)
-                    .setParameter("boardId", id)
+                    .setParameter("boardId", uuid)
                     .getResultList();
             transaction.commit();
         } catch (HibernateException e) {
@@ -89,7 +89,7 @@ public class TaskBoardDAO implements GenericDAO<TaskBoard>, RelatedEntityDAO<Tas
                 throw new RuntimeException("Wrong data format", e);
             }
         } catch (HibernateException e) {
-            throw new RuntimeException("Failed to save task board");
+            throw new RuntimeException("Failed to save entry");
         }
     }
 
@@ -99,12 +99,8 @@ public class TaskBoardDAO implements GenericDAO<TaskBoard>, RelatedEntityDAO<Tas
 
         try (Session session = sessionFactory.openSession()) {
             transaction = session.beginTransaction();
-            if (Objects.isNull(session.find(TaskBoard.class, entity.getId()))) {
-                throw new RuntimeException("Database entry is missing");
-            }
 
             try {
-                entity.setTasks(session.find(TaskBoard.class, entity.getId()).getTasks());
                 session.merge(entity);
                 transaction.commit();
             } catch (PersistenceException e) {
@@ -117,13 +113,13 @@ public class TaskBoardDAO implements GenericDAO<TaskBoard>, RelatedEntityDAO<Tas
     }
 
     @Override
-    public void delete(Long id) {
+    public void delete(UUID uuid) {
         Transaction transaction = null;
 
         try (Session session = sessionFactory.openSession()) {
             transaction = session.beginTransaction();
-            session.createQuery("delete from TaskBoard where id = :id")
-                    .setParameter("id", id)
+            session.createQuery("delete from TaskBoard where id = :boardId")
+                    .setParameter("boardId", uuid)
                     .executeUpdate();
             transaction.commit();
         } catch (HibernateException e) {
