@@ -7,6 +7,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.UUID;
+
 @RestController
 @RequestMapping("/api/tasks")
 public class TaskController {
@@ -18,7 +20,7 @@ public class TaskController {
     }
 
     @GetMapping("/{taskId}")
-    public ResponseEntity<Task> getById(@PathVariable Long taskId) {
+    public ResponseEntity<Task> getById(@PathVariable UUID taskId) {
         try {
             return ResponseEntity.ok(taskService.findById(taskId));
         } catch (RuntimeException e) {
@@ -46,7 +48,7 @@ public class TaskController {
     }
 
     @DeleteMapping("/{taskId}")
-    public ResponseEntity<Task> delete(@PathVariable Long taskId) {
+    public ResponseEntity<Task> delete(@PathVariable UUID taskId) {
         try {
             taskService.delete(taskId);
             return ResponseEntity.noContent().build();

@@ -3,11 +3,14 @@ package com.taskapproacher.service;
 import com.taskapproacher.dao.TaskBoardDAO;
 import com.taskapproacher.entity.Task;
 import com.taskapproacher.entity.TaskBoard;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Objects;
+import java.util.UUID;
 
 @Service
 public class TaskBoardService {
@@ -18,19 +21,19 @@ public class TaskBoardService {
         this.taskBoardDAO = taskBoardDAO;
     }
 
-    public TaskBoard findById(Long id) {
-            TaskBoard taskBoard = taskBoardDAO.findById(id);
+    public TaskBoard findById(UUID boardId) {
+            TaskBoard taskBoard = taskBoardDAO.findById(boardId);
         if (taskBoard == null) {
             throw new RuntimeException("Board is not found");
         }
         return taskBoard;
     }
 
-    public List<Task> findByTaskBoard(Long id) {
-        if (taskBoardDAO.findById(id) == null) {
+    public List<Task> findByTaskBoard(UUID boardId) {
+        if (taskBoardDAO.findById(boardId) == null) {
             throw new RuntimeException("Task board not found");
         }
-        return taskBoardDAO.findRelatedEntities(id);
+        return taskBoardDAO.findRelatedEntitiesByUUID(boardId);
     }
 
     public TaskBoard create(TaskBoard taskBoard) {
@@ -46,11 +49,16 @@ public class TaskBoardService {
     }
 
     public TaskBoard update(TaskBoard taskBoard) {
+        if (Objects.isNull(taskBoardDAO.findById(taskBoard.getId()))) {
+            throw new EntityNotFoundException("Database entry is missing");
+        }
+        taskBoard.setTasks(taskBoardDAO.findById(taskBoard.getId()).getTasks());
+
         taskBoardDAO.update(taskBoard);
         return taskBoard;
     }
 
-    public void delete(Long id) {
-        taskBoardDAO.delete(id);
+    public void delete(UUID boardId) {
+        taskBoardDAO.delete(boardId);
     }
 }

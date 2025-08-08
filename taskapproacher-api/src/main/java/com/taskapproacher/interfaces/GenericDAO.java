@@ -1,8 +1,10 @@
 package com.taskapproacher.interfaces;
 
+import java.util.UUID;
+
 public interface GenericDAO<T> {
-    T findById(Long id);
+    T findById(UUID uuid);
     void save(T entity);
     void update(T entity);
-    void delete(Long id);
+    void delete(UUID uuid);
 }

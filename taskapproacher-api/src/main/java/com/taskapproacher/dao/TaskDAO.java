@@ -19,6 +19,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
 
 @Repository
 public class TaskDAO implements GenericDAO<Task> {
@@ -30,13 +31,13 @@ public class TaskDAO implements GenericDAO<Task> {
     }
 
     @Override
-    public Task findById(Long id) {
+    public Task findById(UUID taskId) {
         Transaction transaction = null;
         Task task = null;
 
         try (Session session = sessionFactory.openSession()) {
             transaction = session.beginTransaction();
-            task = session.get(Task.class, id);
+            task = session.get(Task.class, taskId);
             transaction.commit();
         } catch (HibernateException e) {
             throw new RuntimeException("Failed to find task by id", e);
@@ -65,13 +66,8 @@ public class TaskDAO implements GenericDAO<Task> {
     @Override
     public void update(Task entity) {
         Transaction transaction = null;
-
         try (Session session = sessionFactory.openSession()) {
             transaction = session.beginTransaction();
-
-            if (Objects.isNull(session.find(Task.class, entity.getId()))) {
-                throw new RuntimeException("Entry is missing");
-            }
 
             try {
                 session.merge(entity);
@@ -86,13 +82,13 @@ public class TaskDAO implements GenericDAO<Task> {
     }
 
     @Override
-    public void delete(Long id) {
+    public void delete(UUID taskId) {
         Transaction transaction = null;
 
         try (Session session = sessionFactory.openSession()) {
             transaction = session.beginTransaction();
-            session.createQuery("delete from Task where id = :id")
-                    .setParameter("id", id)
+            session.createQuery("delete from Task where id = :taskId")
+                    .setParameter("taskId", taskId)
                     .executeUpdate();
             transaction.commit();
         } catch (HibernateException e) {
