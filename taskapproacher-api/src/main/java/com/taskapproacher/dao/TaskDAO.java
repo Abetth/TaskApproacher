@@ -21,28 +21,12 @@ import java.util.List;
 import java.util.Objects;
 
 @Repository
-public class TaskDAO implements GenericDAO<Task>, RelatedEntityDAO<Task, TaskBoard> {
+public class TaskDAO implements GenericDAO<Task> {
     SessionFactory sessionFactory;
     List<Task> tasks;
 
     public TaskDAO() {
         sessionFactory = HibernateSessionFactoryUtil.getSessionFactory();
-    }
-
-    @Override
-    public List<Task> findByRelatedBoard(Long id) {
-        Transaction transaction = null;
-
-        try (Session session = sessionFactory.openSession()) {
-            transaction = session.beginTransaction();
-            tasks = session.createQuery("from Task where taskBoard.id = :boardId", Task.class)
-                    .setParameter("boardId", id)
-                    .getResultList();
-            transaction.commit();
-        } catch (HibernateException e) {
-            throw new RuntimeException("Failed to get tasks", e);
-        }
-        return tasks;
     }
 
     @Override

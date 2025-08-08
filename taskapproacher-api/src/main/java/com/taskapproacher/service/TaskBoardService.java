@@ -1,6 +1,7 @@
 package com.taskapproacher.service;
 
 import com.taskapproacher.dao.TaskBoardDAO;
+import com.taskapproacher.entity.Task;
 import com.taskapproacher.entity.TaskBoard;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +24,13 @@ public class TaskBoardService {
             throw new RuntimeException("Board is not found");
         }
         return taskBoard;
+    }
+
+    public List<Task> findByTaskBoard(Long id) {
+        if (taskBoardDAO.findById(id) == null) {
+            throw new RuntimeException("Task board not found");
+        }
+        return taskBoardDAO.findRelatedEntities(id);
     }
 
     public TaskBoard create(TaskBoard taskBoard) {

@@ -57,10 +57,6 @@ public class Task {
         this.taskBoard = list;
     }
 
-    public String getDeadLineAsString() {
-        return deadline.format(DateTimeFormatter.ISO_DATE);
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

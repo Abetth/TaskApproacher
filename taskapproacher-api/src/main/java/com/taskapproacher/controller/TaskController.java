@@ -7,8 +7,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-
 @RestController
 @RequestMapping("/api/tasks")
 public class TaskController {
@@ -17,15 +15,6 @@ public class TaskController {
     @Autowired
     public TaskController(TaskService taskService) {
         this.taskService = taskService;
-    }
-
-    @GetMapping("/{boardId}/task_list")
-    public ResponseEntity<List<Task>> getByBoard(@PathVariable Long boardId) {
-        try {
-            return ResponseEntity.ok(taskService.findByTaskBoard(boardId));
-        } catch (RuntimeException e) {
-            return ResponseEntity.notFound().build();
-        }
     }
 
     @GetMapping("/{taskId}")
