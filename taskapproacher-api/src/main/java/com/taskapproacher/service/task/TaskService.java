@@ -1,12 +1,11 @@
-package com.taskapproacher.service;
+package com.taskapproacher.service.task;
 
-import com.taskapproacher.dao.TaskDAO;
-import com.taskapproacher.entity.Task;
+import com.taskapproacher.dao.task.TaskDAO;
+import com.taskapproacher.entity.task.Task;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 

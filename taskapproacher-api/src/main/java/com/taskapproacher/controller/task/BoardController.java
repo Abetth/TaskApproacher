@@ -1,10 +1,15 @@
-package com.taskapproacher.controller;
+package com.taskapproacher.controller.task;
 
-import com.taskapproacher.entity.Task;
-import com.taskapproacher.entity.TaskBoard;
-import com.taskapproacher.service.TaskBoardService;
+import com.taskapproacher.entity.task.Task;
+import com.taskapproacher.entity.task.TaskBoard;
+import com.taskapproacher.entity.task.TaskBoardResponse;
+import com.taskapproacher.service.task.TaskBoardService;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -20,17 +25,10 @@ public class BoardController {
         this.taskBoardService = taskBoardService;
     }
 
-    @GetMapping
-    public ResponseEntity<List<TaskBoard>> getAllBoards() {
-        try {
-            return ResponseEntity.ok(taskBoardService.findAll());
-        } catch (RuntimeException e) {
-            return ResponseEntity.notFound().build();
-        }
-    }
 
     @GetMapping("/{boardId}")
-    public ResponseEntity<TaskBoard> getById(@PathVariable UUID boardId) {
+    @PreAuthorize("hasAnyRole('USER')")
+    public ResponseEntity<TaskBoardResponse> getById(@PathVariable UUID boardId) {
         try {
             return ResponseEntity.ok(taskBoardService.findById(boardId));
         } catch (RuntimeException e) {
@@ -39,18 +37,20 @@ public class BoardController {
     }
 
     @GetMapping("/{boardId}/tasks")
-    public ResponseEntity<List<Task>> getByBoard(@PathVariable UUID boardId) {
+    @PreAuthorize("hasAnyRole('USER')")
+    public ResponseEntity<List<Task>> getTasksByBoard(@PathVariable UUID boardId) {
         try {
             return ResponseEntity.ok(taskBoardService.findByTaskBoard(boardId));
-        } catch (RuntimeException e) {
+        } catch (EntityNotFoundException e) {
             return ResponseEntity.notFound().build();
         }
     }
 
     @PostMapping
-    public ResponseEntity<TaskBoard> create(@RequestBody TaskBoard board) {
+    @PreAuthorize("hasAnyRole('USER')")
+    public ResponseEntity<TaskBoardResponse> create(@RequestBody TaskBoard board) {
         try {
-            TaskBoard createBoard = taskBoardService.create(board);
+            TaskBoardResponse createBoard = taskBoardService.create(board);
             return ResponseEntity.status(201).body(createBoard);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(null);
@@ -58,7 +58,8 @@ public class BoardController {
     }
 
     @PutMapping
-    public ResponseEntity<TaskBoard> update(@RequestBody TaskBoard board) {
+    @PreAuthorize("hasAnyRole('USER')")
+    public ResponseEntity<TaskBoardResponse> update(@RequestBody TaskBoard board) {
         try {
             return ResponseEntity.ok(taskBoardService.update(board));
         } catch (RuntimeException e) {
@@ -67,7 +68,8 @@ public class BoardController {
     }
 
     @DeleteMapping("/{boardId}")
-    public ResponseEntity<TaskBoard> delete(@PathVariable UUID boardId) {
+    @PreAuthorize("hasAnyRole('USER')")
+    public ResponseEntity<TaskBoardResponse> delete(@PathVariable UUID boardId) {
         try {
             taskBoardService.delete(boardId);
             return ResponseEntity.noContent().build();

@@ -1,10 +1,11 @@
-package com.taskapproacher.controller;
+package com.taskapproacher.controller.task;
 
-import com.taskapproacher.entity.Task;
-import com.taskapproacher.service.TaskService;
+import com.taskapproacher.entity.task.Task;
+import com.taskapproacher.service.task.TaskService;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
@@ -20,6 +21,7 @@ public class TaskController {
     }
 
     @GetMapping("/{taskId}")
+    @PreAuthorize("hasAnyRole('USER')")
     public ResponseEntity<Task> getById(@PathVariable UUID taskId) {
         try {
             return ResponseEntity.ok(taskService.findById(taskId));
@@ -29,6 +31,7 @@ public class TaskController {
     }
 
     @PostMapping
+    @PreAuthorize("hasAnyRole('USER')")
     public ResponseEntity<Task> create(@RequestBody Task task) {
         try {
             Task createTask = taskService.create(task);
@@ -39,6 +42,7 @@ public class TaskController {
     }
 
     @PutMapping
+    @PreAuthorize("hasAnyRole('USER')")
     public ResponseEntity<Task> update(@RequestBody Task task) {
         try {
             return ResponseEntity.ok(taskService.update(task));
@@ -48,6 +52,7 @@ public class TaskController {
     }
 
     @DeleteMapping("/{taskId}")
+    @PreAuthorize("hasAnyRole('USER')")
     public ResponseEntity<Task> delete(@PathVariable UUID taskId) {
         try {
             taskService.delete(taskId);

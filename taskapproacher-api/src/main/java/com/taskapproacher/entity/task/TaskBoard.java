@@ -1,8 +1,10 @@
-package com.taskapproacher.entity;
+package com.taskapproacher.entity.task;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import com.taskapproacher.entity.user.User;
 import jakarta.persistence.*;
 
 import lombok.Getter;
@@ -35,11 +37,18 @@ public class TaskBoard {
     @JsonManagedReference
     private List<Task> tasks;
 
-    public TaskBoard(String title, boolean isSorted, List<Task> tasks) {
+    @Setter
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    @JsonBackReference
+    private User user;
+
+    public TaskBoard(String title, boolean isSorted, List<Task> tasks, User user) {
         this.id = new UUID(0L, 0L);
         this.title = title;
         this.isSorted = isSorted;
         this.tasks = tasks;
+        this.user = user;
     }
 
     @Override
@@ -48,16 +57,19 @@ public class TaskBoard {
         if (o == null || getClass() != o.getClass()) return false;
         TaskBoard comparableTable = (TaskBoard) o;
         return id.equals(comparableTable.id) && title.equals(comparableTable.title)
-                && tasks.equals(comparableTable.tasks);
+                && tasks.equals(comparableTable.tasks) && user.equals(comparableTable.user);
     }
 
     @Override
     public int hashCode() {
-        return 11 + id.hashCode() + title.hashCode() + tasks.hashCode();
+        return 11 + id.hashCode() + title.hashCode() + tasks.hashCode() + user.hashCode();
     }
 
     @Override
     public String toString() {
-        return  "[   Table: " + id + ", Title: " + title + ", Sorted: " + isSorted + "    ]";
+        return  "[   Table: " + id
+                + ", Title: " + title
+                + ", Sorted: " + isSorted
+                + "User: " + user.getUsername() + "    ]";
     }
 }

@@ -1,7 +1,8 @@
-package com.taskapproacher.entity;
+package com.taskapproacher.entity.task;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 
+import com.taskapproacher.entity.user.User;
 import jakarta.persistence.*;
 import jakarta.persistence.Table;
 

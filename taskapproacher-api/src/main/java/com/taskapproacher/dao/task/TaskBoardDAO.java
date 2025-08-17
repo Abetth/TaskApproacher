@@ -1,52 +1,70 @@
-package com.taskapproacher.dao;
+package com.taskapproacher.dao.task;
 
-import com.taskapproacher.entity.Task;
-import com.taskapproacher.entity.TaskBoard;
-
+import com.taskapproacher.entity.task.Task;
+import com.taskapproacher.entity.task.TaskBoard;
+import com.taskapproacher.entity.task.TaskBoardResponse;
 import com.taskapproacher.hibernate.HibernateSessionFactoryUtil;
-import com.taskapproacher.interfaces.*;
+import com.taskapproacher.interfaces.GenericDAO;
 
+import com.taskapproacher.interfaces.RelatedEntityDAO;
 import jakarta.persistence.PersistenceException;
 
-import jakarta.transaction.Transactional;
 import org.hibernate.HibernateException;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+
 import org.hibernate.Transaction;
 import org.hibernate.exception.DataException;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.UUID;
 
 @Repository
-public class TaskDAO implements GenericDAO<Task> {
-    SessionFactory sessionFactory;
-    List<Task> tasks;
+public class TaskBoardDAO implements GenericDAO<TaskBoard>, RelatedEntityDAO<Task, UUID> {
 
-    public TaskDAO() {
+    private final SessionFactory sessionFactory;
+    List<TaskBoard> taskBoards;
+
+    public TaskBoardDAO() {
         sessionFactory = HibernateSessionFactoryUtil.getSessionFactory();
     }
 
     @Override
-    public Task findById(UUID taskId) {
-        Transaction transaction = null;
-        Task task = null;
+    public TaskBoard findById(UUID uuid) {
+        TaskBoard taskBoard = null;
 
         try (Session session = sessionFactory.openSession()) {
-            transaction = session.beginTransaction();
-            task = session.get(Task.class, taskId);
+            Transaction transaction = session.beginTransaction();
+            taskBoard = session.get(TaskBoard.class, uuid);
             transaction.commit();
         } catch (HibernateException e) {
-            throw new RuntimeException("Failed to find task by id", e);
+            throw new RuntimeException("Failed to find task board by id", e);
         }
-        return task;
+
+        return taskBoard;
     }
 
     @Override
-    public void save(Task entity) {
+    public List<Task> findRelatedEntitiesByUUID(UUID uuid) {
+        Transaction transaction = null;
+        List<Task> tasks;
+
+        try (Session session = sessionFactory.openSession()) {
+            transaction = session.beginTransaction();
+            tasks = session.createQuery("FROM Task WHERE taskBoard.id = :boardId", Task.class)
+                    .setParameter("boardId", uuid)
+                    .getResultList();
+            transaction.commit();
+        } catch (HibernateException e) {
+            throw new RuntimeException("Failed to get tasks", e);
+        }
+        return tasks;
+    }
+
+    @Override
+    public void save(TaskBoard entity) {
         Transaction transaction = null;
 
         try (Session session = sessionFactory.openSession()) {
@@ -59,13 +77,14 @@ public class TaskDAO implements GenericDAO<Task> {
                 throw new RuntimeException("Wrong data format", e);
             }
         } catch (HibernateException e) {
-            throw new RuntimeException("Failed to save task", e);
+            throw new RuntimeException("Failed to save entry");
         }
     }
 
     @Override
-    public void update(Task entity) {
+    public void update(TaskBoard entity) {
         Transaction transaction = null;
+
         try (Session session = sessionFactory.openSession()) {
             transaction = session.beginTransaction();
 
@@ -82,13 +101,13 @@ public class TaskDAO implements GenericDAO<Task> {
     }
 
     @Override
-    public void delete(UUID taskId) {
+    public void delete(UUID uuid) {
         Transaction transaction = null;
 
         try (Session session = sessionFactory.openSession()) {
             transaction = session.beginTransaction();
-            session.createQuery("delete from Task where id = :taskId")
-                    .setParameter("taskId", taskId)
+            session.createQuery("DELETE FROM TaskBoard WHERE id = :boardId")
+                    .setParameter("boardId", uuid)
                     .executeUpdate();
             transaction.commit();
         } catch (HibernateException e) {

@@ -1,7 +1,8 @@
 package com.taskapproacher.hibernate;
 
-import com.taskapproacher.entity.Task;
-import com.taskapproacher.entity.TaskBoard;
+import com.taskapproacher.entity.task.Task;
+import com.taskapproacher.entity.task.TaskBoard;
+import com.taskapproacher.entity.user.User;
 import org.hibernate.HibernateError;
 import org.hibernate.SessionFactory;
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
@@ -18,6 +19,7 @@ public class HibernateSessionFactoryUtil {
                 Configuration configuration = new Configuration().configure();
                 configuration.addAnnotatedClass(Task.class);
                 configuration.addAnnotatedClass(TaskBoard.class);
+                configuration.addAnnotatedClass(User.class);
                 StandardServiceRegistryBuilder builder = new StandardServiceRegistryBuilder().applySettings(configuration.getProperties());
                 sessionFactory = configuration.buildSessionFactory(builder.build());
             } catch (HibernateError e) {
