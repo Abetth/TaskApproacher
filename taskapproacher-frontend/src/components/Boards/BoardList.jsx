@@ -1,20 +1,37 @@
-import React, { useState } from 'react';
+// src/components/Boards/BoardList.jsx
+import React, { useState, useEffect, useContext } from 'react';
 import { Link } from 'react-router-dom';
-import { Card, CardBody, CardTitle, Button, Row, Col, Input, ListGroup, ListGroupItem } from 'reactstrap';
+import { Card, CardBody, CardTitle, Button, Row, Col, Input, FormGroup, Label, ListGroup, ListGroupItem } from 'reactstrap';
+import api from '../../services/api';
+import { AuthContext } from '../../contexts/AuthContext';
 
-function BoardList({ boards, fetchBoards }) {
+function BoardList() {
+  const { user } = useContext(AuthContext);
+  const [boards, setBoards] = useState([]);
   const [newBoardTitle, setNewBoardTitle] = useState('');
+  const [newBoardIsSorted, setNewBoardIsSorted] = useState(false);
+
+  useEffect(() => {
+    if (user) {
+      fetchBoards();
+    }
+  }, [user]);
+
+  const fetchBoards = async () => {
+    try {
+      const res = await api.get(`/users/${user.id}/boards`);
+      setBoards(res.data);
+    } catch (error) {
+      console.error('Error fetching boards:', error);
+    }
+  };
 
   const createBoard = async () => {
     if (!newBoardTitle) return;
     try {
-      const response = await fetch('/api/boards', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ title: newBoardTitle, isSorted: false }),
-      });
-      if (!response.ok) throw new Error('Failed to create board');
+      await api.post('/boards', { title: newBoardTitle, isSorted: newBoardIsSorted, user: { id: user.id } });
       setNewBoardTitle('');
+      setNewBoardIsSorted(false);
       fetchBoards();
     } catch (error) {
       console.error('Error creating board:', error);
@@ -23,10 +40,7 @@ function BoardList({ boards, fetchBoards }) {
 
   const deleteBoard = async (boardId) => {
     try {
-      const response = await fetch(`/api/boards/${boardId}`, {
-        method: 'DELETE',
-      });
-      if (!response.ok) throw new Error('Failed to delete board');
+      await api.delete(`/boards/${boardId}`);
       fetchBoards();
     } catch (error) {
       console.error('Error deleting board:', error);
@@ -37,15 +51,31 @@ function BoardList({ boards, fetchBoards }) {
     <div>
       <h2 className="mb-4">All Task Boards</h2>
       <Row className="mb-4">
-        <Col md="6">
-          <Input
-            type="text"
-            value={newBoardTitle}
-            onChange={(e) => setNewBoardTitle(e.target.value)}
-            placeholder="New board title"
-          />
+        <Col md="4">
+          <FormGroup>
+            <Label>Title</Label>
+            <Input
+              type="text"
+              value={newBoardTitle}
+              onChange={(e) => setNewBoardTitle(e.target.value)}
+              placeholder="New board title"
+            />
+          </FormGroup>
         </Col>
-        <Col md="2">
+        <Col md="4">
+          <FormGroup>
+            <Label>Sorting</Label>
+            <Input
+              type="select"
+              value={newBoardIsSorted}
+              onChange={(e) => setNewBoardIsSorted(e.target.value === 'true')}
+            >
+              <option value={false}>Disabled</option>
+              <option value={true}>Enabled</option>
+            </Input>
+          </FormGroup>
+        </Col>
+        <Col md="2" className="align-self-end">
           <Button color="primary" onClick={createBoard}>Create Board</Button>
         </Col>
       </Row>
@@ -54,17 +84,13 @@ function BoardList({ boards, fetchBoards }) {
       ) : (
         <Row>
           {boards.map((board) => (
-            <Col md="6" key={board.id} className="mb-4">
+            <Col md="4" key={board.id} className="mb-4">
               <Card>
                 <CardBody>
                   <CardTitle tag="h5">
                     <Link to={`/board/${board.id}`}>{board.title}</Link>
                   </CardTitle>
-                  <p>
-                    Sorting: {board.isSorted ? 'Enabled' : 'Disabled'}
-                    <br />
-                    Tasks: {board.tasks ? board.tasks.length : 0}
-                  </p>
+                  <p>Sorting: {board.sorted ? 'Enabled' : 'Disabled'}</p>
                   {board.tasks && board.tasks.length > 0 ? (
                     <ListGroup className="mt-3">
                       {board.tasks.map((task) => (
@@ -88,7 +114,7 @@ function BoardList({ boards, fetchBoards }) {
                     color="danger"
                     size="sm"
                     onClick={() => deleteBoard(board.id)}
-                    className="mt-3 me-2"
+                    className="me-2"
                   >
                     Delete Board
                   </Button>
@@ -96,10 +122,9 @@ function BoardList({ boards, fetchBoards }) {
                     color="info"
                     size="sm"
                     tag={Link}
-                    to={`/board/${board.id}/update`}
-                    className="mt-3"
+                    to={`/board/${board.id}/edit`}
                   >
-                    Update Board
+                    Edit Board
                   </Button>
                 </CardBody>
               </Card>
