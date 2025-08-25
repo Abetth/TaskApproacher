@@ -9,13 +9,16 @@ import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.DynamicUpdate;
 
 import java.time.LocalDate;
 import java.util.UUID;
 
 @Getter
+@Setter
 @NoArgsConstructor
 @Entity
+@DynamicUpdate
 @Table(name = "tasks")
 public class Task {
 
@@ -23,23 +26,18 @@ public class Task {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID id;
 
-    @Setter
     @Column(name = "title", nullable = false)
     private String title;
 
-    @Setter
     @Column(name = "description")
     private String description;
 
-    @Setter
     @Column(name = "priority", nullable = false)
     private Integer priority;
 
-    @Setter
     @Column(name = "deadline", nullable = false)
     private LocalDate deadline;
 
-    @Setter
     @Column(name = "status", nullable = false)
     private boolean status;
 

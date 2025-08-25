@@ -34,6 +34,8 @@ public class UserDAO implements GenericDAO<User>, RelatedEntityDAO<TaskBoardResp
             Query<User> query = session.createQuery("FROM User WHERE username = :username", User.class)
                     .setParameter("username", username);
             return Optional.ofNullable(query.uniqueResult());
+        } catch (HibernateException e) {
+            throw new RuntimeException("Failed to find user by username");
         }
     }
 

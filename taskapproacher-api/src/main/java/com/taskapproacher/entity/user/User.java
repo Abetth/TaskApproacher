@@ -7,6 +7,7 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.DynamicUpdate;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -16,30 +17,28 @@ import java.util.List;
 import java.util.UUID;
 
 @Getter
+@Setter
 @NoArgsConstructor
 @Entity
 @Table(name = "users")
+@DynamicUpdate
 public class User implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID id;
 
-    @Setter
     @Column(nullable = false, name = "username")
     private String username;
 
-    @Setter
     @Column(nullable = false, name = "user_password")
     private String password;
 
-    @Setter
     @Column(nullable = false, name = "email_address")
     private String email;
 
-    @Setter
+    @Column(nullable = false, name = "role")
     private Role role;
 
-    @Setter
     @OneToMany(fetch = FetchType.EAGER, mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference
     private List<TaskBoard> taskBoards;

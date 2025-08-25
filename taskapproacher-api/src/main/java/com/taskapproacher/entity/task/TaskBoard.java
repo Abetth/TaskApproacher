@@ -10,13 +10,16 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.DynamicUpdate;
 
 import java.util.List;
 import java.util.UUID;
 
 @Getter
+@Setter
 @Entity
 @NoArgsConstructor
+@DynamicUpdate
 @Table(name = "task_boards")
 public class TaskBoard {
 
@@ -24,21 +27,17 @@ public class TaskBoard {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID id;
 
-    @Setter
     @Column(name = "title", nullable = false)
     private String title;
 
-    @Setter
     @JsonProperty("isSorted")
     private boolean isSorted;
 
-    @Setter
     @OneToMany(fetch = FetchType.EAGER, mappedBy = "taskBoard", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference
     private List<Task> tasks;
 
-    @Setter
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "user_id")
     @JsonBackReference
     private User user;

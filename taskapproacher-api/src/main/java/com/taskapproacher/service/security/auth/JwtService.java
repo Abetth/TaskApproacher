@@ -1,4 +1,4 @@
-package com.taskapproacher.service.security;
+package com.taskapproacher.service.security.auth;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;

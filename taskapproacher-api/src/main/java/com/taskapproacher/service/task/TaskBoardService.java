@@ -25,12 +25,12 @@ public class TaskBoardService {
         this.userService = userService;
     }
 
-    public TaskBoardResponse findById(UUID boardId) {
+    public TaskBoard findById(UUID boardId) {
         TaskBoard taskBoard = taskBoardDAO.findById(boardId);
         if (taskBoard == null) {
             throw new RuntimeException("Board is not found");
         }
-        return new TaskBoardResponse(taskBoard);
+        return taskBoard;
     }
 
     public List<Task> findByTaskBoard(UUID boardId) {
@@ -50,15 +50,16 @@ public class TaskBoardService {
         return new TaskBoardResponse(taskBoard);
     }
 
-    public TaskBoardResponse update(TaskBoard taskBoard) {
-        if (Objects.isNull(taskBoardDAO.findById(taskBoard.getId()))) {
+    public TaskBoardResponse update(UUID boardId, TaskBoard taskBoard) {
+        if (Objects.isNull(taskBoardDAO.findById(boardId))) {
             throw new EntityNotFoundException("Database entry is missing");
         }
-        taskBoard.setTasks(taskBoardDAO.findById(taskBoard.getId()).getTasks());
-        taskBoard.setUser(userService.findById(taskBoard.getUser().getId()));
+        TaskBoard updatedBoard = taskBoardDAO.findById(boardId);
+        updatedBoard.setTitle(taskBoard.getTitle());
+        updatedBoard.setSorted(taskBoard.isSorted());
 
-        taskBoardDAO.update(taskBoard);
-        return new TaskBoardResponse(taskBoard);
+        taskBoardDAO.update(updatedBoard);
+        return new TaskBoardResponse(updatedBoard);
     }
 
     public void delete(UUID boardId) {

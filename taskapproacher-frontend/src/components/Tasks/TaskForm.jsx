@@ -1,4 +1,3 @@
-// src/components/Tasks/TaskForm.jsx
 import React, { useState, useEffect } from 'react';
 import { Button, Form, FormGroup, Input, Label } from 'reactstrap';
 import api from '../../services/api';
@@ -37,7 +36,7 @@ function TaskForm({ boardId, editingTask, onSuccess }) {
     try {
       const payload = { ...formData, taskBoard: { id: boardId } };
       if (editingTask) {
-        await api.put('/tasks', { id: editingTask.id, ...payload });
+        await api.patch(`/tasks/${editingTask.id}`, payload);
       } else {
         await api.post('/tasks', payload);
       }

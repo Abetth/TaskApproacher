@@ -72,8 +72,8 @@ public class UserService {
         return new UserResponse(createdUser);
     }
 
-    public UserResponse update(User user) {
-        if (Objects.isNull(userDAO.findById(user.getId()))) {
+    public UserResponse update(UUID userId, User user) {
+        if (Objects.isNull(userDAO.findById(userId))) {
             throw new RuntimeException("Database entry is missing");
         }
 
@@ -81,9 +81,14 @@ public class UserService {
             user.setPassword(passwordEncoder.encode(user.getPassword()));
         }
 
-        userDAO.update(user);
+        User updatedUser = userDAO.findById(userId);
+        updatedUser.setUsername(user.getUsername());
+        updatedUser.setEmail(user.getEmail());
+        updatedUser.setPassword(updatedUser.getPassword());
 
-        return new UserResponse(user);
+        userDAO.update(updatedUser);
+
+        return new UserResponse(updatedUser);
     }
 
     public void delete(UUID userId) {

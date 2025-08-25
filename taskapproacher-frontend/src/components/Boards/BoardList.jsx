@@ -1,4 +1,3 @@
-// src/components/Boards/BoardList.jsx
 import React, { useState, useEffect, useContext } from 'react';
 import { Link } from 'react-router-dom';
 import { Card, CardBody, CardTitle, Button, Row, Col, Input, FormGroup, Label, ListGroup, ListGroupItem } from 'reactstrap';

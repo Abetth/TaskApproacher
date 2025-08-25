@@ -3,7 +3,7 @@ package com.taskapproacher.controller.security;
 import com.taskapproacher.entity.security.AuthRequest;
 import com.taskapproacher.entity.security.AuthResponse;
 import com.taskapproacher.entity.security.RegisterRequest;
-import com.taskapproacher.service.security.AuthService;
+import com.taskapproacher.service.security.auth.AuthService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;

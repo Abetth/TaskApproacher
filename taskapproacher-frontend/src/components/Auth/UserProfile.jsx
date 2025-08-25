@@ -1,4 +1,3 @@
-// src/components/Auth/UserProfile.jsx
 import React, { useContext } from 'react';
 import { Card, CardBody, CardTitle } from 'reactstrap';
 import { AuthContext } from '../../contexts/AuthContext';

@@ -20,18 +20,8 @@ public class TaskController {
         this.taskService = taskService;
     }
 
-    @GetMapping("/{taskId}")
-    @PreAuthorize("hasAnyRole('USER')")
-    public ResponseEntity<Task> getById(@PathVariable UUID taskId) {
-        try {
-            return ResponseEntity.ok(taskService.findById(taskId));
-        } catch (RuntimeException e) {
-            return ResponseEntity.notFound().build();
-        }
-    }
-
     @PostMapping
-    @PreAuthorize("hasAnyRole('USER')")
+    @PreAuthorize("@taskBoardService.findById(#task.taskBoard.id).user.id == authentication.principal.id")
     public ResponseEntity<Task> create(@RequestBody Task task) {
         try {
             Task createTask = taskService.create(task);
@@ -41,18 +31,18 @@ public class TaskController {
         }
     }
 
-    @PutMapping
-    @PreAuthorize("hasAnyRole('USER')")
-    public ResponseEntity<Task> update(@RequestBody Task task) {
+    @PatchMapping("/{taskId}")
+    @PreAuthorize("@accessCheckService.hasAccessToTask(#taskId, authentication.principal.id)")
+    public ResponseEntity<Task> update(@PathVariable UUID taskId, @RequestBody Task task) {
         try {
-            return ResponseEntity.ok(taskService.update(task));
+            return ResponseEntity.ok(taskService.update(taskId, task));
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(null);
         }
     }
 
     @DeleteMapping("/{taskId}")
-    @PreAuthorize("hasAnyRole('USER')")
+    @PreAuthorize("@accessCheckService.hasAccessToTask(#taskId, authentication.principal.id)")
     public ResponseEntity<Task> delete(@PathVariable UUID taskId) {
         try {
             taskService.delete(taskId);

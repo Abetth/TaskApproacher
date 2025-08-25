@@ -3,6 +3,7 @@ package com.taskapproacher.service.task;
 import com.taskapproacher.dao.task.TaskDAO;
 import com.taskapproacher.entity.task.Task;
 
+import com.taskapproacher.entity.task.TaskBoard;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -37,17 +38,27 @@ public class TaskService {
         if (task.getTitle() == null || task.getTitle().isEmpty()) {
             throw new IllegalArgumentException("Title cannot be empty");
         }
+        TaskBoard boardForTask = taskBoardService.findById(task.getTaskBoard().getId());
+        task.setTaskBoard(boardForTask);
 
         taskDAO.save(task);
         return task;
     }
 
-    public Task update(Task task) {
-        if (Objects.isNull(taskDAO.findById(task.getId()))) {
+    public Task update(UUID taskId, Task task) {
+        if (Objects.isNull(taskDAO.findById(taskId))) {
             throw new RuntimeException("Entry is missing");
         }
-        taskDAO.update(task);
-        return task;
+        Task updatedTask = taskDAO.findById(taskId);
+        updatedTask.setTitle(task.getTitle());
+        updatedTask.setPriority(task.getPriority());
+        updatedTask.setDeadline(task.getDeadline());
+        updatedTask.setDescription(task.getDescription());
+        updatedTask.setStatus(task.isStatus());
+        updatedTask.setTaskBoard(task.getTaskBoard());
+
+        taskDAO.update(updatedTask);
+        return updatedTask;
     }
 
     public void delete(UUID taskId) {

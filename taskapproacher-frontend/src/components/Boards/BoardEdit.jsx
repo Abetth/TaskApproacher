@@ -1,4 +1,3 @@
-// src/components/Boards/BoardEdit.jsx
 import React, { useState, useEffect, useContext } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Button, Form, FormGroup, Input, Label } from 'reactstrap';
@@ -26,7 +25,7 @@ function BoardEdit() {
 
   const updateBoard = async () => {
     try {
-      await api.put('/boards', { id: boardId, title: board.title, isSorted: board.isSorted, user: { id: user.id } });
+      await api.patch(`/boards/${boardId}`, { title: board.title, isSorted: board.isSorted, user: { id: user.id } });
       navigate('/');
     } catch (error) {
       console.error('Error updating board:', error);

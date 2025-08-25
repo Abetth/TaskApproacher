@@ -1,4 +1,4 @@
-package com.taskapproacher.service.security;
+package com.taskapproacher.service.security.auth;
 
 import com.taskapproacher.entity.security.AuthRequest;
 import com.taskapproacher.entity.security.AuthResponse;

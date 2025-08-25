@@ -25,19 +25,8 @@ public class BoardController {
         this.taskBoardService = taskBoardService;
     }
 
-
-    @GetMapping("/{boardId}")
-    @PreAuthorize("hasAnyRole('USER')")
-    public ResponseEntity<TaskBoardResponse> getById(@PathVariable UUID boardId) {
-        try {
-            return ResponseEntity.ok(taskBoardService.findById(boardId));
-        } catch (RuntimeException e) {
-            return ResponseEntity.notFound().build();
-        }
-    }
-
     @GetMapping("/{boardId}/tasks")
-    @PreAuthorize("hasAnyRole('USER')")
+    @PreAuthorize("@accessCheckService.hasAccessToBoard(#boardId, authentication.principal.id)")
     public ResponseEntity<List<Task>> getTasksByBoard(@PathVariable UUID boardId) {
         try {
             return ResponseEntity.ok(taskBoardService.findByTaskBoard(boardId));
@@ -47,7 +36,7 @@ public class BoardController {
     }
 
     @PostMapping
-    @PreAuthorize("hasAnyRole('USER')")
+    @PreAuthorize("#board.user.id == authentication.principal.id")
     public ResponseEntity<TaskBoardResponse> create(@RequestBody TaskBoard board) {
         try {
             TaskBoardResponse createBoard = taskBoardService.create(board);
@@ -57,18 +46,18 @@ public class BoardController {
         }
     }
 
-    @PutMapping
-    @PreAuthorize("hasAnyRole('USER')")
-    public ResponseEntity<TaskBoardResponse> update(@RequestBody TaskBoard board) {
+    @PatchMapping("/{boardId}")
+    @PreAuthorize("@accessCheckService.hasAccessToBoard(#boardId, authentication.principal.id)")
+    public ResponseEntity<TaskBoardResponse> update(@PathVariable UUID boardId, @RequestBody TaskBoard board) {
         try {
-            return ResponseEntity.ok(taskBoardService.update(board));
+            return ResponseEntity.ok(taskBoardService.update(boardId, board));
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(null);
         }
     }
 
     @DeleteMapping("/{boardId}")
-    @PreAuthorize("hasAnyRole('USER')")
+    @PreAuthorize("@accessCheckService.hasAccessToBoard(#boardId, authentication.principal.id)")
     public ResponseEntity<TaskBoardResponse> delete(@PathVariable UUID boardId) {
         try {
             taskBoardService.delete(boardId);
