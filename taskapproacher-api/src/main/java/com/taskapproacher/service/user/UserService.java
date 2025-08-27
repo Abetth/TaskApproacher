@@ -5,9 +5,11 @@ import com.taskapproacher.entity.task.TaskBoardResponse;
 import com.taskapproacher.entity.user.User;
 import com.taskapproacher.entity.user.UserResponse;
 import com.taskapproacher.enums.Role;
+import com.taskapproacher.customexceptions.EntityAlreadyExistsException;
+
 import jakarta.persistence.EntityNotFoundException;
+
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -28,19 +30,30 @@ public class UserService {
     }
 
     public User findById(UUID userId) {
-        User user = userDAO.findById(userId);
-        if (user == null) {
-            throw new RuntimeException("User is not found");
+        if (userId == null) {
+            throw new IllegalArgumentException("User id cannot be null");
         }
-        return user;
+
+        return userDAO.findById(userId)
+                .orElseThrow(() -> new EntityNotFoundException("User is not found"));
     }
 
     public Optional<User> findByUsername(String username) {
-        return userDAO.findByUsername(username);
+        if (username == null || username.isEmpty()) {
+            throw new IllegalArgumentException("Username cannot be null or empty");
+        }
+
+        Optional<User> user = userDAO.findByUsername(username);
+
+        if (user.isEmpty()) {
+            throw new EntityNotFoundException("User is not found");
+        }
+
+        return user;
     }
 
     public List<TaskBoardResponse> findBoardsByUser(UUID userId) {
-        if (userDAO.findById(userId) == null) {
+        if (userDAO.findById(userId).isEmpty()) {
             throw new EntityNotFoundException("User not found");
         }
         return userDAO.findRelatedEntitiesByUUID(userId);
@@ -48,13 +61,13 @@ public class UserService {
 
     public UserResponse create(User user) {
         if (user.getUsername() == null || user.getUsername().isEmpty()) {
-            throw new IllegalArgumentException("Username cannot be empty");
+            throw new IllegalArgumentException("Username cannot be null or empty");
         }
         if (user.getEmail() == null || user.getEmail().isEmpty()) {
-            throw new IllegalArgumentException("User email cannot be empty");
+            throw new IllegalArgumentException("User email cannot be null or empty");
         }
         if (user.getPassword() == null || user.getPassword().isEmpty()) {
-            throw new IllegalArgumentException("User password cannot be empty");
+            throw new IllegalArgumentException("User password cannot be null or empty");
         }
 
         User createdUser = new User();
@@ -64,36 +77,37 @@ public class UserService {
         createdUser.setRole(Role.USER);
 
         if (userDAO.isUserExists(createdUser)) {
-            throw new RuntimeException("User already exists");
+            throw new EntityAlreadyExistsException("User already exists");
         } else {
-            userDAO.save(createdUser);
+            return new UserResponse(userDAO.save(createdUser));
         }
-
-        return new UserResponse(createdUser);
     }
 
     public UserResponse update(UUID userId, User user) {
-        if (Objects.isNull(userDAO.findById(userId))) {
-            throw new RuntimeException("Database entry is missing");
+        if (userDAO.findById(userId).isEmpty()) {
+            throw new EntityNotFoundException("Database entry is missing");
         }
 
-        if(!Objects.isNull(user.getPassword()) && !user.getPassword().isEmpty()) {
-            user.setPassword(passwordEncoder.encode(user.getPassword()));
+        User updatedUser = userDAO.findById(userId).get();
+
+        if (user.getUsername() != null && !user.getUsername().isEmpty()) {
+            updatedUser.setUsername(user.getUsername());
         }
 
-        User updatedUser = userDAO.findById(userId);
-        updatedUser.setUsername(user.getUsername());
-        updatedUser.setEmail(user.getEmail());
-        updatedUser.setPassword(updatedUser.getPassword());
+        if (user.getEmail() != null && !user.getEmail().isEmpty()) {
+            updatedUser.setEmail(user.getEmail());
+        }
 
-        userDAO.update(updatedUser);
+        if (user.getPassword() != null && !user.getPassword().isEmpty()) {
+            updatedUser.setPassword(passwordEncoder.encode(user.getPassword()));
+        }
 
-        return new UserResponse(updatedUser);
+        return new UserResponse(userDAO.update(updatedUser));
     }
 
     public void delete(UUID userId) {
-        if (Objects.isNull(userDAO.findById(userId))) {
-            throw new RuntimeException("User not found");
+        if (userDAO.findById(userId).isEmpty()) {
+            throw new EntityNotFoundException("User not found");
         }
 
         userDAO.delete(userId);

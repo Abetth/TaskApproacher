@@ -15,6 +15,7 @@ import org.hibernate.exception.DataException;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Repository
@@ -27,7 +28,7 @@ public class TaskDAO implements GenericDAO<Task> {
     }
 
     @Override
-    public Task findById(UUID taskId) {
+    public Optional<Task> findById(UUID taskId) {
         Transaction transaction = null;
         Task task = null;
 
@@ -38,11 +39,11 @@ public class TaskDAO implements GenericDAO<Task> {
         } catch (HibernateException e) {
             throw new RuntimeException("Failed to find task by id", e);
         }
-        return task;
+        return Optional.of(task);
     }
 
     @Override
-    public void save(Task entity) {
+    public Task save(Task entity) {
         Transaction transaction = null;
 
         try (Session session = sessionFactory.openSession()) {
@@ -57,10 +58,11 @@ public class TaskDAO implements GenericDAO<Task> {
         } catch (HibernateException e) {
             throw new RuntimeException("Failed to save task", e);
         }
+        return entity;
     }
 
     @Override
-    public void update(Task entity) {
+    public Task update(Task entity) {
         Transaction transaction = null;
         try (Session session = sessionFactory.openSession()) {
             transaction = session.beginTransaction();
@@ -75,6 +77,7 @@ public class TaskDAO implements GenericDAO<Task> {
         } catch (HibernateException e) {
             throw new RuntimeException("Failed to update entry", e);
         }
+        return entity;
     }
 
     @Override

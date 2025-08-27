@@ -60,7 +60,7 @@ public class UserDAO implements GenericDAO<User>, RelatedEntityDAO<TaskBoardResp
     }
 
     @Override
-    public User findById(UUID userId) {
+    public Optional<User> findById(UUID userId) {
         Transaction transaction;
         User user = null;
 
@@ -72,7 +72,7 @@ public class UserDAO implements GenericDAO<User>, RelatedEntityDAO<TaskBoardResp
             throw new RuntimeException("Failed to get user by id", e);
         }
 
-        return user;
+        return Optional.of(user);
     }
 
     @Override
@@ -94,7 +94,7 @@ public class UserDAO implements GenericDAO<User>, RelatedEntityDAO<TaskBoardResp
     }
 
     @Override
-    public void save(User user) {
+    public User save(User user) {
         Transaction transaction = null;
 
         try (Session session = sessionFactory.openSession()) {
@@ -109,10 +109,11 @@ public class UserDAO implements GenericDAO<User>, RelatedEntityDAO<TaskBoardResp
         } catch (HibernateException e) {
             throw new RuntimeException("Failed to save user", e);
         }
+        return user;
     }
 
     @Override
-    public void update(User user) {
+    public User update(User user) {
         Transaction transaction = null;
 
         try (Session session = sessionFactory.openSession()) {
@@ -127,6 +128,7 @@ public class UserDAO implements GenericDAO<User>, RelatedEntityDAO<TaskBoardResp
         } catch (HibernateException e) {
             throw new RuntimeException("Failed to update entry", e);
         }
+        return user;
     }
 
     @Override

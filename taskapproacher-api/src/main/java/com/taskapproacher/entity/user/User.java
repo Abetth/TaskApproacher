@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.taskapproacher.entity.task.TaskBoard;
 import com.taskapproacher.enums.Role;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -19,6 +20,7 @@ import java.util.UUID;
 @Getter
 @Setter
 @NoArgsConstructor
+@AllArgsConstructor
 @Entity
 @Table(name = "users")
 @DynamicUpdate
@@ -51,12 +53,12 @@ public class User implements UserDetails {
 
         User comparable = (User) o;
 
-        return id.equals(comparable.id) && username.equals(comparable.username) && email.equals(comparable.username);
+        return username.equals(comparable.username) && email.equals(comparable.email) && role.equals(comparable.role);
     }
 
     @Override
     public int hashCode() {
-        return 11 + id.hashCode() + username.hashCode() + email.hashCode();
+        return 11 + id.hashCode() + username.hashCode() + email.hashCode() + role.hashCode();
     }
 
     @Override

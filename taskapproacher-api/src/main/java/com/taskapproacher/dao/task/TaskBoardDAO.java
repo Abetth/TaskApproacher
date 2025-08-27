@@ -19,6 +19,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Repository
@@ -32,7 +33,7 @@ public class TaskBoardDAO implements GenericDAO<TaskBoard>, RelatedEntityDAO<Tas
     }
 
     @Override
-    public TaskBoard findById(UUID uuid) {
+    public Optional<TaskBoard> findById(UUID uuid) {
         TaskBoard taskBoard = null;
 
         try (Session session = sessionFactory.openSession()) {
@@ -43,7 +44,7 @@ public class TaskBoardDAO implements GenericDAO<TaskBoard>, RelatedEntityDAO<Tas
             throw new RuntimeException("Failed to find task board by id", e);
         }
 
-        return taskBoard;
+        return Optional.of(taskBoard);
     }
 
     @Override
@@ -64,7 +65,7 @@ public class TaskBoardDAO implements GenericDAO<TaskBoard>, RelatedEntityDAO<Tas
     }
 
     @Override
-    public void save(TaskBoard entity) {
+    public TaskBoard save(TaskBoard entity) {
         Transaction transaction = null;
 
         try (Session session = sessionFactory.openSession()) {
@@ -79,10 +80,11 @@ public class TaskBoardDAO implements GenericDAO<TaskBoard>, RelatedEntityDAO<Tas
         } catch (HibernateException e) {
             throw new RuntimeException("Failed to save entry");
         }
+        return entity;
     }
 
     @Override
-    public void update(TaskBoard entity) {
+    public TaskBoard update(TaskBoard entity) {
         Transaction transaction = null;
 
         try (Session session = sessionFactory.openSession()) {
@@ -98,6 +100,7 @@ public class TaskBoardDAO implements GenericDAO<TaskBoard>, RelatedEntityDAO<Tas
         } catch (HibernateException e) {
             throw new RuntimeException("Failed to update entry", e);
         }
+        return entity;
     }
 
     @Override

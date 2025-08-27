@@ -28,4 +28,14 @@ public class TaskBoardResponse {
         this.tasks = taskBoard.getTasks();
         this.user = new UserResponse(taskBoard.getUser());
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        TaskBoardResponse comparable = (TaskBoardResponse) o;
+
+        return title.equals(comparable.title) && isSorted == comparable.isSorted && tasks.equals(comparable.tasks) && user.equals(comparable.user);
+    }
 }

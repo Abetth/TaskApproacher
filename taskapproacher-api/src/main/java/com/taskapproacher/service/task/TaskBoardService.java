@@ -4,14 +4,13 @@ import com.taskapproacher.dao.task.TaskBoardDAO;
 import com.taskapproacher.entity.task.Task;
 import com.taskapproacher.entity.task.TaskBoard;
 import com.taskapproacher.entity.task.TaskBoardResponse;
-import com.taskapproacher.entity.user.User;
 import com.taskapproacher.service.user.UserService;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Objects;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -26,15 +25,12 @@ public class TaskBoardService {
     }
 
     public TaskBoard findById(UUID boardId) {
-        TaskBoard taskBoard = taskBoardDAO.findById(boardId);
-        if (taskBoard == null) {
-            throw new RuntimeException("Board is not found");
-        }
-        return taskBoard;
+        return taskBoardDAO.findById(boardId)
+                .orElseThrow(() -> new EntityNotFoundException("Board is not found"));
     }
 
     public List<Task> findByTaskBoard(UUID boardId) {
-        if (taskBoardDAO.findById(boardId) == null) {
+        if (taskBoardDAO.findById(boardId).isEmpty()) {
             throw new EntityNotFoundException("Task board not found");
         }
         return taskBoardDAO.findRelatedEntitiesByUUID(boardId);
@@ -42,24 +38,22 @@ public class TaskBoardService {
 
     public TaskBoardResponse create(TaskBoard taskBoard) {
         if (taskBoard.getTitle() == null || taskBoard.getTitle().isEmpty()) {
-            throw new IllegalArgumentException("Title cannot be empty");
+            throw new IllegalArgumentException("Title cannot be null or empty");
         }
         taskBoard.setUser(userService.findById(taskBoard.getUser().getId()));
 
-        taskBoardDAO.save(taskBoard);
-        return new TaskBoardResponse(taskBoard);
+        return new TaskBoardResponse(taskBoardDAO.save(taskBoard));
     }
 
     public TaskBoardResponse update(UUID boardId, TaskBoard taskBoard) {
-        if (Objects.isNull(taskBoardDAO.findById(boardId))) {
+        if (taskBoardDAO.findById(boardId).isEmpty()) {
             throw new EntityNotFoundException("Database entry is missing");
         }
-        TaskBoard updatedBoard = taskBoardDAO.findById(boardId);
+        TaskBoard updatedBoard = taskBoardDAO.findById(boardId).get();
         updatedBoard.setTitle(taskBoard.getTitle());
         updatedBoard.setSorted(taskBoard.isSorted());
 
-        taskBoardDAO.update(updatedBoard);
-        return new TaskBoardResponse(updatedBoard);
+        return new TaskBoardResponse(taskBoardDAO.update(updatedBoard));
     }
 
     public void delete(UUID boardId) {

@@ -6,6 +6,7 @@ import com.taskapproacher.entity.user.User;
 import jakarta.persistence.*;
 import jakarta.persistence.Table;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -17,6 +18,7 @@ import java.util.UUID;
 @Getter
 @Setter
 @NoArgsConstructor
+@AllArgsConstructor
 @Entity
 @DynamicUpdate
 @Table(name = "tasks")
@@ -82,7 +84,7 @@ public class Task {
                 + "Priority: " + priority + "\n"
                 + "Deadline: " + deadline + "\n"
                 + "Status: " + status + "\n"
-                + "Task List: " + taskBoard + "    ]";
+                + "Task Board: " + taskBoard + "    ]";
     }
 
 }

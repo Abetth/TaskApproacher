@@ -22,4 +22,21 @@ public class UserResponse {
         this.email = user.getEmail();
         this.role = user.getRole();
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        UserResponse comparable = (UserResponse) o;
+
+        return username.equals(comparable.username) && email.equals(comparable.email) && role.equals(comparable.role);
+    }
+
+    @Override
+    public String toString() {
+        return "[   User: " + id + "\n"
+                + "Username: " + username + "\n"
+                + "E-mail: " + email + "    ]";
+    }
 }

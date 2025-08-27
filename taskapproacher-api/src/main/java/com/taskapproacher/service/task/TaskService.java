@@ -4,10 +4,12 @@ import com.taskapproacher.dao.task.TaskDAO;
 import com.taskapproacher.entity.task.Task;
 
 import com.taskapproacher.entity.task.TaskBoard;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Objects;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -22,11 +24,8 @@ public class TaskService {
     }
 
     public Task findById(UUID taskId) {
-        Task task = taskDAO.findById(taskId);
-        if (task == null) {
-            throw new RuntimeException("Task not found");
-        }
-        return task;
+        return taskDAO.findById(taskId)
+                .orElseThrow(() -> new EntityNotFoundException("Task not found"));
     }
 
 
@@ -36,20 +35,19 @@ public class TaskService {
         }
 
         if (task.getTitle() == null || task.getTitle().isEmpty()) {
-            throw new IllegalArgumentException("Title cannot be empty");
+            throw new IllegalArgumentException("Title cannot be null or empty");
         }
         TaskBoard boardForTask = taskBoardService.findById(task.getTaskBoard().getId());
         task.setTaskBoard(boardForTask);
 
-        taskDAO.save(task);
-        return task;
+        return taskDAO.save(task);
     }
 
     public Task update(UUID taskId, Task task) {
-        if (Objects.isNull(taskDAO.findById(taskId))) {
+        if (taskDAO.findById(taskId).isEmpty()) {
             throw new RuntimeException("Entry is missing");
         }
-        Task updatedTask = taskDAO.findById(taskId);
+        Task updatedTask = taskDAO.findById(taskId).get();
         updatedTask.setTitle(task.getTitle());
         updatedTask.setPriority(task.getPriority());
         updatedTask.setDeadline(task.getDeadline());
@@ -57,8 +55,7 @@ public class TaskService {
         updatedTask.setStatus(task.isStatus());
         updatedTask.setTaskBoard(task.getTaskBoard());
 
-        taskDAO.update(updatedTask);
-        return updatedTask;
+        return taskDAO.update(updatedTask);
     }
 
     public void delete(UUID taskId) {
