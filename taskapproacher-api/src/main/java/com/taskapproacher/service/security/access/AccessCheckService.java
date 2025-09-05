@@ -2,10 +2,7 @@ package com.taskapproacher.service.security.access;
 
 import com.taskapproacher.dao.task.TaskBoardDAO;
 import com.taskapproacher.dao.task.TaskDAO;
-import com.taskapproacher.entity.task.TaskBoard;
 import org.springframework.beans.factory.annotation.Autowired;
-
-import java.util.stream.Stream;
 
 import org.springframework.stereotype.Service;
 
@@ -23,10 +20,10 @@ public class AccessCheckService {
     }
 
     public boolean hasAccessToBoard(UUID boardId, UUID principalId) {
-        return taskBoardDAO.findById(boardId).getUser().getId().equals(principalId);
+        return taskBoardDAO.findByID(boardId).getUser().getID().equals(principalId);
     }
 
     public boolean hasAccessToTask(UUID taskId, UUID principalId) {
-        return taskDAO.findById(taskId).getTaskBoard().getUser().getId().equals(principalId);
+        return taskDAO.findByID(taskId).getTaskBoard().getUser().getID().equals(principalId);
     }
 }

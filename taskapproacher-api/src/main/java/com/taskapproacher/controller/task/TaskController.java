@@ -21,7 +21,7 @@ public class TaskController {
     }
 
     @PostMapping
-    @PreAuthorize("@taskBoardService.findById(#task.taskBoard.id).user.id == authentication.principal.id")
+    @PreAuthorize("@taskBoardService.findByID(#task.taskBoard.ID).user.ID == authentication.principal.id")
     public ResponseEntity<Task> create(@RequestBody Task task) {
         try {
             Task createTask = taskService.create(task);
@@ -31,21 +31,21 @@ public class TaskController {
         }
     }
 
-    @PatchMapping("/{taskId}")
-    @PreAuthorize("@accessCheckService.hasAccessToTask(#taskId, authentication.principal.id)")
-    public ResponseEntity<Task> update(@PathVariable UUID taskId, @RequestBody Task task) {
+    @PatchMapping("/{taskID}")
+    @PreAuthorize("@accessCheckService.hasAccessToTask(#taskID, authentication.principal.id)")
+    public ResponseEntity<Task> update(@PathVariable UUID taskID, @RequestBody Task task) {
         try {
-            return ResponseEntity.ok(taskService.update(taskId, task));
+            return ResponseEntity.ok(taskService.update(taskID, task));
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(null);
         }
     }
 
-    @DeleteMapping("/{taskId}")
-    @PreAuthorize("@accessCheckService.hasAccessToTask(#taskId, authentication.principal.id)")
-    public ResponseEntity<Task> delete(@PathVariable UUID taskId) {
+    @DeleteMapping("/{taskID}")
+    @PreAuthorize("@accessCheckService.hasAccessToTask(#taskID, authentication.principal.id)")
+    public ResponseEntity<Task> delete(@PathVariable UUID taskID) {
         try {
-            taskService.delete(taskId);
+            taskService.delete(taskID);
             return ResponseEntity.noContent().build();
         } catch (RuntimeException e) {
             return ResponseEntity.notFound().build();

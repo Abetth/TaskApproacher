@@ -27,13 +27,13 @@ public class TaskDAO implements GenericDAO<Task> {
     }
 
     @Override
-    public Task findById(UUID taskId) {
+    public Task findByID(UUID taskID) {
         Transaction transaction = null;
         Task task = null;
 
         try (Session session = sessionFactory.openSession()) {
             transaction = session.beginTransaction();
-            task = session.get(Task.class, taskId);
+            task = session.get(Task.class, taskID);
             transaction.commit();
         } catch (HibernateException e) {
             throw new RuntimeException("Failed to find task by id", e);
@@ -78,13 +78,13 @@ public class TaskDAO implements GenericDAO<Task> {
     }
 
     @Override
-    public void delete(UUID taskId) {
+    public void delete(UUID taskID) {
         Transaction transaction = null;
 
         try (Session session = sessionFactory.openSession()) {
             transaction = session.beginTransaction();
-            session.createQuery("DELETE FROM Task WHERE id = :taskId")
-                    .setParameter("taskId", taskId)
+            session.createQuery("DELETE FROM Task WHERE ID = :taskID")
+                    .setParameter("taskID", taskID)
                     .executeUpdate();
             transaction.commit();
         } catch (HibernateException e) {

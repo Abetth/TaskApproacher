@@ -25,7 +25,7 @@ public class TaskBoard {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    private UUID id;
+    private UUID ID;
 
     @Column(name = "title", nullable = false)
     private String title;
@@ -43,7 +43,7 @@ public class TaskBoard {
     private User user;
 
     public TaskBoard(String title, boolean isSorted, List<Task> tasks, User user) {
-        this.id = new UUID(0L, 0L);
+        this.ID = new UUID(0L, 0L);
         this.title = title;
         this.isSorted = isSorted;
         this.tasks = tasks;
@@ -55,18 +55,18 @@ public class TaskBoard {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         TaskBoard comparableTable = (TaskBoard) o;
-        return id.equals(comparableTable.id) && title.equals(comparableTable.title)
+        return ID.equals(comparableTable.ID) && title.equals(comparableTable.title)
                 && tasks.equals(comparableTable.tasks) && user.equals(comparableTable.user);
     }
 
     @Override
     public int hashCode() {
-        return 11 + id.hashCode() + title.hashCode() + tasks.hashCode() + user.hashCode();
+        return 11 + ID.hashCode() + title.hashCode() + tasks.hashCode() + user.hashCode();
     }
 
     @Override
     public String toString() {
-        return  "[   Table: " + id
+        return  "[   Table: " + ID
                 + ", Title: " + title
                 + ", Sorted: " + isSorted
                 + "User: " + user.getUsername() + "    ]";

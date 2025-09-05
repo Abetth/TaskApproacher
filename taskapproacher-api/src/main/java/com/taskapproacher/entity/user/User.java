@@ -25,7 +25,7 @@ import java.util.UUID;
 public class User implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    private UUID id;
+    private UUID ID;
 
     @Column(nullable = false, name = "username")
     private String username;
@@ -51,17 +51,17 @@ public class User implements UserDetails {
 
         User comparable = (User) o;
 
-        return id.equals(comparable.id) && username.equals(comparable.username) && email.equals(comparable.username);
+        return ID.equals(comparable.ID) && username.equals(comparable.username) && email.equals(comparable.username);
     }
 
     @Override
     public int hashCode() {
-        return 11 + id.hashCode() + username.hashCode() + email.hashCode();
+        return 11 + ID.hashCode() + username.hashCode() + email.hashCode();
     }
 
     @Override
     public String toString() {
-        return "[   User: " + id + "\n"
+        return "[   User: " + ID + "\n"
                 + "Username: " + username + "\n"
                 + "E-mail: " + email + "    ]";
     }

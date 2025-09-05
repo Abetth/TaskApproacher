@@ -7,7 +7,6 @@ import com.taskapproacher.entity.user.UserResponse;
 import com.taskapproacher.enums.Role;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -27,8 +26,8 @@ public class UserService {
         this.passwordEncoder = passwordEncoder;
     }
 
-    public User findById(UUID userId) {
-        User user = userDAO.findById(userId);
+    public User findByID(UUID userID) {
+        User user = userDAO.findByID(userID);
         if (user == null) {
             throw new RuntimeException("User is not found");
         }
@@ -39,11 +38,11 @@ public class UserService {
         return userDAO.findByUsername(username);
     }
 
-    public List<TaskBoardResponse> findBoardsByUser(UUID userId) {
-        if (userDAO.findById(userId) == null) {
+    public List<TaskBoardResponse> findBoardsByUser(UUID userID) {
+        if (userDAO.findByID(userID) == null) {
             throw new EntityNotFoundException("User not found");
         }
-        return userDAO.findRelatedEntitiesByUUID(userId);
+        return userDAO.findRelatedEntitiesByUUID(userID);
     }
 
     public UserResponse create(User user) {
@@ -72,8 +71,8 @@ public class UserService {
         return new UserResponse(createdUser);
     }
 
-    public UserResponse update(UUID userId, User user) {
-        if (Objects.isNull(userDAO.findById(userId))) {
+    public UserResponse update(UUID userID, User user) {
+        if (Objects.isNull(userDAO.findByID(userID))) {
             throw new RuntimeException("Database entry is missing");
         }
 
@@ -81,7 +80,7 @@ public class UserService {
             user.setPassword(passwordEncoder.encode(user.getPassword()));
         }
 
-        User updatedUser = userDAO.findById(userId);
+        User updatedUser = userDAO.findByID(userID);
         updatedUser.setUsername(user.getUsername());
         updatedUser.setEmail(user.getEmail());
         updatedUser.setPassword(updatedUser.getPassword());
@@ -91,11 +90,11 @@ public class UserService {
         return new UserResponse(updatedUser);
     }
 
-    public void delete(UUID userId) {
-        if (Objects.isNull(userDAO.findById(userId))) {
+    public void delete(UUID userID) {
+        if (Objects.isNull(userDAO.findByID(userID))) {
             throw new RuntimeException("User not found");
         }
 
-        userDAO.delete(userId);
+        userDAO.delete(userID);
     }
 }

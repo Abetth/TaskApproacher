@@ -2,7 +2,6 @@ package com.taskapproacher.entity.task;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 
-import com.taskapproacher.entity.user.User;
 import jakarta.persistence.*;
 import jakarta.persistence.Table;
 
@@ -24,7 +23,7 @@ public class Task {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    private UUID id;
+    private UUID ID;
 
     @Column(name = "title", nullable = false)
     private String title;
@@ -47,7 +46,7 @@ public class Task {
     private TaskBoard taskBoard;
 
     public Task(String title, String description, int priority, LocalDate deadline, boolean status, TaskBoard list) {
-        this.id = new UUID(0L, 0L);
+        this.ID = new UUID(0L, 0L);
         this.title = title;
         this.description = description;
         this.priority = priority;
@@ -62,7 +61,7 @@ public class Task {
         if (o == null || getClass() != o.getClass()) return false;
         Task comparableTask = (Task) o;
 
-        return id.equals(comparableTask.id) && title.equals(comparableTask.title)
+        return ID.equals(comparableTask.ID) && title.equals(comparableTask.title)
                 && description.equals(comparableTask.description) && priority.equals(comparableTask.priority)
                 && deadline.equals(comparableTask.deadline) && status == comparableTask.status
                 && taskBoard.equals(comparableTask.taskBoard);
@@ -70,13 +69,13 @@ public class Task {
 
     @Override
     public int hashCode() {
-        return 11 + id.hashCode() + title.hashCode() + description.hashCode() + priority + deadline.hashCode()
+        return 11 + ID.hashCode() + title.hashCode() + description.hashCode() + priority + deadline.hashCode()
                 + taskBoard.hashCode();
     }
 
     @Override
     public String toString() {
-        return  "[   Task: " + id + "\n"
+        return  "[   Task: " + ID + "\n"
                 + "Title: " + title + "\n"
                 + "Description: " + description + "\n"
                 + "Priority: " + priority + "\n"

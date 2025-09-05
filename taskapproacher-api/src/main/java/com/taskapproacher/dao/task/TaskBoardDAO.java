@@ -32,7 +32,7 @@ public class TaskBoardDAO implements GenericDAO<TaskBoard>, RelatedEntityDAO<Tas
     }
 
     @Override
-    public TaskBoard findById(UUID uuid) {
+    public TaskBoard findByID(UUID uuid) {
         TaskBoard taskBoard = null;
 
         try (Session session = sessionFactory.openSession()) {
@@ -53,8 +53,8 @@ public class TaskBoardDAO implements GenericDAO<TaskBoard>, RelatedEntityDAO<Tas
 
         try (Session session = sessionFactory.openSession()) {
             transaction = session.beginTransaction();
-            tasks = session.createQuery("FROM Task WHERE taskBoard.id = :boardId", Task.class)
-                    .setParameter("boardId", uuid)
+            tasks = session.createQuery("FROM Task WHERE taskBoard.ID = :boardID", Task.class)
+                    .setParameter("boardID", uuid)
                     .getResultList();
             transaction.commit();
         } catch (HibernateException e) {
@@ -106,8 +106,8 @@ public class TaskBoardDAO implements GenericDAO<TaskBoard>, RelatedEntityDAO<Tas
 
         try (Session session = sessionFactory.openSession()) {
             transaction = session.beginTransaction();
-            session.createQuery("DELETE FROM TaskBoard WHERE id = :boardId")
-                    .setParameter("boardId", uuid)
+            session.createQuery("DELETE FROM TaskBoard WHERE ID = :boardID")
+                    .setParameter("boardID", uuid)
                     .executeUpdate();
             transaction.commit();
         } catch (HibernateException e) {

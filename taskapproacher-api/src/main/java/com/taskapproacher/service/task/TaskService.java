@@ -21,8 +21,8 @@ public class TaskService {
         this.taskBoardService = taskBoardService;
     }
 
-    public Task findById(UUID taskId) {
-        Task task = taskDAO.findById(taskId);
+    public Task findByID(UUID taskID) {
+        Task task = taskDAO.findByID(taskID);
         if (task == null) {
             throw new RuntimeException("Task not found");
         }
@@ -31,25 +31,25 @@ public class TaskService {
 
 
     public Task create(Task task) {
-        if (task.getTaskBoard() == null || taskBoardService.findById(task.getTaskBoard().getId()) == null) {
+        if (task.getTaskBoard() == null || taskBoardService.findByID(task.getTaskBoard().getID()) == null) {
             throw new IllegalArgumentException("Task board not found");
         }
 
         if (task.getTitle() == null || task.getTitle().isEmpty()) {
             throw new IllegalArgumentException("Title cannot be empty");
         }
-        TaskBoard boardForTask = taskBoardService.findById(task.getTaskBoard().getId());
+        TaskBoard boardForTask = taskBoardService.findByID(task.getTaskBoard().getID());
         task.setTaskBoard(boardForTask);
 
         taskDAO.save(task);
         return task;
     }
 
-    public Task update(UUID taskId, Task task) {
-        if (Objects.isNull(taskDAO.findById(taskId))) {
+    public Task update(UUID taskID, Task task) {
+        if (Objects.isNull(taskDAO.findByID(taskID))) {
             throw new RuntimeException("Entry is missing");
         }
-        Task updatedTask = taskDAO.findById(taskId);
+        Task updatedTask = taskDAO.findByID(taskID);
         updatedTask.setTitle(task.getTitle());
         updatedTask.setPriority(task.getPriority());
         updatedTask.setDeadline(task.getDeadline());
@@ -61,7 +61,7 @@ public class TaskService {
         return updatedTask;
     }
 
-    public void delete(UUID taskId) {
-        taskDAO.delete(taskId);
+    public void delete(UUID taskID) {
+        taskDAO.delete(taskID);
     }
 }
