@@ -2,6 +2,7 @@ HELP.md
 out/
 target/
 src/main/resources/application.properties
+src/main/resources/hibernate.cfg.xml
 .mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/
