@@ -2,7 +2,6 @@ package com.taskapproacher.dao.task;
 
 import com.taskapproacher.entity.task.Task;
 import com.taskapproacher.entity.task.TaskBoard;
-import com.taskapproacher.entity.task.TaskBoardResponse;
 import com.taskapproacher.hibernate.HibernateSessionFactoryUtil;
 import com.taskapproacher.interfaces.GenericDAO;
 
@@ -17,7 +16,6 @@ import org.hibernate.Transaction;
 import org.hibernate.exception.DataException;
 import org.springframework.stereotype.Repository;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -48,7 +46,7 @@ public class TaskBoardDAO implements GenericDAO<TaskBoard>, RelatedEntityDAO<Tas
     }
 
     @Override
-    public List<Task> findRelatedEntitiesByUUID(UUID uuid) {
+    public List<Task> findRelatedEntitiesByID(UUID uuid) {
         Transaction transaction = null;
         List<Task> tasks;
 

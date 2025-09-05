@@ -2,6 +2,8 @@ package com.taskapproacher.controller.task;
 
 import com.taskapproacher.entity.task.Task;
 import com.taskapproacher.service.task.TaskService;
+import com.taskapproacher.entity.task.response.TaskResponse;
+import com.taskapproacher.entity.task.request.TaskRequest;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -20,11 +22,13 @@ public class TaskController {
         this.taskService = taskService;
     }
 
-    @PostMapping
-    @PreAuthorize("@taskBoardService.findById(#task.taskBoard.id).user.id == authentication.principal.id")
-    public ResponseEntity<Task> create(@RequestBody Task task) {
+    @PostMapping("/board/{boardId}")
+    @PreAuthorize("@taskBoardService.findById(#boardId).user.id == authentication.principal.id")
+    public ResponseEntity<TaskResponse> create(@PathVariable UUID boardId,
+                                               @RequestBody TaskRequest task,
+                                               @RequestHeader String timeZone) {
         try {
-            Task createTask = taskService.create(task);
+            TaskResponse createTask = taskService.create(boardId, task, timeZone);
             return ResponseEntity.status(201).body(createTask);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(null);
@@ -33,9 +37,11 @@ public class TaskController {
 
     @PatchMapping("/{taskId}")
     @PreAuthorize("@accessCheckService.hasAccessToTask(#taskId, authentication.principal.id)")
-    public ResponseEntity<Task> update(@PathVariable UUID taskId, @RequestBody Task task) {
+    public ResponseEntity<TaskResponse> update(@PathVariable UUID taskId,
+                                       @RequestBody TaskRequest task,
+                                       @RequestHeader String timeZone) {
         try {
-            return ResponseEntity.ok(taskService.update(taskId, task));
+            return ResponseEntity.ok(taskService.update(taskId, task, timeZone));
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(null);
         }

@@ -1,5 +1,7 @@
-package com.taskapproacher.entity.task;
+package com.taskapproacher.entity.task.response;
 
+import com.taskapproacher.entity.task.Task;
+import com.taskapproacher.entity.task.TaskBoard;
 import com.taskapproacher.entity.user.UserResponse;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -16,7 +18,7 @@ import java.util.UUID;
 public class TaskBoardResponse {
     private UUID id;
     private String title;
-    private boolean isSorted;
+    private boolean sorted;
     private List<Task> tasks;
     private UserResponse user;
 
@@ -24,7 +26,7 @@ public class TaskBoardResponse {
     public TaskBoardResponse(TaskBoard taskBoard) {
         this.id = taskBoard.getId();
         this.title = taskBoard.getTitle();
-        this.isSorted = taskBoard.isSorted();
+        this.sorted = taskBoard.isSorted();
         this.tasks = taskBoard.getTasks();
         this.user = new UserResponse(taskBoard.getUser());
     }
@@ -36,6 +38,6 @@ public class TaskBoardResponse {
 
         TaskBoardResponse comparable = (TaskBoardResponse) o;
 
-        return title.equals(comparable.title) && isSorted == comparable.isSorted && tasks.equals(comparable.tasks) && user.equals(comparable.user);
+        return title.equals(comparable.title) && sorted == comparable.sorted && tasks.equals(comparable.tasks) && user.equals(comparable.user);
     }
 }

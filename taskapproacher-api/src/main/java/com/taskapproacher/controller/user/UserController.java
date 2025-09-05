@@ -1,6 +1,6 @@
 package com.taskapproacher.controller.user;
 
-import com.taskapproacher.entity.task.TaskBoardResponse;
+import com.taskapproacher.entity.task.response.TaskBoardResponse;
 import com.taskapproacher.entity.user.User;
 import com.taskapproacher.entity.user.UserResponse;
 import com.taskapproacher.service.user.UserService;

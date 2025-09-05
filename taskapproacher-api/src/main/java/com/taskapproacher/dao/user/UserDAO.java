@@ -1,7 +1,7 @@
 package com.taskapproacher.dao.user;
 
 import com.taskapproacher.entity.task.TaskBoard;
-import com.taskapproacher.entity.task.TaskBoardResponse;
+import com.taskapproacher.entity.task.response.TaskBoardResponse;
 import com.taskapproacher.entity.user.User;
 import com.taskapproacher.hibernate.HibernateSessionFactoryUtil;
 import com.taskapproacher.interfaces.GenericDAO;
@@ -76,7 +76,7 @@ public class UserDAO implements GenericDAO<User>, RelatedEntityDAO<TaskBoardResp
     }
 
     @Override
-    public List<TaskBoardResponse> findRelatedEntitiesByUUID(UUID uuid) {
+    public List<TaskBoardResponse> findRelatedEntitiesByID(UUID uuid) {
         Transaction transaction = null;
         List<TaskBoard> taskBoards;
 

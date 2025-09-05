@@ -2,14 +2,12 @@ package com.taskapproacher.controller.task;
 
 import com.taskapproacher.entity.task.Task;
 import com.taskapproacher.entity.task.TaskBoard;
-import com.taskapproacher.entity.task.TaskBoardResponse;
+import com.taskapproacher.entity.task.response.TaskBoardResponse;
 import com.taskapproacher.service.task.TaskBoardService;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -17,11 +15,11 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/boards")
-public class BoardController {
+public class TaskBoardController {
     private final TaskBoardService taskBoardService;
 
     @Autowired
-    public BoardController(TaskBoardService taskBoardService) {
+    public TaskBoardController(TaskBoardService taskBoardService) {
         this.taskBoardService = taskBoardService;
     }
 
@@ -35,11 +33,12 @@ public class BoardController {
         }
     }
 
-    @PostMapping
+    @PostMapping("/{userID}")
     @PreAuthorize("#board.user.id == authentication.principal.id")
-    public ResponseEntity<TaskBoardResponse> create(@RequestBody TaskBoard board) {
+    public ResponseEntity<TaskBoardResponse> create(@PathVariable UUID userID,
+                                                    @RequestBody TaskBoard board) {
         try {
-            TaskBoardResponse createBoard = taskBoardService.create(board);
+            TaskBoardResponse createBoard = taskBoardService.create(userID, board);
             return ResponseEntity.status(201).body(createBoard);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(null);

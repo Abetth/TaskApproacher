@@ -33,7 +33,7 @@ public class TaskBoard {
     private String title;
 
     @JsonProperty("isSorted")
-    private boolean isSorted;
+    private boolean sorted;
 
     @OneToMany(fetch = FetchType.EAGER, mappedBy = "taskBoard", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference
@@ -44,10 +44,10 @@ public class TaskBoard {
     @JsonBackReference
     private User user;
 
-    public TaskBoard(String title, boolean isSorted, List<Task> tasks, User user) {
+    public TaskBoard(String title, boolean sorted, List<Task> tasks, User user) {
         this.id = new UUID(0L, 0L);
         this.title = title;
-        this.isSorted = isSorted;
+        this.sorted = sorted;
         this.tasks = tasks;
         this.user = user;
     }
@@ -70,7 +70,7 @@ public class TaskBoard {
     public String toString() {
         return  "[   Table: " + id
                 + ", Title: " + title
-                + ", Sorted: " + isSorted
+                + ", Sorted: " + sorted
                 + "User: " + user.getUsername() + "    ]";
     }
 }

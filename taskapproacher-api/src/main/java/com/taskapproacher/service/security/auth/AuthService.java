@@ -6,6 +6,10 @@ import com.taskapproacher.entity.security.RegisterRequest;
 import com.taskapproacher.entity.user.User;
 import com.taskapproacher.entity.user.UserResponse;
 import com.taskapproacher.service.user.UserService;
+import com.taskapproacher.enums.ErrorMessage;
+
+import jakarta.persistence.EntityNotFoundException;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -33,11 +37,13 @@ public class AuthService {
 
         UserResponse userResponse = userService.create(user);
 
-        User createdUser = userService.findByUsername(userResponse.getUsername())
-                .orElseThrow(() -> new UsernameNotFoundException("User creation failure"));
-        String jwtToken = jwtService.generateToken(createdUser);
-        return new AuthResponse(jwtToken);
-
+        try {
+            User createdUser = userService.findByUsername(userResponse.getUsername());
+            String jwtToken = jwtService.generateToken(createdUser);
+            return new AuthResponse(jwtToken);
+        } catch (EntityNotFoundException e) {
+            throw new UsernameNotFoundException("User " + ErrorMessage.CREATION_FAILURE);
+        }
     }
 
     public AuthResponse authenticate(AuthRequest request) {
@@ -45,8 +51,7 @@ public class AuthService {
                 new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword())
         );
 
-        User user = userService.findByUsername(request.getUsername())
-                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+        User user = userService.findByUsername(request.getUsername());
 
         String jwtToken = jwtService.generateToken(user);
         return new AuthResponse(jwtToken);
