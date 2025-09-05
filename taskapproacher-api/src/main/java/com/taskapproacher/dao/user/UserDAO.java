@@ -60,13 +60,13 @@ public class UserDAO implements GenericDAO<User>, RelatedEntityDAO<TaskBoardResp
     }
 
     @Override
-    public Optional<User> findById(UUID userId) {
+    public Optional<User> findByID(UUID userID) {
         Transaction transaction;
         User user = null;
 
         try (Session session = sessionFactory.openSession()) {
             transaction = session.beginTransaction();
-            user = session.find(User.class, userId);
+            user = session.find(User.class, userID);
             transaction.commit();
         } catch (HibernateException e) {
             throw new RuntimeException("Failed to get user by id", e);
@@ -82,7 +82,7 @@ public class UserDAO implements GenericDAO<User>, RelatedEntityDAO<TaskBoardResp
 
         try (Session session = sessionFactory.openSession()) {
             transaction = session.beginTransaction();
-            taskBoards = session.createQuery("FROM TaskBoard WHERE user.id = :id", TaskBoard.class)
+            taskBoards = session.createQuery("FROM TaskBoard WHERE user.ID = :id", TaskBoard.class)
                     .setParameter("id", uuid)
                     .getResultList();
             transaction.commit();
@@ -132,13 +132,13 @@ public class UserDAO implements GenericDAO<User>, RelatedEntityDAO<TaskBoardResp
     }
 
     @Override
-    public void delete(UUID userId) {
+    public void delete(UUID userID) {
         Transaction transaction = null;
 
         try (Session session = sessionFactory.openSession()) {
             transaction = session.beginTransaction();
-            session.createQuery("DELETE FROM User WHERE id = :userId")
-                    .setParameter("userId", userId)
+            session.createQuery("DELETE FROM User WHERE ID = :userID")
+                    .setParameter("userID", userID)
                     .executeUpdate();
             transaction.commit();
         } catch (HibernateException e) {

@@ -30,12 +30,12 @@ public class UserService {
         this.passwordEncoder = passwordEncoder;
     }
 
-    public User findById(UUID userId) throws IllegalArgumentException, EntityNotFoundException {
-        if (userId == null) {
+    public User findByID(UUID userID) throws IllegalArgumentException, EntityNotFoundException {
+        if (userID == null) {
             throw new IllegalArgumentException("User id " + ErrorMessage.NULL);
         }
 
-        return userDAO.findById(userId).orElseThrow(() -> new EntityNotFoundException("User " + ErrorMessage.NOT_FOUND));
+        return userDAO.findByID(userID).orElseThrow(() -> new EntityNotFoundException("User " + ErrorMessage.NOT_FOUND));
     }
 
     public User findByUsername(String username) throws IllegalArgumentException, UsernameNotFoundException {
@@ -48,10 +48,10 @@ public class UserService {
                 .orElseThrow(() -> new UsernameNotFoundException("User " + ErrorMessage.NOT_FOUND + ": " + username));
     }
 
-    public List<TaskBoardResponse> findBoardsByUser(UUID userId) {
-        findById(userId);
+    public List<TaskBoardResponse> findBoardsByUser(UUID userID) {
+        findByID(userID);
 
-        return userDAO.findRelatedEntitiesByID(userId);
+        return userDAO.findRelatedEntitiesByID(userID);
     }
 
     public UserResponse create(User user) throws IllegalArgumentException, EntityAlreadyExistsException {
@@ -81,8 +81,8 @@ public class UserService {
         }
     }
 
-    public UserResponse update(UUID userId, User user) {
-        User updatedUser = findById(userId);
+    public UserResponse update(UUID userID, User user) {
+        User updatedUser = findByID(userID);
 
         if (user.getUsername() != null && !user.getUsername().isEmpty()) {
             updatedUser.setUsername(user.getUsername());
@@ -99,11 +99,11 @@ public class UserService {
         return new UserResponse(userDAO.update(updatedUser));
     }
 
-    public void delete(UUID userId) throws IllegalArgumentException {
-        if (userId == null) {
+    public void delete(UUID userID) throws IllegalArgumentException {
+        if (userID == null) {
             throw new IllegalArgumentException("User id " + ErrorMessage.NULL);
         }
 
-        userDAO.delete(userId);
+        userDAO.delete(userID);
     }
 }

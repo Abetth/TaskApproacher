@@ -24,17 +24,17 @@ public class TaskBoardService {
         this.userService = userService;
     }
 
-    public TaskBoard findById(UUID boardId) throws IllegalArgumentException, EntityNotFoundException {
-        if (boardId == null) {
+    public TaskBoard findByID(UUID boardID) throws IllegalArgumentException, EntityNotFoundException {
+        if (boardID == null) {
             throw new IllegalArgumentException("Task board id " + ErrorMessage.NULL);
         }
-        return taskBoardDAO.findById(boardId).orElseThrow(() -> new EntityNotFoundException("Task board " + ErrorMessage.NOT_FOUND));
+        return taskBoardDAO.findByID(boardID).orElseThrow(() -> new EntityNotFoundException("Task board " + ErrorMessage.NOT_FOUND));
     }
 
-    public List<Task> findByTaskBoard(UUID boardId) {
-        findById(boardId);
+    public List<Task> findByTaskBoard(UUID boardID) {
+        findByID(boardID);
 
-        return taskBoardDAO.findRelatedEntitiesByID(boardId);
+        return taskBoardDAO.findRelatedEntitiesByID(boardID);
     }
 
     public TaskBoardResponse create(UUID userID, TaskBoard taskBoard) throws IllegalArgumentException {
@@ -42,13 +42,14 @@ public class TaskBoardService {
             ErrorMessage error = (taskBoard.getTitle() == null) ? ErrorMessage.NULL : ErrorMessage.EMPTY;
             throw new IllegalArgumentException("Title " + error);
         }
-        taskBoard.setUser(userService.findById(userID));
+
+        taskBoard.setUser(userService.findByID(userID));
 
         return new TaskBoardResponse(taskBoardDAO.save(taskBoard));
     }
 
-    public TaskBoardResponse update(UUID boardId, TaskBoard taskBoard) {
-        TaskBoard updatedBoard = findById(boardId);
+    public TaskBoardResponse update(UUID boardID, TaskBoard taskBoard) {
+        TaskBoard updatedBoard = findByID(boardID);
 
         if (taskBoard.getTitle() != null && !taskBoard.getTitle().isEmpty()) {
             updatedBoard.setTitle(taskBoard.getTitle());
@@ -58,11 +59,11 @@ public class TaskBoardService {
         return new TaskBoardResponse(taskBoardDAO.update(updatedBoard));
     }
 
-    public void delete(UUID boardId) throws IllegalArgumentException {
-        if (boardId == null) {
+    public void delete(UUID boardID) throws IllegalArgumentException {
+        if (boardID == null) {
             throw new IllegalArgumentException("Board id " + ErrorMessage.NULL);
         }
 
-        taskBoardDAO.delete(boardId);
+        taskBoardDAO.delete(boardID);
     }
 }

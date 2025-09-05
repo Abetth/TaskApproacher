@@ -33,9 +33,9 @@ public class AccessCheckServiceTest {
     @InjectMocks
     private AccessCheckService accessCheckService;
 
-    private User createDefaultUser(UUID userId) {
+    private User createDefaultUser(UUID userID) {
         User user = new User();
-        user.setId(userId);
+        user.setID(userID);
         user.setUsername("Test user");
         user.setPassword("testUserPass");
         user.setEmail("mail@mail.mail");
@@ -43,51 +43,51 @@ public class AccessCheckServiceTest {
         return user;
     }
 
-    private Task createDefaultTask(UUID taskId, UUID boardId, UUID userId) {
+    private Task createDefaultTask(UUID taskID, UUID boardID, UUID userID) {
         Task task = new Task();
-        task.setId(taskId);
+        task.setID(taskID);
         task.setTitle("Test task");
         task.setDescription("Test task description");
         task.setPriority(Priority.STANDARD);
         task.setDeadline(LocalDate.now());
         task.setFinished(true);
-        task.setTaskBoard(createDefaultTaskBoard(boardId, userId));
+        task.setTaskBoard(createDefaultTaskBoard(boardID, userID));
 
         return task;
     }
 
-    private TaskBoard createDefaultTaskBoard(UUID boardId, UUID userId) {
+    private TaskBoard createDefaultTaskBoard(UUID boardID, UUID userID) {
         TaskBoard taskBoard = new TaskBoard();
-        taskBoard.setId(boardId);
+        taskBoard.setID(boardID);
         taskBoard.setSorted(false);
-        taskBoard.setUser(createDefaultUser(userId));
+        taskBoard.setUser(createDefaultUser(userID));
 
         return taskBoard;
     }
 
     @Test
     void hasAccessToBoard_ValidIDs_ReturnsTrue() {
-        UUID boardId = UUID.randomUUID();
-        UUID userId = UUID.randomUUID();
+        UUID boardID = UUID.randomUUID();
+        UUID userID = UUID.randomUUID();
 
-        TaskBoard taskBoard = createDefaultTaskBoard(boardId, userId);
+        TaskBoard taskBoard = createDefaultTaskBoard(boardID, userID);
 
-        when(taskBoardDAO.findById(boardId)).thenReturn(Optional.of(taskBoard));
+        when(taskBoardDAO.findByID(boardID)).thenReturn(Optional.of(taskBoard));
 
-        boolean hasAccess = accessCheckService.hasAccessToBoard(boardId, userId);
+        boolean hasAccess = accessCheckService.hasAccessToBoard(boardID, userID);
 
         assertTrue(hasAccess);
 
-        verify(taskBoardDAO, times(1)).findById(boardId);
+        verify(taskBoardDAO, times(1)).findByID(boardID);
     }
 
     @Test
-    void hasAccessToBoard_NullTaskBoardId_ThrowsIllegalArgumentException() {
-        UUID boardId = null;
-        UUID userId = UUID.randomUUID();
+    void hasAccessToBoard_NullTaskBoardID_ThrowsIllegalArgumentException() {
+        UUID boardID = null;
+        UUID userID = UUID.randomUUID();
 
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
-            accessCheckService.hasAccessToBoard(boardId, userId);
+            accessCheckService.hasAccessToBoard(boardID, userID);
         });
 
         String expectedMessage = "board id " + ErrorMessage.NULL;
@@ -95,16 +95,16 @@ public class AccessCheckServiceTest {
 
         assertTrue(actualMessage.contains(expectedMessage));
 
-        verify(taskBoardDAO, times(0)).findById(boardId);
+        verify(taskBoardDAO, times(0)).findByID(boardID);
     }
 
     @Test
-    void hasAccessToBoard_NullPrincipalId_ThrowsIllegalArgumentException() {
-        UUID boardId = UUID.randomUUID();
-        UUID userId = null;
+    void hasAccessToBoard_NullPrincipalID_ThrowsIllegalArgumentException() {
+        UUID boardID = UUID.randomUUID();
+        UUID userID = null;
 
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
-            accessCheckService.hasAccessToBoard(boardId, userId);
+            accessCheckService.hasAccessToBoard(boardID, userID);
         });
 
         String expectedMessage = "Principal id " + ErrorMessage.NULL;
@@ -112,18 +112,18 @@ public class AccessCheckServiceTest {
 
         assertTrue(actualMessage.contains(expectedMessage));
 
-        verify(taskBoardDAO, times(0)).findById(boardId);
+        verify(taskBoardDAO, times(0)).findByID(boardID);
     }
 
     @Test
-    void hasAccessToBoard_InvalidTaskBoardId_ThrowsEntityNotFoundException() {
-        UUID boardId = UUID.randomUUID();
-        UUID userId = UUID.randomUUID();
+    void hasAccessToBoard_InvalidTaskBoardID_ThrowsEntityNotFoundException() {
+        UUID boardID = UUID.randomUUID();
+        UUID userID = UUID.randomUUID();
 
-        when(taskBoardDAO.findById(boardId)).thenReturn(Optional.empty());
+        when(taskBoardDAO.findByID(boardID)).thenReturn(Optional.empty());
 
         EntityNotFoundException exception = assertThrows(EntityNotFoundException.class, () -> {
-            accessCheckService.hasAccessToBoard(boardId, userId);
+            accessCheckService.hasAccessToBoard(boardID, userID);
         });
 
         String expectedMessage = ErrorMessage.NOT_FOUND.toString();
@@ -131,49 +131,49 @@ public class AccessCheckServiceTest {
 
         assertTrue(actualMessage.contains(expectedMessage));
 
-        verify(taskBoardDAO, times(1)).findById(boardId);
+        verify(taskBoardDAO, times(1)).findByID(boardID);
     }
 
     @Test
     void hasAccessToBoard_InvalidPrincipalID_ReturnsFalse() {
-        UUID boardId = UUID.randomUUID();
-        UUID otherUserId = UUID.randomUUID();
+        UUID boardID = UUID.randomUUID();
+        UUID otherUserID = UUID.randomUUID();
 
-        TaskBoard taskBoard = createDefaultTaskBoard(boardId, UUID.randomUUID());
+        TaskBoard taskBoard = createDefaultTaskBoard(boardID, UUID.randomUUID());
 
-        when(taskBoardDAO.findById(boardId)).thenReturn(Optional.of(taskBoard));
+        when(taskBoardDAO.findByID(boardID)).thenReturn(Optional.of(taskBoard));
 
-        boolean hasAccess = accessCheckService.hasAccessToBoard(boardId, otherUserId);
+        boolean hasAccess = accessCheckService.hasAccessToBoard(boardID, otherUserID);
 
         assertFalse(hasAccess);
 
-        verify(taskBoardDAO, times(1)).findById(boardId);
+        verify(taskBoardDAO, times(1)).findByID(boardID);
     }
 
     @Test
     void hasAccessToTask_ValidIDs_ReturnsTrue() {
-        UUID taskId = UUID.randomUUID();
-        UUID boardId = UUID.randomUUID();
-        UUID userId = UUID.randomUUID();
+        UUID taskID = UUID.randomUUID();
+        UUID boardID = UUID.randomUUID();
+        UUID userID = UUID.randomUUID();
 
-        Task task = createDefaultTask(taskId, boardId, userId);
+        Task task = createDefaultTask(taskID, boardID, userID);
 
-        when(taskDAO.findById(taskId)).thenReturn(Optional.of(task));
+        when(taskDAO.findByID(taskID)).thenReturn(Optional.of(task));
 
-        boolean hasAccess = accessCheckService.hasAccessToTask(taskId, userId);
+        boolean hasAccess = accessCheckService.hasAccessToTask(taskID, userID);
 
         assertTrue(hasAccess);
 
-        verify(taskDAO, times(1)).findById(taskId);
+        verify(taskDAO, times(1)).findByID(taskID);
     }
 
     @Test
-    void hasAccessToTask_NullTaskId_ThrowsIllegalArgumentException() {
-        UUID taskId = null;
-        UUID userId = UUID.randomUUID();
+    void hasAccessToTask_NullTaskID_ThrowsIllegalArgumentException() {
+        UUID taskID = null;
+        UUID userID = UUID.randomUUID();
 
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
-            accessCheckService.hasAccessToTask(taskId, userId);
+            accessCheckService.hasAccessToTask(taskID, userID);
         });
 
         String expectedMessage = "Task id " + ErrorMessage.NULL;
@@ -181,16 +181,16 @@ public class AccessCheckServiceTest {
 
         assertTrue(actualMessage.contains(expectedMessage));
 
-        verify(taskDAO, times(0)).findById(taskId);
+        verify(taskDAO, times(0)).findByID(taskID);
     }
 
     @Test
-    void hasAccessToTask_NullPrincipalId_ThrowsIllegalArgumentException() {
-        UUID taskId = UUID.randomUUID();
-        UUID userId = null;
+    void hasAccessToTask_NullPrincipalID_ThrowsIllegalArgumentException() {
+        UUID taskID = UUID.randomUUID();
+        UUID userID = null;
 
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
-            accessCheckService.hasAccessToTask(taskId, userId);
+            accessCheckService.hasAccessToTask(taskID, userID);
         });
 
         String expectedMessage = "Principal id " + ErrorMessage.NULL;
@@ -198,18 +198,18 @@ public class AccessCheckServiceTest {
 
         assertTrue(actualMessage.contains(expectedMessage));
 
-        verify(taskDAO, times(0)).findById(taskId);
+        verify(taskDAO, times(0)).findByID(taskID);
     }
 
     @Test
-    void hasAccessToTask_InvalidTaskId_ThrowsEntityNotFoundException() {
-        UUID taskId = UUID.randomUUID();
-        UUID userId = UUID.randomUUID();
+    void hasAccessToTask_InvalidTaskID_ThrowsEntityNotFoundException() {
+        UUID taskID = UUID.randomUUID();
+        UUID userID = UUID.randomUUID();
 
-        when(taskDAO.findById(taskId)).thenReturn(Optional.empty());
+        when(taskDAO.findByID(taskID)).thenReturn(Optional.empty());
 
         EntityNotFoundException exception = assertThrows(EntityNotFoundException.class, () -> {
-            accessCheckService.hasAccessToTask(taskId, userId);
+            accessCheckService.hasAccessToTask(taskID, userID);
         });
 
         String expectedMessage = ErrorMessage.NOT_FOUND.toString();
@@ -217,23 +217,23 @@ public class AccessCheckServiceTest {
 
         assertTrue(actualMessage.contains(expectedMessage));
 
-        verify(taskDAO, times(1)).findById(taskId);
+        verify(taskDAO, times(1)).findByID(taskID);
     }
 
     @Test
     void hasAccessToTask_InvalidPrincipalID_ReturnsFalse() {
-        UUID taskId = UUID.randomUUID();
-        UUID boardId = UUID.randomUUID();
-        UUID userId = UUID.randomUUID();
+        UUID taskID = UUID.randomUUID();
+        UUID boardID = UUID.randomUUID();
+        UUID userID = UUID.randomUUID();
 
-        Task task = createDefaultTask(taskId, boardId, userId);
+        Task task = createDefaultTask(taskID, boardID, userID);
 
-        when(taskDAO.findById(taskId)).thenReturn(Optional.of(task));
+        when(taskDAO.findByID(taskID)).thenReturn(Optional.of(task));
 
-        boolean hasAccess = accessCheckService.hasAccessToTask(taskId, UUID.randomUUID());
+        boolean hasAccess = accessCheckService.hasAccessToTask(taskID, UUID.randomUUID());
 
         assertFalse(hasAccess);
 
-        verify(taskDAO, times(1)).findById(taskId);
+        verify(taskDAO, times(1)).findByID(taskID);
     }
 }

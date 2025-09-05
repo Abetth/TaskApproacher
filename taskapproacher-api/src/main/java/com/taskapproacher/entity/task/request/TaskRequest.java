@@ -15,7 +15,7 @@ import lombok.Setter;
 @Getter
 @Setter
 public class TaskRequest {
-    private UUID id;
+    private UUID ID;
 
     private String title;
 

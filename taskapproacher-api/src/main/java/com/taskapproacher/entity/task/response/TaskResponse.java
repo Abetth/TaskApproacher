@@ -11,7 +11,7 @@ import java.util.UUID;
 @Getter
 @Setter
 public class TaskResponse {
-    private UUID id;
+    private UUID ID;
 
     private String title;
 
@@ -26,7 +26,7 @@ public class TaskResponse {
     private TaskBoard taskBoard;
 
     public TaskResponse(Task task) {
-        this.id = task.getId();
+        this.ID = task.getID();
         this.title = task.getTitle();
         this.description = task.getDescription();
         this.priority = task.getPriority().toString();

@@ -2,9 +2,9 @@ package com.taskapproacher.service.task;
 
 import com.taskapproacher.dao.task.TaskDAO;
 import com.taskapproacher.entity.task.Task;
+import com.taskapproacher.entity.task.request.TaskRequest;
 import com.taskapproacher.enums.Priority;
 import com.taskapproacher.entity.task.response.TaskResponse;
-import com.taskapproacher.entity.task.request.TaskRequest;
 import com.taskapproacher.enums.ErrorMessage;
 
 import com.taskapproacher.entity.task.TaskBoard;
@@ -13,7 +13,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.ZoneId;
-import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.UUID;
 
@@ -28,17 +27,17 @@ public class TaskService {
         this.taskBoardService = taskBoardService;
     }
 
-    public Task findById(UUID taskId) throws IllegalArgumentException, EntityNotFoundException {
-        if (taskId == null) {
+    public Task findByID(UUID taskID) throws IllegalArgumentException, EntityNotFoundException {
+        if (taskID == null) {
             throw new IllegalArgumentException("Task id " + ErrorMessage.NULL);
         }
 
-        return taskDAO.findById(taskId).orElseThrow(() -> new EntityNotFoundException("Task " + ErrorMessage.NOT_FOUND));
+        return taskDAO.findByID(taskID).orElseThrow(() -> new EntityNotFoundException("Task " + ErrorMessage.NOT_FOUND));
     }
 
 
     public TaskResponse create(UUID boardId, TaskRequest request, String timeZone) throws IllegalArgumentException {
-        TaskBoard boardForTask = taskBoardService.findById(boardId);
+        TaskBoard boardForTask = taskBoardService.findByID(boardId);
 
         if (request.getTitle() == null || request.getTitle().isEmpty()) {
             ErrorMessage error = (request.getTitle() == null) ? ErrorMessage.NULL : ErrorMessage.EMPTY;
@@ -60,8 +59,8 @@ public class TaskService {
         return new TaskResponse(taskDAO.save(taskFromRequest));
     }
 
-    public TaskResponse update(UUID taskId, TaskRequest request, String timeZone) throws IllegalArgumentException {
-        Task updatedTask = findById(taskId);
+    public TaskResponse update(UUID taskID, TaskRequest request, String timeZone) throws IllegalArgumentException {
+        Task updatedTask = findByID(taskID);
 
         if (request.getTitle() != null && !request.getTitle().isEmpty()) {
             updatedTask.setTitle(request.getTitle());
@@ -92,11 +91,11 @@ public class TaskService {
         return new TaskResponse(taskDAO.update(updatedTask));
     }
 
-    public void delete(UUID taskId) throws IllegalArgumentException {
-        if (taskId == null) {
+    public void delete(UUID taskID) throws IllegalArgumentException {
+        if (taskID == null) {
             throw new IllegalArgumentException("Task id " + ErrorMessage.NULL);
         }
 
-        taskDAO.delete(taskId);
+        taskDAO.delete(taskID);
     }
 }

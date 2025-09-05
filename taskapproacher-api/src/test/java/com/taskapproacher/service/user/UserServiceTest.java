@@ -42,9 +42,9 @@ public class UserServiceTest {
     @Mock
     private UserDAO userDAO;
 
-    private User createDefaultUser(UUID userId) {
+    private User createDefaultUser(UUID userID) {
         User user = new User();
-        user.setId(userId);
+        user.setID(userID);
         user.setUsername("Created User 1");
         user.setPassword("userpass");
         user.setEmail("usermail@mail.mail");
@@ -75,30 +75,30 @@ public class UserServiceTest {
     }
 
     @Test
-    void findById_ValidId_ReturnsUser() {
-        UUID userId = UUID.randomUUID();
-        User mockUser = createDefaultUser(userId);
+    void findByID_ValidID_ReturnsUser() {
+        UUID userID = UUID.randomUUID();
+        User mockUser = createDefaultUser(userID);
 
-        when(userDAO.findById(userId)).thenReturn(Optional.of(mockUser));
+        when(userDAO.findByID(userID)).thenReturn(Optional.of(mockUser));
 
-        User user = userService.findById(userId);
+        User user = userService.findByID(userID);
 
-        assertEquals(userId, user.getId());
+        assertEquals(userID, user.getID());
         assertEquals(mockUser.getUsername(), user.getUsername());
         assertEquals(mockUser.getEmail(), user.getEmail());
         assertEquals(mockUser.getRole(), user.getRole());
 
-        verify(userDAO, times(1)).findById(userId);
+        verify(userDAO, times(1)).findByID(userID);
     }
 
     @Test
-    void findById_InvalidId_ThrowsEntityNotFoundException() {
-        UUID userId = UUID.randomUUID();
+    void findByID_InvalidID_ThrowsEntityNotFoundException() {
+        UUID userID = UUID.randomUUID();
 
-        when(userDAO.findById(userId)).thenReturn(Optional.empty());
+        when(userDAO.findByID(userID)).thenReturn(Optional.empty());
 
         EntityNotFoundException exception = assertThrows(EntityNotFoundException.class, () -> {
-            userService.findById(userId);
+            userService.findByID(userID);
         });
 
 
@@ -107,15 +107,15 @@ public class UserServiceTest {
 
         assertTrue(actualMessage.contains(expectedMessage));
 
-        verify(userDAO, times(1)).findById(userId);
+        verify(userDAO, times(1)).findByID(userID);
     }
 
     @Test
-    void findById_NullId_ThrowsIllegalArgumentException() {
-        UUID userId = null;
+    void findByID_NullID_ThrowsIllegalArgumentException() {
+        UUID userID = null;
 
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
-            userService.findById(userId);
+            userService.findByID(userID);
         });
 
         String expectedMessage = ErrorMessage.NULL.toString();
@@ -123,19 +123,19 @@ public class UserServiceTest {
 
         assertTrue(actualMessage.contains(expectedMessage));
 
-        verify(userDAO, times(0)).findById(userId);
+        verify(userDAO, times(0)).findByID(userID);
     }
 
     @Test
     void findByUsername_ValidUsername_ReturnsUser() {
-        UUID userId = UUID.randomUUID();
-        User mockUser = createDefaultUser(userId);
+        UUID userID = UUID.randomUUID();
+        User mockUser = createDefaultUser(userID);
 
         when(userDAO.findByUsername(mockUser.getUsername())).thenReturn(Optional.of(mockUser));
 
         User user = userService.findByUsername(mockUser.getUsername());
 
-        assertEquals(userId, user.getId());
+        assertEquals(userID, user.getID());
         assertEquals(mockUser.getUsername(), user.getUsername());
 
         verify(userDAO, times(1)).findByUsername(mockUser.getUsername());
@@ -192,50 +192,50 @@ public class UserServiceTest {
     }
 
     @Test
-    void findBoardsByUser_ValidUserId_ReturnsTaskBoardResponseList() {
-        UUID userId = UUID.randomUUID();
-        User user = createDefaultUser(userId);
+    void findBoardsByUser_ValidUserID_ReturnsTaskBoardResponseList() {
+        UUID userID = UUID.randomUUID();
+        User user = createDefaultUser(userID);
 
         List<TaskBoardResponse> mockBoards = createDefaultListOfTaskBoards(user)
                 .stream()
                 .map(TaskBoardResponse::new)
                 .collect(Collectors.toList());
 
-        when(userDAO.findById(userId)).thenReturn(Optional.of(user));
-        when(userDAO.findRelatedEntitiesByID(userId)).thenReturn(mockBoards);
+        when(userDAO.findByID(userID)).thenReturn(Optional.of(user));
+        when(userDAO.findRelatedEntitiesByID(userID)).thenReturn(mockBoards);
 
-        List<TaskBoardResponse> responseBoards = userService.findBoardsByUser(userId);
+        List<TaskBoardResponse> responseBoards = userService.findBoardsByUser(userID);
 
         assertEquals(responseBoards.size(), 2);
-        assertEquals(responseBoards.get(0).getId(), mockBoards.get(0).getId());
-        assertEquals(responseBoards.get(1).getId(), mockBoards.get(1).getId());
+        assertEquals(responseBoards.get(0).getID(), mockBoards.get(0).getID());
+        assertEquals(responseBoards.get(1).getID(), mockBoards.get(1).getID());
 
-        verify(userDAO, times(1)).findById(userId);
-        verify(userDAO, times(1)).findRelatedEntitiesByID(userId);
+        verify(userDAO, times(1)).findByID(userID);
+        verify(userDAO, times(1)).findRelatedEntitiesByID(userID);
     }
 
     @Test
-    void findBoardsByUser_ValidUserIdZeroTaskBoards_ReturnsEmptyTaskBoardResponseList() {
-        UUID userId = UUID.randomUUID();
-        User user = createDefaultUser(userId);
+    void findBoardsByUser_ValidUserIDZeroTaskBoards_ReturnsEmptyTaskBoardResponseList() {
+        UUID userID = UUID.randomUUID();
+        User user = createDefaultUser(userID);
 
-        when(userDAO.findById(userId)).thenReturn(Optional.of(user));
-        when(userDAO.findRelatedEntitiesByID(userId)).thenReturn(List.of());
+        when(userDAO.findByID(userID)).thenReturn(Optional.of(user));
+        when(userDAO.findRelatedEntitiesByID(userID)).thenReturn(List.of());
 
-        List<TaskBoardResponse> responseBoards = userService.findBoardsByUser(userId);
+        List<TaskBoardResponse> responseBoards = userService.findBoardsByUser(userID);
 
         assertEquals(responseBoards.size(), 0);
 
-        verify(userDAO, times(1)).findById(userId);
-        verify(userDAO, times(1)).findRelatedEntitiesByID(userId);
+        verify(userDAO, times(1)).findByID(userID);
+        verify(userDAO, times(1)).findRelatedEntitiesByID(userID);
     }
 
     @Test
-    void findBoardsByUser_NullUserId_ThrowsIllegalArgumentException() {
-        UUID userId = null;
+    void findBoardsByUser_NullUserID_ThrowsIllegalArgumentException() {
+        UUID userID = null;
 
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
-            userService.findBoardsByUser(userId);
+            userService.findBoardsByUser(userID);
         });
 
         String expectedMessage = ErrorMessage.NULL.toString();
@@ -243,18 +243,18 @@ public class UserServiceTest {
 
         assertTrue(actualMessage.contains(expectedMessage));
 
-        verify(userDAO, times(0)).findById(userId);
-        verify(userDAO, times(0)).findRelatedEntitiesByID(userId);
+        verify(userDAO, times(0)).findByID(userID);
+        verify(userDAO, times(0)).findRelatedEntitiesByID(userID);
     }
 
     @Test
-    void findBoardsByUser_InvalidUserId_ThrowsEntityNotFoundException() {
-        UUID userId = UUID.randomUUID();
+    void findBoardsByUser_InvalidUserID_ThrowsEntityNotFoundException() {
+        UUID userID = UUID.randomUUID();
 
-        when(userDAO.findById(userId)).thenReturn(Optional.empty());
+        when(userDAO.findByID(userID)).thenReturn(Optional.empty());
 
         EntityNotFoundException exception = assertThrows(EntityNotFoundException.class, () -> {
-           userService.findBoardsByUser(userId);
+           userService.findBoardsByUser(userID);
         });
 
         String expectedMessage = ErrorMessage.NOT_FOUND.toString();
@@ -262,8 +262,8 @@ public class UserServiceTest {
 
         assertTrue(actualMessage.contains(expectedMessage));
 
-        verify(userDAO, times(1)).findById(userId);
-        verify(userDAO, times(0)).findRelatedEntitiesByID(userId);
+        verify(userDAO, times(1)).findByID(userID);
+        verify(userDAO, times(0)).findRelatedEntitiesByID(userID);
     }
 
     @Test
@@ -425,10 +425,10 @@ public class UserServiceTest {
 
     @Test
     void update_ValidUser_ReturnsUserResponseUserDataChanged() {
-        UUID userId = UUID.randomUUID();
+        UUID userID = UUID.randomUUID();
         String newEncodedPassword = "newEncodedPass";
 
-        User existingUser = createDefaultUser(userId);
+        User existingUser = createDefaultUser(userID);
 
         User copyOfExistingUser = new User();
         BeanUtils.copyProperties(existingUser, copyOfExistingUser);
@@ -440,11 +440,11 @@ public class UserServiceTest {
 
         ArgumentCaptor<User> captor = ArgumentCaptor.forClass(User.class);
 
-        when(userDAO.findById(userId)).thenReturn(Optional.of(copyOfExistingUser));
+        when(userDAO.findByID(userID)).thenReturn(Optional.of(copyOfExistingUser));
         when(passwordEncoder.encode(updateData.getPassword())).thenReturn(newEncodedPassword);
         when(userDAO.update(captor.capture())).thenAnswer(invocation -> invocation.getArgument(0));
 
-        UserResponse response  = userService.update(userId, updateData);
+        UserResponse response  = userService.update(userID, updateData);
         User capturedUser = captor.getValue();
 
         assertNotEquals(existingUser.getUsername(), capturedUser.getUsername());
@@ -458,15 +458,15 @@ public class UserServiceTest {
         assertEquals(updateData.getUsername(), response.getUsername());
         assertEquals(updateData.getEmail(), response.getEmail());
 
-        verify(userDAO, times(1)).findById(userId);
+        verify(userDAO, times(1)).findByID(userID);
         verify(userDAO, times(1)).update(captor.capture());
     }
 
     @Test
     void update_UserFieldsAreNull_ReturnsUserResponseUserDataDidNotChanged() {
-        UUID userId = UUID.randomUUID();
+        UUID userID = UUID.randomUUID();
 
-        User existingUser = createDefaultUser(userId);
+        User existingUser = createDefaultUser(userID);
 
         User copyOfExistingUser = new User();
         BeanUtils.copyProperties(existingUser, copyOfExistingUser);
@@ -475,13 +475,13 @@ public class UserServiceTest {
 
         ArgumentCaptor<User> captor = ArgumentCaptor.forClass(User.class);
 
-        when(userDAO.findById(userId)).thenReturn(Optional.of(copyOfExistingUser));
+        when(userDAO.findByID(userID)).thenReturn(Optional.of(copyOfExistingUser));
         when(userDAO.update(captor.capture())).thenAnswer(invocation -> invocation.getArgument(0));
 
-        UserResponse response = userService.update(userId, updateData);
+        UserResponse response = userService.update(userID, updateData);
         User capturedUser = captor.getValue();
 
-        assertEquals(existingUser.getId(), capturedUser.getId());
+        assertEquals(existingUser.getID(), capturedUser.getID());
         assertEquals(existingUser.getUsername(), capturedUser.getUsername());
         assertEquals(existingUser.getPassword(), capturedUser.getPassword());
         assertEquals(existingUser.getEmail(), capturedUser.getEmail());
@@ -492,15 +492,15 @@ public class UserServiceTest {
         assertNotEquals(updateData.getUsername(), response.getUsername());
         assertNotEquals(updateData.getEmail(), response.getEmail());
 
-        verify(userDAO, times(1)).findById(userId);
+        verify(userDAO, times(1)).findByID(userID);
         verify(userDAO, times(1)).update(captor.capture());
     }
 
     @Test
     void update_UserFieldsAreEmpty_ReturnsUserResponseUserDataDidNotChanged() {
-        UUID userId = UUID.randomUUID();
+        UUID userID = UUID.randomUUID();
 
-        User existingUser = createDefaultUser(userId);
+        User existingUser = createDefaultUser(userID);
 
         User copyOfExistingUser = new User();
         BeanUtils.copyProperties(existingUser, copyOfExistingUser);
@@ -512,13 +512,13 @@ public class UserServiceTest {
 
         ArgumentCaptor<User> captor = ArgumentCaptor.forClass(User.class);
 
-        when(userDAO.findById(userId)).thenReturn(Optional.of(copyOfExistingUser));
+        when(userDAO.findByID(userID)).thenReturn(Optional.of(copyOfExistingUser));
         when(userDAO.update(captor.capture())).thenAnswer(invocation -> invocation.getArgument(0));
 
-        UserResponse response = userService.update(userId, updateData);
+        UserResponse response = userService.update(userID, updateData);
         User capturedUser = captor.getValue();
 
-        assertEquals(existingUser.getId(), capturedUser.getId());
+        assertEquals(existingUser.getID(), capturedUser.getID());
         assertEquals(existingUser.getUsername(), capturedUser.getUsername());
         assertEquals(existingUser.getPassword(), capturedUser.getPassword());
         assertEquals(existingUser.getEmail(), capturedUser.getEmail());
@@ -529,18 +529,18 @@ public class UserServiceTest {
         assertNotEquals(updateData.getUsername(), response.getUsername());
         assertNotEquals(updateData.getEmail(), response.getEmail());
 
-        verify(userDAO, times(1)).findById(userId);
+        verify(userDAO, times(1)).findByID(userID);
         verify(userDAO, times(1)).update(captor.capture());
     }
 
     @Test
-    void update_InvalidUserId_ThrowsEntityNotFoundException() {
-        UUID userId = UUID.randomUUID();
+    void update_InvalidUserID_ThrowsEntityNotFoundException() {
+        UUID userID = UUID.randomUUID();
 
-        when(userDAO.findById(userId)).thenReturn(Optional.empty());
+        when(userDAO.findByID(userID)).thenReturn(Optional.empty());
 
         EntityNotFoundException exception = assertThrows(EntityNotFoundException.class, () -> {
-            userService.update(userId, new User());
+            userService.update(userID, new User());
         });
 
         String expectedMessage = ErrorMessage.NOT_FOUND.toString();
@@ -548,27 +548,27 @@ public class UserServiceTest {
 
         assertTrue(actualMessage.contains(expectedMessage));
 
-        verify(userDAO, times(1)).findById(userId);
+        verify(userDAO, times(1)).findByID(userID);
         verify(userDAO, times(0)).update(ArgumentMatchers.any(User.class));
     }
 
     @Test
-    void delete_ValidUserId_UserDeletedSuccessfully() {
-        UUID userId = UUID.randomUUID();
+    void delete_ValidUserID_UserDeletedSuccessfully() {
+        UUID userID = UUID.randomUUID();
 
-        doNothing().when(userDAO).delete(userId);
+        doNothing().when(userDAO).delete(userID);
 
-        userService.delete(userId);
+        userService.delete(userID);
 
-        verify(userDAO, times(1)).delete(userId);
+        verify(userDAO, times(1)).delete(userID);
     }
 
     @Test
-    void delete_InvalidUserId_ThrowsIllegalArgumentException() {
-        UUID userId = null;
+    void delete_InvalidUserID_ThrowsIllegalArgumentException() {
+        UUID userID = null;
 
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
-            userService.delete(userId);
+            userService.delete(userID);
         });
 
         String expectedMessage = ErrorMessage.NULL.toString();
@@ -576,6 +576,6 @@ public class UserServiceTest {
 
         assertTrue(actualMessage.contains(expectedMessage));
 
-        verify(userDAO, times(0)).delete(userId);
+        verify(userDAO, times(0)).delete(userID);
     }
 }

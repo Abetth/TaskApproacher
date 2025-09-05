@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonBackReference;
 
 import com.taskapproacher.enums.Priority;
 import com.taskapproacher.entity.task.request.TaskRequest;
-
 import jakarta.persistence.*;
 import jakarta.persistence.Table;
 
@@ -27,7 +26,7 @@ public class Task {
     @Id
     @Setter
     @GeneratedValue(strategy = GenerationType.AUTO)
-    private UUID id;
+    private UUID ID;
 
     @Setter
     @Column(name = "title", nullable = false)
@@ -63,7 +62,7 @@ public class Task {
     }
 
     public Task(String title, String description, int priority, LocalDate deadline, boolean finished, TaskBoard list) {
-        this.id = new UUID(0L, 0L);
+        this.ID = new UUID(0L, 0L);
         this.title = title;
         this.description = description;
         this.priority = Priority.fromInt(priority);
@@ -73,7 +72,7 @@ public class Task {
     }
 
     public Task(String title, String description, Priority priority, LocalDate deadline, boolean finished, TaskBoard list) {
-        this.id = new UUID(0L, 0L);
+        this.ID = new UUID(0L, 0L);
         this.title = title;
         this.description = description;
         this.priority = priority;
@@ -117,7 +116,7 @@ public class Task {
 
     @Override
     public String toString() {
-        return  "[   Task: " + id + "\n"
+        return  "[   Task: " + ID + "\n"
                 + "Title: " + title + "\n"
                 + "Description: " + description + "\n"
                 + "Priority: " + priority + "\n"

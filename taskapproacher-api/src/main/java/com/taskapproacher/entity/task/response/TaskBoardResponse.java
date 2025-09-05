@@ -16,7 +16,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 public class TaskBoardResponse {
-    private UUID id;
+    private UUID ID;
     private String title;
     private boolean sorted;
     private List<Task> tasks;
@@ -24,7 +24,7 @@ public class TaskBoardResponse {
 
 
     public TaskBoardResponse(TaskBoard taskBoard) {
-        this.id = taskBoard.getId();
+        this.ID = taskBoard.getID();
         this.title = taskBoard.getTitle();
         this.sorted = taskBoard.isSorted();
         this.tasks = taskBoard.getTasks();

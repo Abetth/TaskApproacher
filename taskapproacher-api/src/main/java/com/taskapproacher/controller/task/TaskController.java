@@ -22,36 +22,36 @@ public class TaskController {
         this.taskService = taskService;
     }
 
-    @PostMapping("/board/{boardId}")
-    @PreAuthorize("@taskBoardService.findById(#boardId).user.id == authentication.principal.id")
-    public ResponseEntity<TaskResponse> create(@PathVariable UUID boardId,
+    @PostMapping("/board/{boardID}")
+    @PreAuthorize("@taskBoardService.findByID(#boardID).user.ID == authentication.principal.ID")
+    public ResponseEntity<TaskResponse> create(@PathVariable UUID boardID,
                                                @RequestBody TaskRequest task,
                                                @RequestHeader String timeZone) {
         try {
-            TaskResponse createTask = taskService.create(boardId, task, timeZone);
+            TaskResponse createTask = taskService.create(boardID, task, timeZone);
             return ResponseEntity.status(201).body(createTask);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(null);
         }
     }
 
-    @PatchMapping("/{taskId}")
-    @PreAuthorize("@accessCheckService.hasAccessToTask(#taskId, authentication.principal.id)")
-    public ResponseEntity<TaskResponse> update(@PathVariable UUID taskId,
-                                       @RequestBody TaskRequest task,
-                                       @RequestHeader String timeZone) {
+    @PatchMapping("/{taskID}")
+    @PreAuthorize("@accessCheckService.hasAccessToTask(#taskID, authentication.principal.ID)")
+    public ResponseEntity<TaskResponse> update(@PathVariable UUID taskID,
+                                               @RequestBody TaskRequest task,
+                                               @RequestHeader String timeZone) {
         try {
-            return ResponseEntity.ok(taskService.update(taskId, task, timeZone));
+            return ResponseEntity.ok(taskService.update(taskID, task, timeZone));
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(null);
         }
     }
 
-    @DeleteMapping("/{taskId}")
-    @PreAuthorize("@accessCheckService.hasAccessToTask(#taskId, authentication.principal.id)")
-    public ResponseEntity<Task> delete(@PathVariable UUID taskId) {
+    @DeleteMapping("/{taskID}")
+    @PreAuthorize("@accessCheckService.hasAccessToTask(#taskID, authentication.principal.ID)")
+    public ResponseEntity<Task> delete(@PathVariable UUID taskID) {
         try {
-            taskService.delete(taskId);
+            taskService.delete(taskID);
             return ResponseEntity.noContent().build();
         } catch (RuntimeException e) {
             return ResponseEntity.notFound().build();

@@ -26,30 +26,30 @@ public class AccessCheckService {
         this.taskDAO = taskDAO;
     }
 
-    public boolean hasAccessToBoard(UUID boardId, UUID principalId) throws IllegalArgumentException {
-        if (boardId == null || principalId == null) {
-            String wrongValue = (boardId == null) ? "Task board id " : "Principal id ";
+    public boolean hasAccessToBoard(UUID boardID, UUID principalID) throws IllegalArgumentException {
+        if (boardID == null || principalID == null) {
+            String wrongValue = (boardID == null) ? "Task board id " : "Principal id ";
 
             throw new IllegalArgumentException(wrongValue + ErrorMessage.NULL);
         }
 
-        TaskBoard foundBoard = taskBoardDAO.findById(boardId)
+        TaskBoard foundBoard = taskBoardDAO.findByID(boardID)
                 .orElseThrow(() -> new EntityNotFoundException("Task board " + ErrorMessage.NOT_FOUND));
 
-        return foundBoard.getUser().getId().equals(principalId);
+        return foundBoard.getUser().getID().equals(principalID);
 
     }
 
-    public boolean hasAccessToTask(UUID taskId, UUID principalId) {
-        if (taskId == null || principalId == null) {
-            String wrongValue = (taskId == null) ? "Task id " : "Principal id ";
+    public boolean hasAccessToTask(UUID taskID, UUID principalID) {
+        if (taskID == null || principalID == null) {
+            String wrongValue = (taskID == null) ? "Task id " : "Principal id ";
 
             throw new IllegalArgumentException(wrongValue + ErrorMessage.NULL);
         }
 
-        Task task = taskDAO.findById(taskId)
+        Task task = taskDAO.findByID(taskID)
                 .orElseThrow(() -> new EntityNotFoundException("Task " + ErrorMessage.NOT_FOUND));
 
-        return task.getTaskBoard().getUser().getId().equals(principalId);
+        return task.getTaskBoard().getUser().getID().equals(principalID);
     }
 }

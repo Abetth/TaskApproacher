@@ -23,18 +23,18 @@ public class TaskBoardController {
         this.taskBoardService = taskBoardService;
     }
 
-    @GetMapping("/{boardId}/tasks")
-    @PreAuthorize("@accessCheckService.hasAccessToBoard(#boardId, authentication.principal.id)")
-    public ResponseEntity<List<Task>> getTasksByBoard(@PathVariable UUID boardId) {
+    @GetMapping("/{boardID}/tasks")
+    @PreAuthorize("@accessCheckService.hasAccessToBoard(#boardID, authentication.principal.ID)")
+    public ResponseEntity<List<Task>> getTasksByBoard(@PathVariable UUID boardID) {
         try {
-            return ResponseEntity.ok(taskBoardService.findByTaskBoard(boardId));
+            return ResponseEntity.ok(taskBoardService.findByTaskBoard(boardID));
         } catch (EntityNotFoundException e) {
             return ResponseEntity.notFound().build();
         }
     }
 
     @PostMapping("/{userID}")
-    @PreAuthorize("#board.user.id == authentication.principal.id")
+    @PreAuthorize("#board.user.ID == authentication.principal.ID")
     public ResponseEntity<TaskBoardResponse> create(@PathVariable UUID userID,
                                                     @RequestBody TaskBoard board) {
         try {
@@ -45,21 +45,21 @@ public class TaskBoardController {
         }
     }
 
-    @PatchMapping("/{boardId}")
-    @PreAuthorize("@accessCheckService.hasAccessToBoard(#boardId, authentication.principal.id)")
-    public ResponseEntity<TaskBoardResponse> update(@PathVariable UUID boardId, @RequestBody TaskBoard board) {
+    @PatchMapping("/{boardID}")
+    @PreAuthorize("@accessCheckService.hasAccessToBoard(#boardID, authentication.principal.ID)")
+    public ResponseEntity<TaskBoardResponse> update(@PathVariable UUID boardID, @RequestBody TaskBoard board) {
         try {
-            return ResponseEntity.ok(taskBoardService.update(boardId, board));
+            return ResponseEntity.ok(taskBoardService.update(boardID, board));
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(null);
         }
     }
 
-    @DeleteMapping("/{boardId}")
-    @PreAuthorize("@accessCheckService.hasAccessToBoard(#boardId, authentication.principal.id)")
-    public ResponseEntity<TaskBoardResponse> delete(@PathVariable UUID boardId) {
+    @DeleteMapping("/{boardID}")
+    @PreAuthorize("@accessCheckService.hasAccessToBoard(#boardID, authentication.principal.ID)")
+    public ResponseEntity<TaskBoardResponse> delete(@PathVariable UUID boardID) {
         try {
-            taskBoardService.delete(boardId);
+            taskBoardService.delete(boardID);
             return ResponseEntity.noContent().build();
         } catch (RuntimeException e) {
             return ResponseEntity.notFound().build();
