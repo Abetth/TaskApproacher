@@ -6,9 +6,12 @@ import com.taskapproacher.entity.task.response.TaskBoardResponse;
 import com.taskapproacher.entity.user.User;
 import com.taskapproacher.dao.task.TaskBoardDAO;
 import com.taskapproacher.entity.user.UserResponse;
+import com.taskapproacher.interfaces.TaskBoardMatcher;
 import com.taskapproacher.service.user.UserService;
-import com.taskapproacher.enums.ErrorMessage;
-import com.taskapproacher.enums.Role;
+import com.taskapproacher.constant.ExceptionMessage;
+import com.taskapproacher.constant.Role;
+
+import static com.taskapproacher.test.utils.ApproacherTestUtils.*;
 
 import java.util.UUID;
 import java.util.Optional;
@@ -22,12 +25,14 @@ import org.springframework.beans.BeanUtils;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 import org.mockito.Mock;
 import org.mockito.InjectMocks;
 import org.mockito.ArgumentMatchers;
 import org.mockito.ArgumentCaptor;
+
 import static org.mockito.Mockito.*;
 
 //Tests naming convention: method_scenario_result
@@ -72,18 +77,27 @@ public class TaskBoardServiceTest {
         return user;
     }
 
+    private void assertTaskBoardEquals(TaskBoardMatcher expected, TaskBoardMatcher actual) {
+        assertAll(() -> {
+            assertEqualsIfNotNull(expected.getID(), actual.getID());
+            assertEqualsIfNotNull(expected.getTitle(), actual.getTitle());
+            assertEqualsIfNotNull(expected.isSorted(), actual.isSorted());
+            assertEqualsIfNotNull(expected.getTasks(), actual.getTasks());
+            assertEqualsIfNotNull(expected.getUser(), actual.getUser());
+        });
+    }
+
     @Test
     void findByID_ValidTaskBoardID_ReturnsTaskBoard() {
         UUID boardID = UUID.randomUUID();
 
-        TaskBoard mockBoard = new TaskBoard();
-        mockBoard.setID(boardID);
+        TaskBoard mockBoard = createDefaultTaskBoard(boardID, new User());
 
         when(taskBoardDAO.findByID(boardID)).thenReturn(Optional.of(mockBoard));
 
         TaskBoard taskBoard = taskBoardService.findByID(boardID);
 
-        assertEquals(boardID, taskBoard.getID());
+        assertTaskBoardEquals(mockBoard, taskBoard);
 
         verify(taskBoardDAO, times(1)).findByID(boardID);
     }
@@ -96,7 +110,7 @@ public class TaskBoardServiceTest {
             taskBoardService.findByID(boardID);
         });
 
-        String expectedMessage = ErrorMessage.NULL.toString();
+        String expectedMessage = ExceptionMessage.NULL.toString();
         String actualMessage = exception.getMessage();
 
         assertTrue(actualMessage.contains(expectedMessage));
@@ -114,7 +128,7 @@ public class TaskBoardServiceTest {
             taskBoardService.findByID(boardID);
         });
 
-        String expectedMessage = ErrorMessage.NOT_FOUND.toString();
+        String expectedMessage = ExceptionMessage.NOT_FOUND.toString();
         String actualMessage = exception.getMessage();
 
         assertTrue(actualMessage.contains(expectedMessage));
@@ -152,7 +166,7 @@ public class TaskBoardServiceTest {
             taskBoardService.findByTaskBoard(boardID);
         });
 
-        String expectedMessage = ErrorMessage.NULL.toString();
+        String expectedMessage = ExceptionMessage.NULL.toString();
         String actualMessage = exception.getMessage();
 
         assertTrue(actualMessage.contains(expectedMessage));
@@ -170,7 +184,7 @@ public class TaskBoardServiceTest {
             taskBoardService.findByTaskBoard(boardID);
         });
 
-        String expectedMessage = ErrorMessage.NOT_FOUND.toString();
+        String expectedMessage = ExceptionMessage.NOT_FOUND.toString();
         String actualMessage = exception.getMessage();
 
         assertTrue(actualMessage.contains(expectedMessage));
@@ -185,16 +199,13 @@ public class TaskBoardServiceTest {
         User user = createDefaultUser(userID);
         TaskBoard taskBoard = createDefaultTaskBoard(null, null);
 
-        UserResponse userResponseForTaskBoard = new UserResponse(user);
-
         when(userService.findByID(userID)).thenReturn(user);
         when(taskBoardDAO.save(ArgumentMatchers.any(TaskBoard.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         TaskBoardResponse response = taskBoardService.create(userID, taskBoard);
 
-        assertEquals(taskBoard.getTitle(), response.getTitle());
-        assertEquals(taskBoard.isSorted(), response.isSorted());
-        assertEquals(userResponseForTaskBoard, response.getUser());
+        assertTaskBoardEquals(taskBoard, response);
+        assertEquals(user, response.getUser());
 
         verify(userService, times(1)).findByID(userID);
         verify(taskBoardDAO, times(1)).save(ArgumentMatchers.any(TaskBoard.class));
@@ -211,7 +222,7 @@ public class TaskBoardServiceTest {
             taskBoardService.create(userID, taskBoard);
         });
 
-        String expectedMessage = ErrorMessage.EMPTY.toString();
+        String expectedMessage = ExceptionMessage.EMPTY.toString();
         String actualMessage = exception.getMessage();
 
         assertTrue(actualMessage.contains(expectedMessage));
@@ -230,7 +241,7 @@ public class TaskBoardServiceTest {
             taskBoardService.create(userID, taskBoard);
         });
 
-        String expectedMessage = ErrorMessage.NULL.toString();
+        String expectedMessage = ExceptionMessage.NULL.toString();
         String actualMessage = exception.getMessage();
 
         assertTrue(actualMessage.contains(expectedMessage));
@@ -318,7 +329,7 @@ public class TaskBoardServiceTest {
             taskBoardService.update(boardID, new TaskBoard());
         });
 
-        String expectedMessage = ErrorMessage.NULL.toString();
+        String expectedMessage = ExceptionMessage.NULL.toString();
         String actualMessage = exception.getMessage();
 
         assertTrue(actualMessage.contains(expectedMessage));
@@ -336,7 +347,7 @@ public class TaskBoardServiceTest {
             taskBoardService.update(boardID, new TaskBoard());
         });
 
-        String expectedMessage = ErrorMessage.NOT_FOUND.toString();
+        String expectedMessage = ExceptionMessage.NOT_FOUND.toString();
         String actualMessage = exception.getMessage();
 
         assertTrue(actualMessage.contains(expectedMessage));
@@ -368,13 +379,9 @@ public class TaskBoardServiceTest {
         when(taskBoardDAO.update(captor.capture())).thenAnswer(invocation -> invocation.getArgument(0));
 
         TaskBoardResponse response = taskBoardService.update(boardID, updateData);
-        TaskBoard capturedBoard = captor.getValue();
+        TaskBoard capturedTaskBoard = captor.getValue();
 
-        assertEquals(existingTaskBoard.getID(), capturedBoard.getID());
-        assertEquals(existingTaskBoard.getTitle(), capturedBoard.getTitle());
-        assertEquals(existingTaskBoard.isSorted(), capturedBoard.isSorted());
-        assertEquals(existingTaskBoard.getTasks(), capturedBoard.getTasks());
-        assertEquals(existingTaskBoard.getUser(), capturedBoard.getUser());
+        assertTaskBoardEquals(existingTaskBoard, capturedTaskBoard);
 
         assertNotNull(response);
         assertNotEquals(updateData.getTitle(), response.getTitle());
@@ -407,13 +414,9 @@ public class TaskBoardServiceTest {
         when(taskBoardDAO.update(captor.capture())).thenAnswer(invocation -> invocation.getArgument(0));
 
         TaskBoardResponse response = taskBoardService.update(boardID, updateData);
-        TaskBoard capturedBoard = captor.getValue();
+        TaskBoard capturedTaskBoard = captor.getValue();
 
-        assertEquals(existingTaskBoard.getID(), capturedBoard.getID());
-        assertEquals(existingTaskBoard.getTitle(), capturedBoard.getTitle());
-        assertEquals(existingTaskBoard.isSorted(), capturedBoard.isSorted());
-        assertEquals(existingTaskBoard.getTasks(), capturedBoard.getTasks());
-        assertEquals(existingTaskBoard.getUser(), capturedBoard.getUser());
+        assertTaskBoardEquals(existingTaskBoard, capturedTaskBoard);
 
         assertNotNull(response);
         assertNotEquals(updateData.getTitle(), response.getTitle());
@@ -441,7 +444,7 @@ public class TaskBoardServiceTest {
             taskBoardService.delete(boardID);
         });
 
-        String expectedMessage = ErrorMessage.NULL.toString();
+        String expectedMessage = ExceptionMessage.NULL.toString();
         String actualMessage = exception.getMessage();
 
         assertTrue(actualMessage.contains(expectedMessage));

@@ -1,4 +1,4 @@
-package com.taskapproacher.enums;
+package com.taskapproacher.constant;
 
 public enum Role {
     USER,

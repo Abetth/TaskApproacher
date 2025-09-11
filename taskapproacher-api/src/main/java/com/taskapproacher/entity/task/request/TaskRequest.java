@@ -5,6 +5,7 @@ import com.taskapproacher.entity.task.TaskBoard;
 import java.time.LocalDate;
 import java.util.UUID;
 
+import com.taskapproacher.interfaces.TaskMatcher;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import lombok.Getter;
@@ -14,7 +15,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @Getter
 @Setter
-public class TaskRequest {
+public class TaskRequest implements TaskMatcher {
     private UUID ID;
 
     private String title;
@@ -28,18 +29,4 @@ public class TaskRequest {
     private boolean finished;
 
     private TaskBoard taskBoard;
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-
-        TaskRequest comparable = (TaskRequest) o;
-
-        return title.equals(comparable.title)
-                && description.equals(comparable.description) && priority.equals(comparable.priority)
-                && deadline.equals(comparable.deadline) && finished == comparable.finished
-                && taskBoard.equals(comparable.taskBoard);
-
-    }
 }

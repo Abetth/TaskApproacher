@@ -2,7 +2,9 @@ package com.taskapproacher.entity.task.response;
 
 import com.taskapproacher.entity.task.Task;
 import com.taskapproacher.entity.task.TaskBoard;
+import com.taskapproacher.entity.user.User;
 import com.taskapproacher.entity.user.UserResponse;
+import com.taskapproacher.interfaces.TaskBoardMatcher;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -15,7 +17,7 @@ import java.util.UUID;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class TaskBoardResponse {
+public class TaskBoardResponse implements TaskBoardMatcher {
     private UUID ID;
     private String title;
     private boolean sorted;
@@ -32,12 +34,7 @@ public class TaskBoardResponse {
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-
-        TaskBoardResponse comparable = (TaskBoardResponse) o;
-
-        return title.equals(comparable.title) && sorted == comparable.sorted && tasks.equals(comparable.tasks) && user.equals(comparable.user);
+    public User getUser() {
+        return new User(this.user);
     }
 }

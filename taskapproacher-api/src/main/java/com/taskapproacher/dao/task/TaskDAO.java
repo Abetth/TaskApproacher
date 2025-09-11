@@ -5,12 +5,10 @@ import com.taskapproacher.entity.task.Task;
 import com.taskapproacher.hibernate.HibernateSessionFactoryUtil;
 import com.taskapproacher.interfaces.*;
 
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.persistence.PersistenceException;
 
-import org.hibernate.HibernateException;
-import org.hibernate.Session;
-import org.hibernate.SessionFactory;
-import org.hibernate.Transaction;
+import org.hibernate.*;
 import org.hibernate.exception.DataException;
 import org.springframework.stereotype.Repository;
 
@@ -36,10 +34,13 @@ public class TaskDAO implements GenericDAO<Task> {
             transaction = session.beginTransaction();
             task = session.get(Task.class, taskID);
             transaction.commit();
-        } catch (HibernateException e) {
-            throw new RuntimeException("Failed to find task by id", e);
+        } catch (Exception exception) {
+            if (transaction != null && transaction.isActive()) {
+                transaction.rollback();
+            }
+            throw new HibernateException("Failed to find task by id");
         }
-        return Optional.of(task);
+        return Optional.ofNullable(task);
     }
 
     @Override
@@ -51,12 +52,14 @@ public class TaskDAO implements GenericDAO<Task> {
             try {
                 session.persist(entity);
                 transaction.commit();
-            } catch (DataException e) {
-                transaction.rollback();
-                throw new RuntimeException("Wrong data format", e);
+            } catch (Exception exception) {
+                if (transaction != null && transaction.isActive()) {
+                    transaction.rollback();
+                }
+                throw new HibernateException("Wrong data format");
             }
-        } catch (HibernateException e) {
-            throw new RuntimeException("Failed to save task", e);
+        } catch (Exception exception) {
+            throw new HibernateException("Failed to save entry: " + exception.getMessage());
         }
         return entity;
     }
@@ -66,18 +69,19 @@ public class TaskDAO implements GenericDAO<Task> {
         Transaction transaction = null;
         try (Session session = sessionFactory.openSession()) {
             transaction = session.beginTransaction();
-
             try {
-                session.merge(entity);
+                Task merged = session.merge(entity);
                 transaction.commit();
-            } catch (PersistenceException e) {
-                transaction.rollback();
-                throw new RuntimeException("Failed to save changes", e);
+                return merged;
+            } catch (Exception exception) {
+                if (transaction != null && transaction.isActive()) {
+                    transaction.rollback();
+                }
+                throw new HibernateException("Failed to save changes");
             }
-        } catch (HibernateException e) {
-            throw new RuntimeException("Failed to update entry", e);
+        } catch (Exception exception) {
+            throw new HibernateException("Failed to update entry: " + exception.getMessage());
         }
-        return entity;
     }
 
     @Override
@@ -90,8 +94,11 @@ public class TaskDAO implements GenericDAO<Task> {
                     .setParameter("taskID", taskID)
                     .executeUpdate();
             transaction.commit();
-        } catch (HibernateException e) {
-            throw new RuntimeException("Failed to delete entry", e);
+        } catch (Exception exception) {
+            if (transaction != null && transaction.isActive()) {
+                transaction.rollback();
+            }
+            throw new HibernateException("Failed to delete entry");
         }
     }
 }

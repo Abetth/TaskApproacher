@@ -1,4 +1,4 @@
-package com.taskapproacher.customexceptions;
+package com.taskapproacher.exception.custom;
 
 public class EntityAlreadyExistsException extends RuntimeException {
     public EntityAlreadyExistsException(String message) {

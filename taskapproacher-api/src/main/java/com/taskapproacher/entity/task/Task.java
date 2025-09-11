@@ -2,8 +2,10 @@ package com.taskapproacher.entity.task;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 
-import com.taskapproacher.enums.Priority;
+import com.taskapproacher.constant.Priority;
 import com.taskapproacher.entity.task.request.TaskRequest;
+import com.taskapproacher.interfaces.TaskMatcher;
+
 import jakarta.persistence.*;
 import jakarta.persistence.Table;
 
@@ -22,7 +24,7 @@ import java.util.UUID;
 @Entity
 @DynamicUpdate
 @Table(name = "tasks")
-public class Task {
+public class Task implements TaskMatcher {
     @Id
     @Setter
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -38,6 +40,7 @@ public class Task {
 
     @Column(name = "priority", nullable = false)
     private Priority priority;
+
     @Setter
     @Column(name = "deadline", nullable = false)
     private LocalDate deadline;
@@ -96,6 +99,14 @@ public class Task {
         this.priority = priority;
     }
 
+    public String getPriority() {
+        return this.priority.toString();
+    }
+
+    public Priority getEnumPriority() {
+        return this.priority;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -113,16 +124,4 @@ public class Task {
         return 11 + title.hashCode() + description.hashCode() + priority.getPriority()
                 + deadline.hashCode() + taskBoard.hashCode();
     }
-
-    @Override
-    public String toString() {
-        return  "[   Task: " + ID + "\n"
-                + "Title: " + title + "\n"
-                + "Description: " + description + "\n"
-                + "Priority: " + priority + "\n"
-                + "Deadline: " + deadline + "\n"
-                + "Status: " + finished + "\n"
-                + "Task Board: " + taskBoard + "    ]";
-    }
-
 }

@@ -24,7 +24,6 @@ import java.util.UUID;
 public class TaskBoardDAO implements GenericDAO<TaskBoard>, RelatedEntityDAO<Task, UUID> {
 
     private final SessionFactory sessionFactory;
-    List<TaskBoard> taskBoards;
 
     public TaskBoardDAO() {
         sessionFactory = HibernateSessionFactoryUtil.getSessionFactory();
@@ -32,17 +31,21 @@ public class TaskBoardDAO implements GenericDAO<TaskBoard>, RelatedEntityDAO<Tas
 
     @Override
     public Optional<TaskBoard> findByID(UUID uuid) {
+        Transaction transaction = null;
         TaskBoard taskBoard = null;
 
         try (Session session = sessionFactory.openSession()) {
-            Transaction transaction = session.beginTransaction();
+            transaction = session.beginTransaction();
             taskBoard = session.get(TaskBoard.class, uuid);
             transaction.commit();
-        } catch (HibernateException e) {
-            throw new RuntimeException("Failed to find task board by id", e);
+        } catch (Exception exception) {
+            if (transaction != null && transaction.isActive()) {
+                transaction.rollback();
+            }
+            throw new HibernateException("Failed to find task board by id");
         }
 
-        return Optional.of(taskBoard);
+        return Optional.ofNullable(taskBoard);
     }
 
     @Override
@@ -56,8 +59,11 @@ public class TaskBoardDAO implements GenericDAO<TaskBoard>, RelatedEntityDAO<Tas
                     .setParameter("boardID", uuid)
                     .getResultList();
             transaction.commit();
-        } catch (HibernateException e) {
-            throw new RuntimeException("Failed to get tasks", e);
+        } catch (Exception exception) {
+            if (transaction != null && transaction.isActive()) {
+                transaction.rollback();
+            }
+            throw new HibernateException("Failed to get tasks");
         }
         return tasks;
     }
@@ -71,12 +77,14 @@ public class TaskBoardDAO implements GenericDAO<TaskBoard>, RelatedEntityDAO<Tas
             try {
                 session.persist(entity);
                 transaction.commit();
-            } catch (DataException e) {
-                transaction.rollback();
-                throw new RuntimeException("Wrong data format", e);
+            } catch (Exception exception) {
+                if (transaction != null && transaction.isActive()) {
+                    transaction.rollback();
+                }
+                throw new HibernateException("Wrong data format");
             }
-        } catch (HibernateException e) {
-            throw new RuntimeException("Failed to save entry");
+        } catch (Exception exception) {
+            throw new HibernateException("Failed to save entry: " + exception.getMessage());
         }
         return entity;
     }
@@ -89,16 +97,18 @@ public class TaskBoardDAO implements GenericDAO<TaskBoard>, RelatedEntityDAO<Tas
             transaction = session.beginTransaction();
 
             try {
-                session.merge(entity);
+                TaskBoard merged = session.merge(entity);
                 transaction.commit();
-            } catch (PersistenceException e) {
-                transaction.rollback();
-                throw new RuntimeException("Failed to save changes", e);
+                return merged;
+            } catch (Exception exception) {
+                if (transaction != null && transaction.isActive()) {
+                    transaction.rollback();
+                }
+                throw new HibernateException("Failed to save changes");
             }
-        } catch (HibernateException e) {
-            throw new RuntimeException("Failed to update entry", e);
+        } catch (Exception exception) {
+            throw new HibernateException("Failed to update entry" + exception.getMessage());
         }
-        return entity;
     }
 
     @Override
@@ -111,8 +121,11 @@ public class TaskBoardDAO implements GenericDAO<TaskBoard>, RelatedEntityDAO<Tas
                     .setParameter("boardID", uuid)
                     .executeUpdate();
             transaction.commit();
-        } catch (HibernateException e) {
-            throw new RuntimeException("Failed to delete entry", e);
+        } catch (Exception exception) {
+            if (transaction != null && transaction.isActive()) {
+                transaction.rollback();
+            }
+            throw new HibernateException("Failed to delete entry");
         }
     }
 }

@@ -1,6 +1,6 @@
-package com.taskapproacher.enums;
+package com.taskapproacher.constant;
 
-public enum ErrorMessage {
+public enum ExceptionMessage {
     NOT_FOUND("not found"),
     NULL("can't be null"),
     EMPTY("can't be empty"),
@@ -8,11 +8,12 @@ public enum ErrorMessage {
     WRONG_FORMAT("wrong format"),
     ALREADY_EXISTS("already exists"),
     BEFORE_CURRENT_DATE("can't be less than the current date"),
-    CREATION_FAILURE("creation failure");
+    CREATION_FAILURE("creation failure"),
+    INVALID_DATA("Data is invalid");
 
     private final String message;
 
-    ErrorMessage(String message) {
+    ExceptionMessage(String message) {
         this.message = message;
     }
 

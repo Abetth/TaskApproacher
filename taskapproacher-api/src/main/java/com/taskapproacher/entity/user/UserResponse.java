@@ -1,6 +1,6 @@
 package com.taskapproacher.entity.user;
 
-import com.taskapproacher.enums.Role;
+import com.taskapproacher.constant.Role;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;

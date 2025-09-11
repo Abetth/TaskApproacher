@@ -26,43 +26,26 @@ public class TaskBoardController {
     @GetMapping("/{boardID}/tasks")
     @PreAuthorize("@accessCheckService.hasAccessToBoard(#boardID, authentication.principal.ID)")
     public ResponseEntity<List<Task>> getTasksByBoard(@PathVariable UUID boardID) {
-        try {
-            return ResponseEntity.ok(taskBoardService.findByTaskBoard(boardID));
-        } catch (EntityNotFoundException e) {
-            return ResponseEntity.notFound().build();
-        }
+        return ResponseEntity.ok(taskBoardService.findByTaskBoard(boardID));
     }
 
     @PostMapping("/{userID}")
-    @PreAuthorize("#board.user.ID == authentication.principal.ID")
-    public ResponseEntity<TaskBoardResponse> create(@PathVariable UUID userID,
-                                                    @RequestBody TaskBoard board) {
-        try {
-            TaskBoardResponse createBoard = taskBoardService.create(userID, board);
-            return ResponseEntity.status(201).body(createBoard);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(null);
-        }
+    @PreAuthorize("#userID == authentication.principal.ID")
+    public ResponseEntity<TaskBoardResponse> create(@PathVariable UUID userID, @RequestBody TaskBoard board) {
+        TaskBoardResponse createBoard = taskBoardService.create(userID, board);
+        return ResponseEntity.status(201).body(createBoard);
     }
 
     @PatchMapping("/{boardID}")
     @PreAuthorize("@accessCheckService.hasAccessToBoard(#boardID, authentication.principal.ID)")
     public ResponseEntity<TaskBoardResponse> update(@PathVariable UUID boardID, @RequestBody TaskBoard board) {
-        try {
-            return ResponseEntity.ok(taskBoardService.update(boardID, board));
-        } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(null);
-        }
+        return ResponseEntity.ok(taskBoardService.update(boardID, board));
     }
 
     @DeleteMapping("/{boardID}")
     @PreAuthorize("@accessCheckService.hasAccessToBoard(#boardID, authentication.principal.ID)")
     public ResponseEntity<TaskBoardResponse> delete(@PathVariable UUID boardID) {
-        try {
-            taskBoardService.delete(boardID);
-            return ResponseEntity.noContent().build();
-        } catch (RuntimeException e) {
-            return ResponseEntity.notFound().build();
-        }
+        taskBoardService.delete(boardID);
+        return ResponseEntity.noContent().build();
     }
 }

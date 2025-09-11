@@ -24,19 +24,11 @@ public class AuthController {
 
     @PostMapping("/register")
     public ResponseEntity<AuthResponse> register(@Valid @RequestBody RegisterRequest request) {
-        try {
-            return ResponseEntity.status(201).body(authService.register(request));
-        } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(new AuthResponse(null));
-        }
+        return ResponseEntity.status(201).body(authService.register(request));
     }
 
     @PostMapping("/login")
     public ResponseEntity<AuthResponse> login(@Valid @RequestBody AuthRequest request) {
-        try {
-            return ResponseEntity.ok(authService.authenticate(request));
-        } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(new AuthResponse(null));
-        }
+        return ResponseEntity.ok(authService.authenticate(request));
     }
 }

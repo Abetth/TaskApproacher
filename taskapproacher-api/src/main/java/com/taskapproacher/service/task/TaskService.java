@@ -3,9 +3,9 @@ package com.taskapproacher.service.task;
 import com.taskapproacher.dao.task.TaskDAO;
 import com.taskapproacher.entity.task.Task;
 import com.taskapproacher.entity.task.request.TaskRequest;
-import com.taskapproacher.enums.Priority;
+import com.taskapproacher.constant.Priority;
 import com.taskapproacher.entity.task.response.TaskResponse;
-import com.taskapproacher.enums.ErrorMessage;
+import com.taskapproacher.constant.ExceptionMessage;
 
 import com.taskapproacher.entity.task.TaskBoard;
 import jakarta.persistence.EntityNotFoundException;
@@ -29,18 +29,18 @@ public class TaskService {
 
     public Task findByID(UUID taskID) throws IllegalArgumentException, EntityNotFoundException {
         if (taskID == null) {
-            throw new IllegalArgumentException("Task id " + ErrorMessage.NULL);
+            throw new IllegalArgumentException("Task id " + ExceptionMessage.NULL);
         }
 
-        return taskDAO.findByID(taskID).orElseThrow(() -> new EntityNotFoundException("Task " + ErrorMessage.NOT_FOUND));
+        return taskDAO.findByID(taskID).orElseThrow(() -> new EntityNotFoundException("Task " + ExceptionMessage.NOT_FOUND));
     }
 
 
-    public TaskResponse create(UUID boardId, TaskRequest request, String timeZone) throws IllegalArgumentException {
+    public TaskResponse create(UUID boardId, TaskRequest request, String timeZone) throws IllegalArgumentException, EntityNotFoundException {
         TaskBoard boardForTask = taskBoardService.findByID(boardId);
 
         if (request.getTitle() == null || request.getTitle().isEmpty()) {
-            ErrorMessage error = (request.getTitle() == null) ? ErrorMessage.NULL : ErrorMessage.EMPTY;
+            ExceptionMessage error = (request.getTitle() == null) ? ExceptionMessage.NULL : ExceptionMessage.EMPTY;
             throw new IllegalArgumentException("Title " + error);
         }
 
@@ -49,7 +49,7 @@ public class TaskService {
         }
 
         if (request.getDeadline() == null || request.getDeadline().isBefore(ZonedDateTime.now(ZoneId.of(timeZone)).toLocalDate())) {
-            ErrorMessage error = (request.getDeadline() == null) ? ErrorMessage.NULL : ErrorMessage.BEFORE_CURRENT_DATE;
+            ExceptionMessage error = (request.getDeadline() == null) ? ExceptionMessage.NULL : ExceptionMessage.BEFORE_CURRENT_DATE;
             throw new IllegalArgumentException("Task deadline " + error);
         }
 
@@ -59,7 +59,7 @@ public class TaskService {
         return new TaskResponse(taskDAO.save(taskFromRequest));
     }
 
-    public TaskResponse update(UUID taskID, TaskRequest request, String timeZone) throws IllegalArgumentException {
+    public TaskResponse update(UUID taskID, TaskRequest request, String timeZone) throws IllegalArgumentException, EntityNotFoundException {
         Task updatedTask = findByID(taskID);
 
         if (request.getTitle() != null && !request.getTitle().isEmpty()) {
@@ -76,7 +76,7 @@ public class TaskService {
 
         if (request.getDeadline() != null) {
             if (request.getDeadline().isBefore(ZonedDateTime.now(ZoneId.of(timeZone)).toLocalDate())) {
-                throw new IllegalArgumentException("Task deadline " + ErrorMessage.BEFORE_CURRENT_DATE);
+                throw new IllegalArgumentException("Task deadline " + ExceptionMessage.BEFORE_CURRENT_DATE);
             } else {
                 updatedTask.setDeadline(request.getDeadline());
             }
@@ -93,7 +93,7 @@ public class TaskService {
 
     public void delete(UUID taskID) throws IllegalArgumentException {
         if (taskID == null) {
-            throw new IllegalArgumentException("Task id " + ErrorMessage.NULL);
+            throw new IllegalArgumentException("Task id " + ExceptionMessage.NULL);
         }
 
         taskDAO.delete(taskID);

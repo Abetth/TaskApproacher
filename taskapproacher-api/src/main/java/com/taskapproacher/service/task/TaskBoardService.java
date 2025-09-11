@@ -4,7 +4,7 @@ import com.taskapproacher.dao.task.TaskBoardDAO;
 import com.taskapproacher.entity.task.Task;
 import com.taskapproacher.entity.task.TaskBoard;
 import com.taskapproacher.entity.task.response.TaskBoardResponse;
-import com.taskapproacher.enums.ErrorMessage;
+import com.taskapproacher.constant.ExceptionMessage;
 import com.taskapproacher.service.user.UserService;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,20 +26,20 @@ public class TaskBoardService {
 
     public TaskBoard findByID(UUID boardID) throws IllegalArgumentException, EntityNotFoundException {
         if (boardID == null) {
-            throw new IllegalArgumentException("Task board id " + ErrorMessage.NULL);
+            throw new IllegalArgumentException("Task board id " + ExceptionMessage.NULL);
         }
-        return taskBoardDAO.findByID(boardID).orElseThrow(() -> new EntityNotFoundException("Task board " + ErrorMessage.NOT_FOUND));
+        return taskBoardDAO.findByID(boardID).orElseThrow(() -> new EntityNotFoundException("Task board " + ExceptionMessage.NOT_FOUND));
     }
 
-    public List<Task> findByTaskBoard(UUID boardID) {
+    public List<Task> findByTaskBoard(UUID boardID) throws IllegalArgumentException, EntityNotFoundException {
         findByID(boardID);
 
         return taskBoardDAO.findRelatedEntitiesByID(boardID);
     }
 
-    public TaskBoardResponse create(UUID userID, TaskBoard taskBoard) throws IllegalArgumentException {
+    public TaskBoardResponse create(UUID userID, TaskBoard taskBoard) throws IllegalArgumentException, EntityNotFoundException {
         if (taskBoard.getTitle() == null || taskBoard.getTitle().isEmpty()) {
-            ErrorMessage error = (taskBoard.getTitle() == null) ? ErrorMessage.NULL : ErrorMessage.EMPTY;
+            ExceptionMessage error = (taskBoard.getTitle() == null) ? ExceptionMessage.NULL : ExceptionMessage.EMPTY;
             throw new IllegalArgumentException("Title " + error);
         }
 
@@ -48,7 +48,7 @@ public class TaskBoardService {
         return new TaskBoardResponse(taskBoardDAO.save(taskBoard));
     }
 
-    public TaskBoardResponse update(UUID boardID, TaskBoard taskBoard) {
+    public TaskBoardResponse update(UUID boardID, TaskBoard taskBoard) throws IllegalArgumentException, EntityNotFoundException {
         TaskBoard updatedBoard = findByID(boardID);
 
         if (taskBoard.getTitle() != null && !taskBoard.getTitle().isEmpty()) {
@@ -61,7 +61,7 @@ public class TaskBoardService {
 
     public void delete(UUID boardID) throws IllegalArgumentException {
         if (boardID == null) {
-            throw new IllegalArgumentException("Board id " + ErrorMessage.NULL);
+            throw new IllegalArgumentException("Board id " + ExceptionMessage.NULL);
         }
 
         taskBoardDAO.delete(boardID);

@@ -5,9 +5,12 @@ import com.taskapproacher.entity.task.TaskBoard;
 import com.taskapproacher.dao.task.TaskDAO;
 import com.taskapproacher.entity.task.response.TaskResponse;
 import com.taskapproacher.entity.task.request.TaskRequest;
+import com.taskapproacher.interfaces.TaskMatcher;
 
-import com.taskapproacher.enums.ErrorMessage;
-import com.taskapproacher.enums.Priority;
+import static com.taskapproacher.test.utils.ApproacherTestUtils.*;
+
+import com.taskapproacher.constant.ExceptionMessage;
+import com.taskapproacher.constant.Priority;
 
 import jakarta.persistence.EntityNotFoundException;
 
@@ -28,13 +31,11 @@ import org.springframework.beans.BeanUtils;
 
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
-import java.util.Optional;
-import java.util.TimeZone;
-import java.util.UUID;
+import java.util.*;
 
 //Tests naming convention: method_scenario_result
 @ExtendWith(MockitoExtension.class)
-public class TaskServiceTest {
+public class TaskServiceTest<T> {
     @Mock
     private TaskDAO taskDAO;
     @Mock
@@ -87,18 +88,29 @@ public class TaskServiceTest {
         return task;
     }
 
+    private void assertTaskEquals(TaskMatcher expected, TaskMatcher actual) {
+        assertAll(() -> {
+            assertEqualsIfNotNull(expected.getID(), actual.getID());
+            assertEqualsIfNotNull(expected.getTitle(), actual.getTitle());
+            assertEqualsIfNotNull(expected.getDescription(), actual.getDescription());
+            assertEqualsIfNotNull(expected.getPriority(), actual.getPriority());
+            assertEqualsIfNotNull(expected.getDeadline(), actual.getDeadline());
+            assertEqualsIfNotNull(expected.isFinished(), actual.isFinished());
+            assertEqualsIfNotNull(expected.getTaskBoard(), actual.getTaskBoard());
+        });
+    }
+
     @Test
     void findByID_ValidTaskID_ReturnsTask() {
         UUID taskID = UUID.randomUUID();
 
-        Task mockTask = new Task();
-        mockTask.setID(taskID);
+        Task mockTask = createDefaultTask(taskID, new TaskBoard());
 
         when(taskDAO.findByID(taskID)).thenReturn(Optional.of(mockTask));
 
         Task task = taskService.findByID(taskID);
 
-        assertEquals(mockTask.getID(), task.getID());
+        assertTaskEquals(mockTask, task);
 
         verify(taskDAO, times(1)).findByID(taskID);
     }
@@ -113,7 +125,7 @@ public class TaskServiceTest {
             taskService.findByID(taskID);
         });
 
-        String expectedMessage = ErrorMessage.NOT_FOUND.toString();
+        String expectedMessage = ExceptionMessage.NOT_FOUND.toString();
         String actualMessage = exception.getMessage();
 
         assertTrue(actualMessage.contains(expectedMessage));
@@ -129,7 +141,7 @@ public class TaskServiceTest {
             taskService.findByID(taskID);
         });
 
-        String expectedMessage = ErrorMessage.NULL.toString();
+        String expectedMessage = ExceptionMessage.NULL.toString();
         String actualMessage = exception.getMessage();
 
         assertTrue(actualMessage.contains(expectedMessage));
@@ -150,11 +162,7 @@ public class TaskServiceTest {
 
         TaskResponse response = taskService.create(boardID, request, DEFAULT_TIME_ZONE);
 
-        assertEquals(request.getTitle(), response.getTitle());
-        assertEquals(request.getDescription(), response.getDescription());
-        assertEquals(request.getPriority(), response.getPriority());
-        assertEquals(request.getDeadline(), response.getDeadline());
-        assertEquals(request.isFinished(), response.isFinished());
+        assertTaskEquals(request, response);
         assertEquals(taskBoard, response.getTaskBoard());
 
         verify(taskDAO, times(1)).save(ArgumentMatchers.any(Task.class));
@@ -193,7 +201,7 @@ public class TaskServiceTest {
             taskService.create(boardID, request, DEFAULT_TIME_ZONE);
         });
 
-        String expectedMessage = ErrorMessage.EMPTY.toString();
+        String expectedMessage = ExceptionMessage.EMPTY.toString();
         String actualMessage = exception.getMessage();
 
         assertTrue(actualMessage.contains(expectedMessage));
@@ -217,7 +225,7 @@ public class TaskServiceTest {
             taskService.create(boardID, request, DEFAULT_TIME_ZONE);
         });
 
-        String expectedMessage = ErrorMessage.NULL.toString();
+        String expectedMessage = ExceptionMessage.NULL.toString();
         String actualMessage = exception.getMessage();
 
         assertTrue(actualMessage.contains(expectedMessage));
@@ -243,15 +251,11 @@ public class TaskServiceTest {
         TaskResponse response = taskService.create(boardID, request, DEFAULT_TIME_ZONE);
         Task capturedTask = captor.getValue();
 
-        assertEquals(request.getTitle(), capturedTask.getTitle());
-        assertEquals(request.getDescription(), capturedTask.getDescription());
-        assertEquals(Priority.STANDARD, capturedTask.getPriority());
-        assertEquals(request.getDeadline(), capturedTask.getDeadline());
-        assertEquals(request.isFinished(), capturedTask.isFinished());
+        assertTaskEquals(request, capturedTask);
+        assertEquals(Priority.STANDARD, capturedTask.getEnumPriority());
         assertEquals(taskBoard, capturedTask.getTaskBoard());
 
-        assertNotNull(response);
-        assertEquals(request.getTitle(), response.getTitle());
+        assertTaskEquals(request, response);
         assertEquals(taskBoard, response.getTaskBoard());
 
         verify(taskBoardService, times(1)).findByID(boardID);
@@ -275,15 +279,11 @@ public class TaskServiceTest {
         TaskResponse response = taskService.create(boardID, request, DEFAULT_TIME_ZONE);
         Task capturedTask = captor.getValue();
 
-        assertEquals(request.getTitle(), capturedTask.getTitle());
-        assertEquals(request.getDescription(), capturedTask.getDescription());
-        assertEquals(Priority.STANDARD, capturedTask.getPriority());
-        assertEquals(request.getDeadline(), capturedTask.getDeadline());
-        assertEquals(request.isFinished(), capturedTask.isFinished());
+        assertTaskEquals(request, capturedTask);
+        assertEquals(Priority.STANDARD, capturedTask.getEnumPriority());
         assertEquals(taskBoard, capturedTask.getTaskBoard());
 
-        assertNotNull(response);
-        assertEquals(request.getTitle(), response.getTitle());
+        assertTaskEquals(request, response);
         assertEquals(taskBoard, response.getTaskBoard());
 
         verify(taskBoardService, times(1)).findByID(boardID);
@@ -305,7 +305,7 @@ public class TaskServiceTest {
             taskService.create(boardID, request, DEFAULT_TIME_ZONE);
         });
 
-        String expectedMessage = ErrorMessage.NULL.toString();
+        String expectedMessage = ExceptionMessage.NULL.toString();
         String actualMessage = exception.getMessage();
 
         assertTrue(actualMessage.contains(expectedMessage));
@@ -335,16 +335,10 @@ public class TaskServiceTest {
         TaskResponse response = taskService.create(boardID, request, testTimeZone);
         Task capturedTask = captor.getValue();
 
-        assertEquals(request.getTitle(), capturedTask.getTitle());
-        assertEquals(request.getDescription(), capturedTask.getDescription());
-        assertEquals(request.getPriority(), capturedTask.getPriority().toString());
-        assertEquals(updatedDateTime, capturedTask.getDeadline());
-        assertEquals(request.getDeadline(), capturedTask.getDeadline());
-        assertEquals(request.isFinished(), capturedTask.isFinished());
+        assertTaskEquals(request, capturedTask);
         assertEquals(taskBoard, capturedTask.getTaskBoard());
 
-        assertNotNull(response);
-        assertEquals(request.getTitle(), response.getTitle());
+        assertTaskEquals(request, response);
         assertEquals(taskBoard, response.getTaskBoard());
 
         verify(taskBoardService, times(1)).findByID(boardID);
@@ -366,7 +360,7 @@ public class TaskServiceTest {
             taskService.create(boardID, request, DEFAULT_TIME_ZONE);
         });
 
-        String expectedMessage = ErrorMessage.BEFORE_CURRENT_DATE.toString();
+        String expectedMessage = ExceptionMessage.BEFORE_CURRENT_DATE.toString();
         String actualMessage = exception.getMessage();
 
         assertTrue(actualMessage.contains(expectedMessage));
@@ -401,45 +395,39 @@ public class TaskServiceTest {
         TaskResponse response = taskService.update(taskID, updateData, DEFAULT_TIME_ZONE);
         Task capturedTask = captor.getValue();
 
-        assertEquals(existingTask.getID(), capturedTask.getID());
-        assertNotEquals(existingTask.getTitle(), capturedTask.getTitle());
-        assertNotEquals(existingTask.getDescription(), capturedTask.getDescription());
-        assertNotEquals(existingTask.getPriority(), capturedTask.getPriority());
-        assertNotEquals(existingTask.getDeadline(), capturedTask.getDeadline());
-        assertNotEquals(existingTask.isFinished(), capturedTask.isFinished());
-        assertNotEquals(existingTask.getTaskBoard(), capturedTask.getTaskBoard());
+        assertAll(() -> {
+            assertEquals(existingTask.getID(), capturedTask.getID());
+            assertNotEquals(existingTask.getTitle(), capturedTask.getTitle());
+            assertNotEquals(existingTask.getDescription(), capturedTask.getDescription());
+            assertNotEquals(existingTask.getEnumPriority(), capturedTask.getEnumPriority());
+            assertNotEquals(existingTask.getDeadline(), capturedTask.getDeadline());
+            assertNotEquals(existingTask.isFinished(), capturedTask.isFinished());
+            assertNotEquals(existingTask.getTaskBoard(), capturedTask.getTaskBoard());
+        });
 
-        assertNotNull(response);
+        assertTaskEquals(updateData, response);
         assertEquals(taskID, response.getID());
-        assertEquals(updateData.getTitle(), response.getTitle());
-        assertEquals(updateData.getPriority(), response.getPriority());
-        assertEquals(updateData.getDeadline(), response.getDeadline());
-        assertEquals(updateData.isFinished(), response.isFinished());
-        assertEquals(updateData.getTaskBoard(), response.getTaskBoard());
 
         verify(taskDAO, times(1)).findByID(taskID);
         verify(taskDAO, times(1)).update(captor.capture());
     }
 
     @Test
-    void update_TaskFieldsAreEmptyExceptForFinishedAndTaskBoard_ReturnsTaskResponseTaskDataChanged() {
+    void update_TaskFieldsAreEmptyFinishedIsFalse_ReturnsTaskResponseTaskDataChanged() {
         UUID taskID = UUID.randomUUID();
-        UUID firstBoardID = UUID.randomUUID();
-        UUID secondBoardID = UUID.randomUUID();
+        UUID boardID = UUID.randomUUID();
 
-        TaskBoard firstTaskBoard = createDefaultTaskBoard(firstBoardID, "First task board");
-        TaskBoard secondTaskBoard = createDefaultTaskBoard(secondBoardID, "Second task board");
+        TaskBoard taskBoard = createDefaultTaskBoard(boardID, "First task board");
 
-        Task existingTask = createDefaultTask(taskID, firstTaskBoard);
+        Task existingTask = createDefaultTask(taskID, taskBoard);
 
         Task copyOfExistingTask = new Task();
         BeanUtils.copyProperties(existingTask, copyOfExistingTask);
 
-        TaskRequest updateData = createDefaultTaskRequest(secondTaskBoard);
+        TaskRequest updateData = createDefaultTaskRequest(taskBoard);
         updateData.setTitle("");
         updateData.setDescription("");
         updateData.setPriority("");
-        updateData.setFinished(true);
 
         ArgumentCaptor<Task> captor = ArgumentCaptor.forClass(Task.class);
 
@@ -449,15 +437,8 @@ public class TaskServiceTest {
         TaskResponse response = taskService.update(taskID, updateData, DEFAULT_TIME_ZONE);
         Task capturedTask = captor.getValue();
 
-        assertEquals(existingTask.getID(), capturedTask.getID());
-        assertEquals(existingTask.getTitle(), capturedTask.getTitle());
-        assertEquals(existingTask.getDescription(), capturedTask.getDescription());
-        assertEquals(existingTask.getPriority(), capturedTask.getPriority());
-        assertEquals(existingTask.getDeadline(), capturedTask.getDeadline());
-        assertNotEquals(existingTask.isFinished(), capturedTask.isFinished());
-        assertNotEquals(existingTask.getTaskBoard(), capturedTask.getTaskBoard());
+        assertTaskEquals(existingTask, capturedTask);
 
-        assertNotNull(response);
         assertEquals(taskID, response.getID());
         assertNotEquals(updateData.getTitle(), response.getTitle());
         assertEquals(updateData.getTaskBoard(), response.getTaskBoard());
@@ -488,15 +469,8 @@ public class TaskServiceTest {
         TaskResponse response = taskService.update(taskID, updateData, DEFAULT_TIME_ZONE);
         Task capturedTask = captor.getValue();
 
-        assertEquals(existingTask.getID(), capturedTask.getID());
-        assertEquals(existingTask.getTitle(), capturedTask.getTitle());
-        assertEquals(existingTask.getDescription(), capturedTask.getDescription());
-        assertEquals(existingTask.getPriority(), capturedTask.getPriority());
-        assertEquals(existingTask.getDeadline(), capturedTask.getDeadline());
-        assertEquals(existingTask.isFinished(), capturedTask.isFinished());
-        assertEquals(existingTask.getTaskBoard(), capturedTask.getTaskBoard());
+        assertTaskEquals(existingTask, capturedTask);
 
-        assertNotNull(response);
         assertNotEquals(updateData.getID(), response.getID());
         assertNotEquals(updateData.getTitle(), response.getTitle());
 
@@ -522,7 +496,7 @@ public class TaskServiceTest {
             taskService.update(taskID, updateData, DEFAULT_TIME_ZONE);
         });
 
-        String expectedMessage = ErrorMessage.BEFORE_CURRENT_DATE.toString();
+        String expectedMessage = ExceptionMessage.BEFORE_CURRENT_DATE.toString();
         String actualMessage = exception.getMessage();
 
         assertTrue(actualMessage.contains(expectedMessage));
@@ -550,7 +524,7 @@ public class TaskServiceTest {
             taskService.delete(taskID);
         });
 
-        String expectedMessage = ErrorMessage.NULL.toString();
+        String expectedMessage = ExceptionMessage.NULL.toString();
         String actualMessage = exception.getMessage();
 
         assertTrue(actualMessage.contains(expectedMessage));

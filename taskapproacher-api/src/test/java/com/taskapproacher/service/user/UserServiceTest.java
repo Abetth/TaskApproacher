@@ -5,9 +5,9 @@ import com.taskapproacher.entity.user.User;
 import com.taskapproacher.entity.task.TaskBoard;
 import com.taskapproacher.entity.user.UserResponse;
 import com.taskapproacher.entity.task.response.TaskBoardResponse;
-import com.taskapproacher.enums.ErrorMessage;
-import com.taskapproacher.enums.Role;
-import com.taskapproacher.customexceptions.EntityAlreadyExistsException;
+import com.taskapproacher.constant.ExceptionMessage;
+import com.taskapproacher.constant.Role;
+import com.taskapproacher.exception.custom.EntityAlreadyExistsException;
 
 import jakarta.persistence.EntityNotFoundException;
 
@@ -102,7 +102,7 @@ public class UserServiceTest {
         });
 
 
-        String expectedMessage = ErrorMessage.NOT_FOUND.toString();
+        String expectedMessage = ExceptionMessage.NOT_FOUND.toString();
         String actualMessage = exception.getMessage();
 
         assertTrue(actualMessage.contains(expectedMessage));
@@ -118,7 +118,7 @@ public class UserServiceTest {
             userService.findByID(userID);
         });
 
-        String expectedMessage = ErrorMessage.NULL.toString();
+        String expectedMessage = ExceptionMessage.NULL.toString();
         String actualMessage = exception.getMessage();
 
         assertTrue(actualMessage.contains(expectedMessage));
@@ -151,7 +151,7 @@ public class UserServiceTest {
             userService.findByUsername(username);
         });
 
-        String expectedMessage = ErrorMessage.NOT_FOUND.toString();
+        String expectedMessage = ExceptionMessage.NOT_FOUND.toString();
         String actualMessage = exception.getMessage();
 
         assertTrue(actualMessage.contains(expectedMessage));
@@ -167,7 +167,7 @@ public class UserServiceTest {
            userService.findByUsername(username);
         });
 
-        String expectedMessage = ErrorMessage.EMPTY.toString();
+        String expectedMessage = ExceptionMessage.EMPTY.toString();
         String actualMessage = exception.getMessage();
 
         assertTrue(actualMessage.contains(expectedMessage));
@@ -183,7 +183,7 @@ public class UserServiceTest {
             userService.findByUsername(username);
         });
 
-        String expectedMessage = ErrorMessage.NULL.toString();
+        String expectedMessage = ExceptionMessage.NULL.toString();
         String actualMessage = exception.getMessage();
 
         assertTrue(actualMessage.contains(expectedMessage));
@@ -238,7 +238,7 @@ public class UserServiceTest {
             userService.findBoardsByUser(userID);
         });
 
-        String expectedMessage = ErrorMessage.NULL.toString();
+        String expectedMessage = ExceptionMessage.NULL.toString();
         String actualMessage = exception.getMessage();
 
         assertTrue(actualMessage.contains(expectedMessage));
@@ -257,7 +257,7 @@ public class UserServiceTest {
            userService.findBoardsByUser(userID);
         });
 
-        String expectedMessage = ErrorMessage.NOT_FOUND.toString();
+        String expectedMessage = ExceptionMessage.NOT_FOUND.toString();
         String actualMessage = exception.getMessage();
 
         assertTrue(actualMessage.contains(expectedMessage));
@@ -305,7 +305,7 @@ public class UserServiceTest {
             userService.create(user);
         });
 
-        String expectedMessage = ErrorMessage.EMPTY.toString();
+        String expectedMessage = ExceptionMessage.EMPTY.toString();
         String actualMessage = exception.getMessage();
 
         assertTrue(actualMessage.contains(expectedMessage));
@@ -323,7 +323,7 @@ public class UserServiceTest {
            userService.create(user);
         });
 
-        String expectedMessage = ErrorMessage.NULL.toString();
+        String expectedMessage = ExceptionMessage.NULL.toString();
         String actualMessage = exception.getMessage();
 
         assertTrue(actualMessage.contains(expectedMessage));
@@ -341,7 +341,7 @@ public class UserServiceTest {
             userService.create(user);
         });
 
-        String expectedMessage = ErrorMessage.EMPTY.toString();
+        String expectedMessage = ExceptionMessage.EMPTY.toString();
         String actualMessage = exception.getMessage();
 
         assertTrue(actualMessage.contains(expectedMessage));
@@ -359,7 +359,7 @@ public class UserServiceTest {
             userService.create(user);
         });
 
-        String expectedMessage = ErrorMessage.NULL.toString();
+        String expectedMessage = ExceptionMessage.NULL.toString();
         String actualMessage = exception.getMessage();
 
         assertTrue(actualMessage.contains(expectedMessage));
@@ -377,7 +377,7 @@ public class UserServiceTest {
             userService.create(user);
         });
 
-        String expectedMessage = ErrorMessage.EMPTY.toString();
+        String expectedMessage = ExceptionMessage.EMPTY.toString();
         String actualMessage = exception.getMessage();
 
         assertTrue(actualMessage.contains(expectedMessage));
@@ -395,7 +395,7 @@ public class UserServiceTest {
             userService.create(user);
         });
 
-        String expectedMessage = ErrorMessage.NULL.toString();
+        String expectedMessage = ExceptionMessage.NULL.toString();
         String actualMessage = exception.getMessage();
 
         assertTrue(actualMessage.contains(expectedMessage));
@@ -414,7 +414,7 @@ public class UserServiceTest {
             userService.create(user);
         });
 
-        String expectedMessage = ErrorMessage.ALREADY_EXISTS.toString();
+        String expectedMessage = ExceptionMessage.ALREADY_EXISTS.toString();
         String actualMessage = exception.getMessage();
 
         assertTrue(actualMessage.contains(expectedMessage));
@@ -543,7 +543,7 @@ public class UserServiceTest {
             userService.update(userID, new User());
         });
 
-        String expectedMessage = ErrorMessage.NOT_FOUND.toString();
+        String expectedMessage = ExceptionMessage.NOT_FOUND.toString();
         String actualMessage = exception.getMessage();
 
         assertTrue(actualMessage.contains(expectedMessage));
@@ -571,7 +571,7 @@ public class UserServiceTest {
             userService.delete(userID);
         });
 
-        String expectedMessage = ErrorMessage.NULL.toString();
+        String expectedMessage = ExceptionMessage.NULL.toString();
         String actualMessage = exception.getMessage();
 
         assertTrue(actualMessage.contains(expectedMessage));

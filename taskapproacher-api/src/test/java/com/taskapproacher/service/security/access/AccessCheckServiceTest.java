@@ -1,6 +1,6 @@
 package com.taskapproacher.service.security.access;
 
-import com.taskapproacher.enums.ErrorMessage;
+import com.taskapproacher.constant.ExceptionMessage;
 import com.taskapproacher.dao.task.TaskDAO;
 import com.taskapproacher.dao.task.TaskBoardDAO;
 import com.taskapproacher.entity.task.Task;
@@ -9,7 +9,7 @@ import com.taskapproacher.entity.task.TaskBoard;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import com.taskapproacher.enums.Priority;
+import com.taskapproacher.constant.Priority;
 import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -90,7 +90,7 @@ public class AccessCheckServiceTest {
             accessCheckService.hasAccessToBoard(boardID, userID);
         });
 
-        String expectedMessage = "board id " + ErrorMessage.NULL;
+        String expectedMessage = "board id " + ExceptionMessage.NULL;
         String actualMessage = exception.getMessage();
 
         assertTrue(actualMessage.contains(expectedMessage));
@@ -107,7 +107,7 @@ public class AccessCheckServiceTest {
             accessCheckService.hasAccessToBoard(boardID, userID);
         });
 
-        String expectedMessage = "Principal id " + ErrorMessage.NULL;
+        String expectedMessage = "Principal id " + ExceptionMessage.NULL;
         String actualMessage = exception.getMessage();
 
         assertTrue(actualMessage.contains(expectedMessage));
@@ -126,7 +126,7 @@ public class AccessCheckServiceTest {
             accessCheckService.hasAccessToBoard(boardID, userID);
         });
 
-        String expectedMessage = ErrorMessage.NOT_FOUND.toString();
+        String expectedMessage = ExceptionMessage.NOT_FOUND.toString();
         String actualMessage = exception.getMessage();
 
         assertTrue(actualMessage.contains(expectedMessage));
@@ -176,7 +176,7 @@ public class AccessCheckServiceTest {
             accessCheckService.hasAccessToTask(taskID, userID);
         });
 
-        String expectedMessage = "Task id " + ErrorMessage.NULL;
+        String expectedMessage = "Task id " + ExceptionMessage.NULL;
         String actualMessage = exception.getMessage();
 
         assertTrue(actualMessage.contains(expectedMessage));
@@ -193,7 +193,7 @@ public class AccessCheckServiceTest {
             accessCheckService.hasAccessToTask(taskID, userID);
         });
 
-        String expectedMessage = "Principal id " + ErrorMessage.NULL;
+        String expectedMessage = "Principal id " + ExceptionMessage.NULL;
         String actualMessage = exception.getMessage();
 
         assertTrue(actualMessage.contains(expectedMessage));
@@ -212,7 +212,7 @@ public class AccessCheckServiceTest {
             accessCheckService.hasAccessToTask(taskID, userID);
         });
 
-        String expectedMessage = ErrorMessage.NOT_FOUND.toString();
+        String expectedMessage = ExceptionMessage.NOT_FOUND.toString();
         String actualMessage = exception.getMessage();
 
         assertTrue(actualMessage.contains(expectedMessage));

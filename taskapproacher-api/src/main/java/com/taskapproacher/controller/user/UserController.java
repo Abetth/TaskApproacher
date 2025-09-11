@@ -4,7 +4,6 @@ import com.taskapproacher.entity.task.response.TaskBoardResponse;
 import com.taskapproacher.entity.user.User;
 import com.taskapproacher.entity.user.UserResponse;
 import com.taskapproacher.service.user.UserService;
-import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -28,43 +27,28 @@ public class UserController {
     @GetMapping("/profile")
     @PreAuthorize("hasAnyRole('USER')")
     public ResponseEntity<UserResponse> getUserProfile() {
-        try {
-            Authentication authentication = SecurityContextHolder.getContext().getAuthentication() ;
-            User user = (User) authentication.getPrincipal();
-            return ResponseEntity.ok(new UserResponse(user));
-        } catch (RuntimeException e) {
-            return ResponseEntity.notFound().build();
-        }
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        User user = (User) authentication.getPrincipal();
+        return ResponseEntity.ok(new UserResponse(user));
     }
 
     @GetMapping("/{userID}/boards")
     @PreAuthorize("#userID == authentication.principal.ID")
     public ResponseEntity<List<TaskBoardResponse>> getBoardsByUser(@PathVariable UUID userID) {
-        try {
-            return ResponseEntity.ok(userService.findBoardsByUser(userID));
-        } catch (EntityNotFoundException e) {
-            return ResponseEntity.notFound().build();
-        }
+        return ResponseEntity.ok(userService.findBoardsByUser(userID));
     }
 
     @PatchMapping("/{userID}")
     @PreAuthorize("#userID == authentication.principal.ID")
-    public ResponseEntity<UserResponse> updateUser(@PathVariable UUID userID, @RequestBody User user) {
-        try {
-            return ResponseEntity.ok(userService.update(userID, user));
-        } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(new UserResponse(null));
-        }
+    public ResponseEntity<UserResponse> update(@PathVariable UUID userID, @RequestBody User user) {
+
+        return ResponseEntity.ok(userService.update(userID, user));
     }
 
     @DeleteMapping("/{userID}")
     @PreAuthorize("#userID == authentication.principal.ID")
-    public ResponseEntity<UserResponse> deleteUser(@PathVariable UUID userID) {
-        try {
-            userService.delete(userID);
-            return ResponseEntity.noContent().build();
-        } catch (RuntimeException e) {
-            return ResponseEntity.notFound().build();
-        }
+    public ResponseEntity<UserResponse> delete(@PathVariable UUID userID) {
+        userService.delete(userID);
+        return ResponseEntity.noContent().build();
     }
 }

@@ -4,12 +4,9 @@ import com.taskapproacher.dao.task.TaskBoardDAO;
 import com.taskapproacher.dao.task.TaskDAO;
 import com.taskapproacher.entity.task.Task;
 import com.taskapproacher.entity.task.TaskBoard;
-import com.taskapproacher.enums.ErrorMessage;
+import com.taskapproacher.constant.ExceptionMessage;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
-
-import java.util.Optional;
-import java.util.stream.Stream;
 
 import org.springframework.stereotype.Service;
 
@@ -30,11 +27,11 @@ public class AccessCheckService {
         if (boardID == null || principalID == null) {
             String wrongValue = (boardID == null) ? "Task board id " : "Principal id ";
 
-            throw new IllegalArgumentException(wrongValue + ErrorMessage.NULL);
+            throw new IllegalArgumentException(wrongValue + ExceptionMessage.NULL);
         }
 
         TaskBoard foundBoard = taskBoardDAO.findByID(boardID)
-                .orElseThrow(() -> new EntityNotFoundException("Task board " + ErrorMessage.NOT_FOUND));
+                .orElseThrow(() -> new EntityNotFoundException("Task board " + ExceptionMessage.NOT_FOUND));
 
         return foundBoard.getUser().getID().equals(principalID);
 
@@ -44,11 +41,11 @@ public class AccessCheckService {
         if (taskID == null || principalID == null) {
             String wrongValue = (taskID == null) ? "Task id " : "Principal id ";
 
-            throw new IllegalArgumentException(wrongValue + ErrorMessage.NULL);
+            throw new IllegalArgumentException(wrongValue + ExceptionMessage.NULL);
         }
 
         Task task = taskDAO.findByID(taskID)
-                .orElseThrow(() -> new EntityNotFoundException("Task " + ErrorMessage.NOT_FOUND));
+                .orElseThrow(() -> new EntityNotFoundException("Task " + ExceptionMessage.NOT_FOUND));
 
         return task.getTaskBoard().getUser().getID().equals(principalID);
     }

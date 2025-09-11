@@ -6,7 +6,7 @@ import com.taskapproacher.entity.security.RegisterRequest;
 import com.taskapproacher.entity.user.User;
 import com.taskapproacher.entity.user.UserResponse;
 import com.taskapproacher.service.user.UserService;
-import com.taskapproacher.enums.ErrorMessage;
+import com.taskapproacher.constant.ExceptionMessage;
 
 import jakarta.persistence.EntityNotFoundException;
 
@@ -31,6 +31,7 @@ public class AuthService {
 
     public AuthResponse register(RegisterRequest request) {
         User user = new User();
+
         user.setUsername(request.getUsername());
         user.setPassword(request.getPassword());
         user.setEmail(request.getEmail());
@@ -42,7 +43,7 @@ public class AuthService {
             String jwtToken = jwtService.generateToken(createdUser);
             return new AuthResponse(jwtToken);
         } catch (EntityNotFoundException e) {
-            throw new UsernameNotFoundException("User " + ErrorMessage.CREATION_FAILURE);
+            throw new UsernameNotFoundException("User " + ExceptionMessage.CREATION_FAILURE);
         }
     }
 

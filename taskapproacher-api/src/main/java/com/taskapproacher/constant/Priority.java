@@ -1,4 +1,4 @@
-package com.taskapproacher.enums;
+package com.taskapproacher.constant;
 
 import java.util.Arrays;
 

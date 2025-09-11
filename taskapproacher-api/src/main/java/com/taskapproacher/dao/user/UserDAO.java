@@ -33,9 +33,14 @@ public class UserDAO implements GenericDAO<User>, RelatedEntityDAO<TaskBoardResp
             transaction = session.beginTransaction();
             Query<User> query = session.createQuery("FROM User WHERE username = :username", User.class)
                     .setParameter("username", username);
+            transaction.commit();
+
             return Optional.ofNullable(query.uniqueResult());
-        } catch (HibernateException e) {
-            throw new RuntimeException("Failed to find user by username");
+        } catch (Exception exception) {
+            if (transaction != null && transaction.isActive()) {
+                transaction.rollback();
+            }
+            throw new HibernateException("Failed to find user by username");
         }
     }
 
@@ -54,25 +59,31 @@ public class UserDAO implements GenericDAO<User>, RelatedEntityDAO<TaskBoardResp
             transaction.commit();
 
             return isExists;
-        } catch (HibernateException e) {
-            throw new RuntimeException("Failed to find user by name and mail");
+        } catch (Exception exception) {
+            if (transaction != null && transaction.isActive()) {
+                transaction.rollback();
+            }
+            throw new HibernateException("Failed to find user by name and mail");
         }
     }
 
     @Override
     public Optional<User> findByID(UUID userID) {
-        Transaction transaction;
+        Transaction transaction = null;
         User user = null;
 
         try (Session session = sessionFactory.openSession()) {
             transaction = session.beginTransaction();
             user = session.find(User.class, userID);
             transaction.commit();
-        } catch (HibernateException e) {
-            throw new RuntimeException("Failed to get user by id", e);
+        } catch (Exception exception) {
+            if (transaction != null && transaction.isActive()) {
+                transaction.rollback();
+            }
+            throw new HibernateException("Failed to get user by id");
         }
 
-        return Optional.of(user);
+        return Optional.ofNullable(user);
     }
 
     @Override
@@ -86,8 +97,11 @@ public class UserDAO implements GenericDAO<User>, RelatedEntityDAO<TaskBoardResp
                     .setParameter("id", uuid)
                     .getResultList();
             transaction.commit();
-        } catch (HibernateException e) {
-            throw new RuntimeException("Failed to get task boards");
+        } catch (Exception exception) {
+            if (transaction != null && transaction.isActive()) {
+                transaction.rollback();
+            }
+            throw new HibernateException("Failed to get task boards");
         }
 
         return taskBoards.stream().map(TaskBoardResponse::new).collect(Collectors.toList());
@@ -102,12 +116,14 @@ public class UserDAO implements GenericDAO<User>, RelatedEntityDAO<TaskBoardResp
             try {
                 session.persist(user);
                 transaction.commit();
-            } catch (DataException e) {
-                transaction.rollback();
-                throw new RuntimeException("Wrong data format", e);
+            } catch (Exception exception) {
+                if (transaction != null && transaction.isActive()) {
+                    transaction.rollback();
+                }
+                throw new HibernateException("Wrong data format");
             }
-        } catch (HibernateException e) {
-            throw new RuntimeException("Failed to save user", e);
+        } catch (Exception exception) {
+            throw new HibernateException("Failed to save user: " + exception.getMessage());
         }
         return user;
     }
@@ -119,16 +135,18 @@ public class UserDAO implements GenericDAO<User>, RelatedEntityDAO<TaskBoardResp
         try (Session session = sessionFactory.openSession()) {
             transaction = session.beginTransaction();
             try {
-                session.merge(user);
+                User merged = session.merge(user);
                 transaction.commit();
-            } catch (PersistenceException e) {
-                transaction.rollback();
-                throw new RuntimeException("Failed to save changes", e);
+                return merged;
+            } catch (Exception exception) {
+                if (transaction != null && transaction.isActive()) {
+                    transaction.rollback();
+                }
+                throw new HibernateException("Failed to save changes");
             }
-        } catch (HibernateException e) {
-            throw new RuntimeException("Failed to update entry", e);
+        } catch (Exception exception) {
+            throw new HibernateException("Failed to update entry" + exception.getMessage());
         }
-        return user;
     }
 
     @Override
@@ -141,8 +159,11 @@ public class UserDAO implements GenericDAO<User>, RelatedEntityDAO<TaskBoardResp
                     .setParameter("userID", userID)
                     .executeUpdate();
             transaction.commit();
-        } catch (HibernateException e) {
-            throw new RuntimeException("Failed to delete entry", e);
+        } catch (Exception exception) {
+            if (transaction != null && transaction.isActive()) {
+                transaction.rollback();
+            }
+            throw new HibernateException("Failed to delete entry");
         }
     }
 }

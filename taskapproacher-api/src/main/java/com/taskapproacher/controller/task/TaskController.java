@@ -27,12 +27,8 @@ public class TaskController {
     public ResponseEntity<TaskResponse> create(@PathVariable UUID boardID,
                                                @RequestBody TaskRequest task,
                                                @RequestHeader String timeZone) {
-        try {
-            TaskResponse createTask = taskService.create(boardID, task, timeZone);
-            return ResponseEntity.status(201).body(createTask);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(null);
-        }
+        TaskResponse createTask = taskService.create(boardID, task, timeZone);
+        return ResponseEntity.status(201).body(createTask);
     }
 
     @PatchMapping("/{taskID}")
@@ -40,22 +36,14 @@ public class TaskController {
     public ResponseEntity<TaskResponse> update(@PathVariable UUID taskID,
                                                @RequestBody TaskRequest task,
                                                @RequestHeader String timeZone) {
-        try {
-            return ResponseEntity.ok(taskService.update(taskID, task, timeZone));
-        } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(null);
-        }
+        return ResponseEntity.ok(taskService.update(taskID, task, timeZone));
     }
 
     @DeleteMapping("/{taskID}")
     @PreAuthorize("@accessCheckService.hasAccessToTask(#taskID, authentication.principal.ID)")
     public ResponseEntity<Task> delete(@PathVariable UUID taskID) {
-        try {
-            taskService.delete(taskID);
-            return ResponseEntity.noContent().build();
-        } catch (RuntimeException e) {
-            return ResponseEntity.notFound().build();
-        }
+        taskService.delete(taskID);
+        return ResponseEntity.noContent().build();
     }
 
 }

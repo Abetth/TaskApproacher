@@ -2,6 +2,8 @@ package com.taskapproacher.entity.task.response;
 
 import com.taskapproacher.entity.task.Task;
 import com.taskapproacher.entity.task.TaskBoard;
+import com.taskapproacher.interfaces.TaskMatcher;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.Getter;
 
@@ -10,7 +12,8 @@ import java.util.UUID;
 
 @Getter
 @Setter
-public class TaskResponse {
+@NoArgsConstructor
+public class TaskResponse implements TaskMatcher {
     private UUID ID;
 
     private String title;
@@ -29,23 +32,10 @@ public class TaskResponse {
         this.ID = task.getID();
         this.title = task.getTitle();
         this.description = task.getDescription();
-        this.priority = task.getPriority().toString();
+        this.priority = task.getPriority();
         this.deadline = task.getDeadline();
         this.finished = task.isFinished();
         this.taskBoard = task.getTaskBoard();
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-
-        TaskResponse comparable = (TaskResponse) o;
-
-        return title.equals(comparable.title)
-                && description.equals(comparable.description) && priority.equals(comparable.priority)
-                && deadline.equals(comparable.deadline) && finished == comparable.finished
-                && taskBoard.equals(comparable.taskBoard);
-
-    }
 }

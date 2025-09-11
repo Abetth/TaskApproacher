@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import com.taskapproacher.entity.user.User;
+import com.taskapproacher.interfaces.TaskBoardMatcher;
 import jakarta.persistence.*;
 
 import lombok.AllArgsConstructor;
@@ -23,7 +24,7 @@ import java.util.UUID;
 @AllArgsConstructor
 @DynamicUpdate
 @Table(name = "task_boards")
-public class TaskBoard {
+public class TaskBoard implements TaskBoardMatcher {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -32,7 +33,7 @@ public class TaskBoard {
     @Column(name = "title", nullable = false)
     private String title;
 
-    @JsonProperty("isSorted")
+    @Column(name = "sorted", nullable = false)
     private boolean sorted;
 
     @OneToMany(fetch = FetchType.EAGER, mappedBy = "taskBoard", cascade = CascadeType.ALL, orphanRemoval = true)
