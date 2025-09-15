@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import com.taskapproacher.entity.task.response.TaskBoardResponse;
 import com.taskapproacher.entity.user.User;
 import com.taskapproacher.interfaces.TaskBoardMatcher;
 import jakarta.persistence.*;
@@ -44,6 +45,14 @@ public class TaskBoard implements TaskBoardMatcher {
     @JoinColumn(name = "user_id")
     @JsonBackReference
     private User user;
+
+    public TaskBoard(TaskBoardResponse response) {
+        this.ID = response.getID();
+        this.title = response.getTitle();
+        this.sorted = response.isSorted();
+        this.tasks = response.getTasks();
+        this.user = response.getUser();
+    }
 
     public TaskBoard(String title, boolean sorted, List<Task> tasks, User user) {
         this.ID = new UUID(0L, 0L);

@@ -41,7 +41,6 @@ public class UserController {
     @PatchMapping("/{userID}")
     @PreAuthorize("#userID == authentication.principal.ID")
     public ResponseEntity<UserResponse> update(@PathVariable UUID userID, @RequestBody User user) {
-
         return ResponseEntity.ok(userService.update(userID, user));
     }
 

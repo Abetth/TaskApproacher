@@ -7,7 +7,7 @@ import com.taskapproacher.entity.task.response.TaskResponse;
 import com.taskapproacher.entity.task.request.TaskRequest;
 import com.taskapproacher.interfaces.TaskMatcher;
 
-import static com.taskapproacher.test.utils.ApproacherTestUtils.*;
+import com.taskapproacher.test.utils.ApproacherTestUtils;
 
 import com.taskapproacher.constant.ExceptionMessage;
 import com.taskapproacher.constant.Priority;
@@ -90,13 +90,13 @@ public class TaskServiceTest<T> {
 
     private void assertTaskEquals(TaskMatcher expected, TaskMatcher actual) {
         assertAll(() -> {
-            assertEqualsIfNotNull(expected.getID(), actual.getID());
-            assertEqualsIfNotNull(expected.getTitle(), actual.getTitle());
-            assertEqualsIfNotNull(expected.getDescription(), actual.getDescription());
-            assertEqualsIfNotNull(expected.getPriority(), actual.getPriority());
-            assertEqualsIfNotNull(expected.getDeadline(), actual.getDeadline());
-            assertEqualsIfNotNull(expected.isFinished(), actual.isFinished());
-            assertEqualsIfNotNull(expected.getTaskBoard(), actual.getTaskBoard());
+            ApproacherTestUtils.assertEqualsIfNotNull(expected.getID(), actual.getID());
+            ApproacherTestUtils.assertEqualsIfNotNull(expected.getTitle(), actual.getTitle());
+            ApproacherTestUtils.assertEqualsIfNotNull(expected.getDescription(), actual.getDescription());
+            ApproacherTestUtils.assertEqualsIfNotNull(expected.getPriority(), actual.getPriority());
+            ApproacherTestUtils.assertEqualsIfNotNull(expected.getDeadline(), actual.getDeadline());
+            ApproacherTestUtils.assertEqualsIfNotNull(expected.isFinished(), actual.isFinished());
+            ApproacherTestUtils.assertEqualsIfNotNull(expected.getTaskBoard(), actual.getTaskBoard());
         });
     }
 

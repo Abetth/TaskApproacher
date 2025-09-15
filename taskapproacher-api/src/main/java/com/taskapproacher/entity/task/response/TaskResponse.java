@@ -37,5 +37,4 @@ public class TaskResponse implements TaskMatcher {
         this.finished = task.isFinished();
         this.taskBoard = task.getTaskBoard();
     }
-
 }

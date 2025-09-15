@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonBackReference;
 
 import com.taskapproacher.constant.Priority;
 import com.taskapproacher.entity.task.request.TaskRequest;
+import com.taskapproacher.entity.task.response.TaskResponse;
 import com.taskapproacher.interfaces.TaskMatcher;
 
 import jakarta.persistence.*;
@@ -62,6 +63,15 @@ public class Task implements TaskMatcher {
         this.deadline = request.getDeadline();
         this.finished = request.isFinished();
         this.taskBoard = request.getTaskBoard();
+    }
+
+    public Task(TaskResponse response) {
+        this.title = response.getTitle();
+        this.description = response.getDescription();
+        this.priority = Priority.valueOf(response.getPriority());
+        this.deadline = response.getDeadline();
+        this.finished = response.isFinished();
+        this.taskBoard = response.getTaskBoard();
     }
 
     public Task(String title, String description, int priority, LocalDate deadline, boolean finished, TaskBoard list) {

@@ -199,7 +199,7 @@ public class UserServiceTest {
         List<TaskBoardResponse> mockBoards = createDefaultListOfTaskBoards(user)
                 .stream()
                 .map(TaskBoardResponse::new)
-                .collect(Collectors.toList());
+                .toList();
 
         when(userDAO.findByID(userID)).thenReturn(Optional.of(user));
         when(userDAO.findRelatedEntitiesByID(userID)).thenReturn(mockBoards);

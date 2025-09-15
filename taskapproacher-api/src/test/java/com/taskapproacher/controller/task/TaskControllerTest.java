@@ -44,6 +44,7 @@ import java.util.UUID;
 
 import static org.mockito.Mockito.*;
 
+// Illegal***Data = Empty || Null or any other unsuitable data
 //Tests naming convention: method_scenario_result
 @ExtendWith(MockitoExtension.class)
 public class TaskControllerTest {
@@ -80,20 +81,6 @@ public class TaskControllerTest {
         return request;
     }
 
-    private MockHttpServletRequestBuilder buildRequest(HttpMethod method, String path, String objectJson) {
-        HttpHeaders headers = new HttpHeaders();
-        MockHttpServletRequestBuilder builder = MockMvcRequestBuilders.request(method, path);
-
-        if (method != HttpMethod.DELETE) {
-            headers.add("TimeZone", TIME_ZONE);
-            builder.content(objectJson);
-        }
-        builder.headers(headers);
-        builder.contentType(MediaType.APPLICATION_JSON);
-
-        return builder;
-    }
-
     private ResultMatcher[] buildFailedMatchers(HttpStatus status, String path, ExceptionMessage exceptionMessage) {
         List<ResultMatcher> matchers = new ArrayList<>();
         int statusCode = status.value();
@@ -119,9 +106,8 @@ public class TaskControllerTest {
             return matchers.toArray(new ResultMatcher[0]);
         }
 
-        if (taskMatcher.getID() != null) {
-            matchers.add(jsonPath("$.id").value(taskMatcher.getID().toString()));
-        }
+        matchers.add(content().contentType(MediaType.APPLICATION_JSON));
+        matchers.add(jsonPath("$.id").value(taskMatcher.getID().toString()));
         matchers.add(jsonPath("$.title").value(taskMatcher.getTitle()));
         matchers.add(jsonPath("$.description").value(taskMatcher.getDescription()));
         matchers.add(jsonPath("$.priority").value(taskMatcher.getPriority()));
@@ -150,6 +136,20 @@ public class TaskControllerTest {
         mockMvc.perform(builder).andExpectAll(matchers);
     }
 
+    private MockHttpServletRequestBuilder buildRequest(HttpMethod method, String path, String objectJson) {
+        HttpHeaders headers = new HttpHeaders();
+        MockHttpServletRequestBuilder builder = MockMvcRequestBuilders.request(method, path);
+
+        if (method != HttpMethod.DELETE) {
+            headers.add("TimeZone", TIME_ZONE);
+            builder.content(objectJson);
+        }
+        builder.headers(headers);
+        builder.contentType(MediaType.APPLICATION_JSON);
+
+        return builder;
+    }
+
     @BeforeEach
     void setUp() {
         mockMvc = MockMvcBuilders.standaloneSetup(taskController)
@@ -162,33 +162,35 @@ public class TaskControllerTest {
     @Test
     void anyRequest_NullPath_ReturnsStatusCodeBadRequestAndErrorResponse() throws Exception {
         TaskRequest request = createDefaultTaskRequest();
-        String taskJson = objectMapper.writeValueAsString(request);
+
+        String requestJson = objectMapper.writeValueAsString(request);
         String path = PATH_TO_API + "board/" + null;
 
-        performFailedRequest(HttpMethod.POST, HttpStatus.BAD_REQUEST, path, taskJson, ExceptionMessage.INVALID_DATA);
+        performFailedRequest(HttpMethod.POST, HttpStatus.BAD_REQUEST, path, requestJson, ExceptionMessage.INVALID_DATA);
 
         verify(taskService, times(0))
                 .create(ArgumentMatchers.any(UUID.class), ArgumentMatchers.any(TaskRequest.class), ArgumentMatchers.any(String.class));
     }
 
     @Test
-    void create_ValidData_ReturnsStatusCodeCreatedWithCreatedTask() throws Exception {
+    void create_ValidTaskData_ReturnsStatusCodeCreatedAndCreatedTask() throws Exception {
         UUID boardID = UUID.randomUUID();
         UUID createdTaskID = UUID.randomUUID();
 
         TaskRequest request = createDefaultTaskRequest();
-        String taskJson = objectMapper.writeValueAsString(request);
+
+        String requestJson = objectMapper.writeValueAsString(request);
+        String path = PATH_TO_API + "board/" + boardID;
 
         TaskResponse response = new TaskResponse(new Task(request));
         response.setID(createdTaskID);
 
-        String path = PATH_TO_API + "board/" + boardID;
 
         when(taskService.create(ArgumentMatchers.any(UUID.class), ArgumentMatchers.any(TaskRequest.class), ArgumentMatchers.any(String.class)))
                 .thenReturn(response);
 
 
-        performSuccessfulRequest(HttpMethod.POST, HttpStatus.CREATED, path, taskJson, request);
+        performSuccessfulRequest(HttpMethod.POST, HttpStatus.CREATED, path, requestJson, response);
 
         verify(taskService, times(1))
                 .create(ArgumentMatchers.any(UUID.class), ArgumentMatchers.any(TaskRequest.class), ArgumentMatchers.any(String.class));
@@ -199,13 +201,14 @@ public class TaskControllerTest {
         UUID boardID = UUID.randomUUID();
 
         TaskRequest request = createDefaultTaskRequest();
-        String taskJson = objectMapper.writeValueAsString(request);
+
+        String requestJson = objectMapper.writeValueAsString(request);
         String path = PATH_TO_API + "board/" + boardID;
 
         when(taskService.create(ArgumentMatchers.any(UUID.class), ArgumentMatchers.any(TaskRequest.class), ArgumentMatchers.any(String.class)))
                 .thenThrow(new EntityNotFoundException(ExceptionMessage.NOT_FOUND.toString()));
 
-        performFailedRequest(HttpMethod.POST, HttpStatus.BAD_REQUEST, path, taskJson, ExceptionMessage.NOT_FOUND);
+        performFailedRequest(HttpMethod.POST, HttpStatus.BAD_REQUEST, path, requestJson, ExceptionMessage.NOT_FOUND);
 
         verify(taskService, times(1))
                 .create(ArgumentMatchers.any(UUID.class), ArgumentMatchers.any(TaskRequest.class), ArgumentMatchers.any(String.class));
@@ -216,41 +219,43 @@ public class TaskControllerTest {
         UUID boardID = UUID.randomUUID();
 
         TaskRequest request = createDefaultTaskRequest();
-        String taskJson = objectMapper.writeValueAsString(request);
+
+        String requestJson = objectMapper.writeValueAsString(request);
         String path = PATH_TO_API + "board/" + boardID;
 
         when(taskService
                 .create(ArgumentMatchers.any(UUID.class), ArgumentMatchers.any(TaskRequest.class), ArgumentMatchers.any(String.class)))
-                .thenThrow(new IllegalArgumentException(ExceptionMessage.NULL.toString()));
+                .thenThrow(new IllegalArgumentException(ExceptionMessage.EMPTY.toString()));
 
 
-        performFailedRequest(HttpMethod.POST, HttpStatus.BAD_REQUEST, path, taskJson, ExceptionMessage.NULL);
+        performFailedRequest(HttpMethod.POST, HttpStatus.BAD_REQUEST, path, requestJson, ExceptionMessage.EMPTY);
 
         verify(taskService, times(1))
                 .create(ArgumentMatchers.any(UUID.class), ArgumentMatchers.any(TaskRequest.class), ArgumentMatchers.any(String.class));
     }
 
     @Test
-    void update_ValidData_ReturnsStatusCodeOkWithUpdatedTask() throws Exception {
+    void update_ValidTaskData_ReturnsStatusCodeOkAndUpdatedTask() throws Exception {
         UUID taskID = UUID.randomUUID();
-        TaskRequest request = createDefaultTaskRequest();
-        String taskJson = objectMapper.writeValueAsString(request);
 
-        TaskResponse response = new TaskResponse(new Task(request));
+        TaskRequest updateData = createDefaultTaskRequest();
+        updateData.setTitle("Updated task");
+        updateData.setDescription("Updated description");
+        updateData.setPriority("CRITICAL");
+        updateData.setDeadline(LocalDate.now().plusDays(10));
+        updateData.setFinished(true);
+
+        TaskResponse response = new TaskResponse(new Task(updateData));
         response.setID(taskID);
-        response.setTitle("Updated board");
-        response.setDescription("Updated description");
-        response.setPriority("CRITICAL");
-        response.setDeadline(LocalDate.now().plusDays(10));
-        response.setFinished(true);
 
+        String updateDataJson = objectMapper.writeValueAsString(updateData);
         String path = PATH_TO_API + taskID;
 
         when(taskService.update(ArgumentMatchers.any(UUID.class), ArgumentMatchers.any(TaskRequest.class), ArgumentMatchers.any(String.class)))
                 .thenReturn(response);
 
 
-        performSuccessfulRequest(HttpMethod.PATCH, HttpStatus.OK, path, taskJson, response);
+        performSuccessfulRequest(HttpMethod.PATCH, HttpStatus.OK, path, updateDataJson, response);
 
         verify(taskService, times(1))
                 .update(ArgumentMatchers.any(UUID.class), ArgumentMatchers.any(TaskRequest.class), ArgumentMatchers.any(String.class));
@@ -259,8 +264,10 @@ public class TaskControllerTest {
     @Test
     void update_InvalidTaskID_ReturnsStatusCodeBadRequestAndErrorResponse() throws Exception {
         UUID taskID = UUID.randomUUID();
+
         TaskRequest request = createDefaultTaskRequest();
-        String taskJson = objectMapper.writeValueAsString(request);
+
+        String requestJson = objectMapper.writeValueAsString(request);
         String path = PATH_TO_API + taskID;
 
         when(taskService
@@ -268,7 +275,7 @@ public class TaskControllerTest {
                 .thenThrow(new EntityNotFoundException(ExceptionMessage.NOT_FOUND.toString()));
 
 
-        performFailedRequest(HttpMethod.PATCH, HttpStatus.BAD_REQUEST, path, taskJson, ExceptionMessage.NOT_FOUND);
+        performFailedRequest(HttpMethod.PATCH, HttpStatus.BAD_REQUEST, path, requestJson, ExceptionMessage.NOT_FOUND);
 
         verify(taskService, times(1))
                 .update(ArgumentMatchers.any(UUID.class), ArgumentMatchers.any(TaskRequest.class), ArgumentMatchers.any(String.class));
@@ -277,15 +284,17 @@ public class TaskControllerTest {
     @Test
     void update_IllegalTaskData_ReturnsStatusCodeBadRequestAndErrorResponse() throws Exception {
         UUID taskID = UUID.randomUUID();
+
         TaskRequest request = createDefaultTaskRequest();
-        String taskJson = objectMapper.writeValueAsString(request);
+
+        String requestJson = objectMapper.writeValueAsString(request);
         String path = PATH_TO_API + taskID;
 
         when(taskService
                 .update(ArgumentMatchers.any(UUID.class), ArgumentMatchers.any(TaskRequest.class), ArgumentMatchers.any(String.class)))
-                .thenThrow(new IllegalArgumentException(ExceptionMessage.NULL.toString()));
+                .thenThrow(new IllegalArgumentException(ExceptionMessage.EMPTY.toString()));
 
-        performFailedRequest(HttpMethod.PATCH, HttpStatus.BAD_REQUEST, path, taskJson, ExceptionMessage.NULL);
+        performFailedRequest(HttpMethod.PATCH, HttpStatus.BAD_REQUEST, path, requestJson, ExceptionMessage.EMPTY);
 
         verify(taskService, times(1))
                 .update(ArgumentMatchers.any(UUID.class), ArgumentMatchers.any(TaskRequest.class), ArgumentMatchers.any(String.class));
@@ -294,6 +303,7 @@ public class TaskControllerTest {
     @Test
     void delete_ValidTaskID_ReturnsStatusCodeNoContent() throws Exception {
         UUID taskID = UUID.randomUUID();
+
         String path = PATH_TO_API + taskID;
 
         doNothing().when(taskService).delete(ArgumentMatchers.any(UUID.class));
@@ -306,6 +316,7 @@ public class TaskControllerTest {
     @Test
     void delete_IllegalTaskID_ReturnsStatusCodeBadRequestAndErrorResponse() throws Exception {
         UUID taskID = UUID.randomUUID();
+
         String path = PATH_TO_API + taskID;
 
         doThrow(new IllegalArgumentException(ExceptionMessage.NULL.toString()))

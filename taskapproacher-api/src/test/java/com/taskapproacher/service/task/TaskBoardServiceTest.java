@@ -1,18 +1,20 @@
 package com.taskapproacher.service.task;
 
+import com.taskapproacher.constant.Priority;
 import com.taskapproacher.entity.task.TaskBoard;
 import com.taskapproacher.entity.task.Task;
 import com.taskapproacher.entity.task.response.TaskBoardResponse;
+import com.taskapproacher.entity.task.response.TaskResponse;
 import com.taskapproacher.entity.user.User;
 import com.taskapproacher.dao.task.TaskBoardDAO;
-import com.taskapproacher.entity.user.UserResponse;
 import com.taskapproacher.interfaces.TaskBoardMatcher;
 import com.taskapproacher.service.user.UserService;
 import com.taskapproacher.constant.ExceptionMessage;
 import com.taskapproacher.constant.Role;
 
-import static com.taskapproacher.test.utils.ApproacherTestUtils.*;
+import com.taskapproacher.test.utils.ApproacherTestUtils;
 
+import java.time.LocalDate;
 import java.util.UUID;
 import java.util.Optional;
 import java.util.List;
@@ -45,11 +47,26 @@ public class TaskBoardServiceTest {
     @InjectMocks
     private TaskBoardService taskBoardService;
 
+    private Task createDefaultTask(UUID taskID) {
+        Task task = new Task();
+        task.setID(taskID);
+        task.setTitle("Default task");
+        task.setDescription("Default task description");
+        task.setPriority(Priority.STANDARD);
+        task.setDeadline(LocalDate.now());
+        task.setFinished(false);
+        task.setTaskBoard(null);
+
+        return task;
+    }
+
     private List<Task> createDefaultListOfTasks() {
-        Task firstTask = new Task();
+        Task firstTask = createDefaultTask(UUID.randomUUID());
         firstTask.setID(UUID.randomUUID());
-        Task secondTask = new Task();
+        firstTask.setTitle("First task");
+        Task secondTask = createDefaultTask(UUID.randomUUID());
         secondTask.setID(UUID.randomUUID());
+        secondTask.setTitle("Second task");
 
         return List.of(firstTask, secondTask);
     }
@@ -79,11 +96,11 @@ public class TaskBoardServiceTest {
 
     private void assertTaskBoardEquals(TaskBoardMatcher expected, TaskBoardMatcher actual) {
         assertAll(() -> {
-            assertEqualsIfNotNull(expected.getID(), actual.getID());
-            assertEqualsIfNotNull(expected.getTitle(), actual.getTitle());
-            assertEqualsIfNotNull(expected.isSorted(), actual.isSorted());
-            assertEqualsIfNotNull(expected.getTasks(), actual.getTasks());
-            assertEqualsIfNotNull(expected.getUser(), actual.getUser());
+            ApproacherTestUtils.assertEqualsIfNotNull(expected.getID(), actual.getID());
+            ApproacherTestUtils.assertEqualsIfNotNull(expected.getTitle(), actual.getTitle());
+            ApproacherTestUtils.assertEqualsIfNotNull(expected.isSorted(), actual.isSorted());
+            ApproacherTestUtils.assertEqualsIfNotNull(expected.getTasks(), actual.getTasks());
+            ApproacherTestUtils.assertEqualsIfNotNull(expected.getUser(), actual.getUser());
         });
     }
 
@@ -148,7 +165,7 @@ public class TaskBoardServiceTest {
         when(taskBoardDAO.findByID(boardID)).thenReturn(Optional.of(taskBoard));
         when(taskBoardDAO.findRelatedEntitiesByID(boardID)).thenReturn(mockListOfTasks);
 
-        List<Task> listOfTasks = taskBoardService.findByTaskBoard(boardID);
+        List<TaskResponse> listOfTasks = taskBoardService.findByTaskBoard(boardID);
 
         assertEquals(2, listOfTasks.size());
         assertEquals(listOfTasks.get(0).getID(), mockListOfTasks.get(0).getID());

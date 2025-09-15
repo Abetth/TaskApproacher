@@ -19,7 +19,6 @@ import java.util.UUID;
 @Repository
 public class TaskDAO implements GenericDAO<Task> {
     SessionFactory sessionFactory;
-    List<Task> tasks;
 
     public TaskDAO() {
         sessionFactory = HibernateSessionFactoryUtil.getSessionFactory();
@@ -52,6 +51,7 @@ public class TaskDAO implements GenericDAO<Task> {
             try {
                 session.persist(entity);
                 transaction.commit();
+                return entity;
             } catch (Exception exception) {
                 if (transaction != null && transaction.isActive()) {
                     transaction.rollback();
@@ -61,7 +61,6 @@ public class TaskDAO implements GenericDAO<Task> {
         } catch (Exception exception) {
             throw new HibernateException("Failed to save entry: " + exception.getMessage());
         }
-        return entity;
     }
 
     @Override
@@ -70,9 +69,9 @@ public class TaskDAO implements GenericDAO<Task> {
         try (Session session = sessionFactory.openSession()) {
             transaction = session.beginTransaction();
             try {
-                Task merged = session.merge(entity);
+                session.merge(entity);
                 transaction.commit();
-                return merged;
+                return entity;
             } catch (Exception exception) {
                 if (transaction != null && transaction.isActive()) {
                     transaction.rollback();

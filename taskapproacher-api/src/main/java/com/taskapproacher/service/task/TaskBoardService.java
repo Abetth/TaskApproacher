@@ -5,6 +5,7 @@ import com.taskapproacher.entity.task.Task;
 import com.taskapproacher.entity.task.TaskBoard;
 import com.taskapproacher.entity.task.response.TaskBoardResponse;
 import com.taskapproacher.constant.ExceptionMessage;
+import com.taskapproacher.entity.task.response.TaskResponse;
 import com.taskapproacher.service.user.UserService;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,6 +13,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 public class TaskBoardService {
@@ -31,10 +33,12 @@ public class TaskBoardService {
         return taskBoardDAO.findByID(boardID).orElseThrow(() -> new EntityNotFoundException("Task board " + ExceptionMessage.NOT_FOUND));
     }
 
-    public List<Task> findByTaskBoard(UUID boardID) throws IllegalArgumentException, EntityNotFoundException {
+    public List<TaskResponse> findByTaskBoard(UUID boardID) throws IllegalArgumentException, EntityNotFoundException {
         findByID(boardID);
 
-        return taskBoardDAO.findRelatedEntitiesByID(boardID);
+        List<Task> tasks = taskBoardDAO.findRelatedEntitiesByID(boardID);
+
+        return tasks.stream().map(TaskResponse::new).collect(Collectors.toList());
     }
 
     public TaskBoardResponse create(UUID userID, TaskBoard taskBoard) throws IllegalArgumentException, EntityNotFoundException {

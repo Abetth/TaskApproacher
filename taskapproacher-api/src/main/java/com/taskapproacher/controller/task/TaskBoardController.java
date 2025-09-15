@@ -1,10 +1,10 @@
 package com.taskapproacher.controller.task;
 
-import com.taskapproacher.entity.task.Task;
 import com.taskapproacher.entity.task.TaskBoard;
 import com.taskapproacher.entity.task.response.TaskBoardResponse;
+import com.taskapproacher.entity.task.response.TaskResponse;
 import com.taskapproacher.service.task.TaskBoardService;
-import jakarta.persistence.EntityNotFoundException;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -25,7 +25,7 @@ public class TaskBoardController {
 
     @GetMapping("/{boardID}/tasks")
     @PreAuthorize("@accessCheckService.hasAccessToBoard(#boardID, authentication.principal.ID)")
-    public ResponseEntity<List<Task>> getTasksByBoard(@PathVariable UUID boardID) {
+    public ResponseEntity<List<TaskResponse>> getTasksByBoard(@PathVariable UUID boardID) {
         return ResponseEntity.ok(taskBoardService.findByTaskBoard(boardID));
     }
 
