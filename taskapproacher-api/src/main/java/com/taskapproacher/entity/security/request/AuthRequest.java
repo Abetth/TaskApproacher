@@ -1,4 +1,4 @@
-package com.taskapproacher.entity.security;
+package com.taskapproacher.entity.security.request;
 
 import lombok.Getter;
 import lombok.Setter;

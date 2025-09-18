@@ -1,4 +1,4 @@
-package com.taskapproacher.exception;
+package com.taskapproacher.exception.handler;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.taskapproacher.constant.ExceptionMessage;

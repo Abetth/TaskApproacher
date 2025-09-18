@@ -1,4 +1,4 @@
-package com.taskapproacher.interfaces;
+package com.taskapproacher.interfaces.matcher;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;

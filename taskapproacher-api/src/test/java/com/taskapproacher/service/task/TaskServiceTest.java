@@ -5,9 +5,9 @@ import com.taskapproacher.entity.task.TaskBoard;
 import com.taskapproacher.dao.task.TaskDAO;
 import com.taskapproacher.entity.task.response.TaskResponse;
 import com.taskapproacher.entity.task.request.TaskRequest;
-import com.taskapproacher.interfaces.TaskMatcher;
+import com.taskapproacher.interfaces.matcher.TaskMatcher;
 
-import com.taskapproacher.test.utils.ApproacherTestUtils;
+import com.taskapproacher.test.utils.TestApproacherUtils;
 
 import com.taskapproacher.constant.ExceptionMessage;
 import com.taskapproacher.constant.Priority;
@@ -90,13 +90,13 @@ public class TaskServiceTest<T> {
 
     private void assertTaskEquals(TaskMatcher expected, TaskMatcher actual) {
         assertAll(() -> {
-            ApproacherTestUtils.assertEqualsIfNotNull(expected.getID(), actual.getID());
-            ApproacherTestUtils.assertEqualsIfNotNull(expected.getTitle(), actual.getTitle());
-            ApproacherTestUtils.assertEqualsIfNotNull(expected.getDescription(), actual.getDescription());
-            ApproacherTestUtils.assertEqualsIfNotNull(expected.getPriority(), actual.getPriority());
-            ApproacherTestUtils.assertEqualsIfNotNull(expected.getDeadline(), actual.getDeadline());
-            ApproacherTestUtils.assertEqualsIfNotNull(expected.isFinished(), actual.isFinished());
-            ApproacherTestUtils.assertEqualsIfNotNull(expected.getTaskBoard(), actual.getTaskBoard());
+            TestApproacherUtils.assertEqualsIfNotNull(expected.getID(), actual.getID());
+            TestApproacherUtils.assertEqualsIfNotNull(expected.getTitle(), actual.getTitle());
+            TestApproacherUtils.assertEqualsIfNotNull(expected.getDescription(), actual.getDescription());
+            TestApproacherUtils.assertEqualsIfNotNull(expected.getPriority(), actual.getPriority());
+            TestApproacherUtils.assertEqualsIfNotNull(expected.getDeadline(), actual.getDeadline());
+            TestApproacherUtils.assertEqualsIfNotNull(expected.isFinished(), actual.isFinished());
+            TestApproacherUtils.assertEqualsIfNotNull(expected.getTaskBoard(), actual.getTaskBoard());
         });
     }
 

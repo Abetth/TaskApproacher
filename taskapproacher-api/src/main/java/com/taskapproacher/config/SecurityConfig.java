@@ -1,6 +1,7 @@
 package com.taskapproacher.config;
 
-import com.taskapproacher.exception.CustomAccessDeniedHandler;
+import com.taskapproacher.exception.handler.CustomAccessDeniedHandler;
+import com.taskapproacher.exception.handler.CustomAuthenticationEntryPoint;
 import com.taskapproacher.filter.JwtAuthenticationFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -43,7 +44,9 @@ public class SecurityConfig {
                         .requestMatchers("/swagger-ui/index.html").permitAll()
                         .anyRequest().authenticated())
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
-                .exceptionHandling(exceptions -> exceptions.accessDeniedHandler(accessDeniedHandler()));
+                .exceptionHandling(exceptions -> exceptions
+                        .authenticationEntryPoint(authenticationEntryPoint())
+                        .accessDeniedHandler(accessDeniedHandler()));
         return http.build();
     }
 
@@ -60,6 +63,11 @@ public class SecurityConfig {
     @Bean
     public AccessDeniedHandler accessDeniedHandler() {
         return new CustomAccessDeniedHandler();
+    }
+
+    @Bean
+    public AuthenticationEntryPoint authenticationEntryPoint() {
+        return new CustomAuthenticationEntryPoint();
     }
 
 }

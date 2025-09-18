@@ -3,7 +3,7 @@ package com.taskapproacher.service.user;
 import com.taskapproacher.dao.user.UserDAO;
 import com.taskapproacher.entity.task.response.TaskBoardResponse;
 import com.taskapproacher.entity.user.User;
-import com.taskapproacher.entity.user.UserResponse;
+import com.taskapproacher.entity.user.response.UserResponse;
 import com.taskapproacher.constant.Role;
 import com.taskapproacher.exception.custom.EntityAlreadyExistsException;
 import com.taskapproacher.constant.ExceptionMessage;

@@ -3,8 +3,8 @@ package com.taskapproacher.entity.task.response;
 import com.taskapproacher.entity.task.Task;
 import com.taskapproacher.entity.task.TaskBoard;
 import com.taskapproacher.entity.user.User;
-import com.taskapproacher.entity.user.UserResponse;
-import com.taskapproacher.interfaces.TaskBoardMatcher;
+import com.taskapproacher.entity.user.response.UserResponse;
+import com.taskapproacher.interfaces.matcher.TaskBoardMatcher;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -12,7 +12,6 @@ import lombok.Setter;
 
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Getter
 @Setter

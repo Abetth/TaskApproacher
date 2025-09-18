@@ -1,14 +1,17 @@
-package com.taskapproacher.entity.user;
+package com.taskapproacher.entity.user.response;
 
 import com.taskapproacher.constant.Role;
+import com.taskapproacher.entity.user.User;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.util.UUID;
 
 @Getter
 @Setter
+@NoArgsConstructor
 @AllArgsConstructor
 public class UserResponse {
     private UUID ID;
@@ -21,16 +24,6 @@ public class UserResponse {
         this.username = user.getUsername();
         this.email = user.getEmail();
         this.role = user.getRole();
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-
-        UserResponse comparable = (UserResponse) o;
-
-        return username.equals(comparable.username) && email.equals(comparable.email) && role.equals(comparable.role);
     }
 
     @Override

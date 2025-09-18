@@ -2,7 +2,7 @@ package com.taskapproacher.entity.task.response;
 
 import com.taskapproacher.entity.task.Task;
 import com.taskapproacher.entity.task.TaskBoard;
-import com.taskapproacher.interfaces.TaskMatcher;
+import com.taskapproacher.interfaces.matcher.TaskMatcher;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.Getter;
@@ -15,17 +15,11 @@ import java.util.UUID;
 @NoArgsConstructor
 public class TaskResponse implements TaskMatcher {
     private UUID ID;
-
     private String title;
-
     private String description;
-
     private String priority;
-
     private LocalDate deadline;
-
     private boolean finished;
-
     private TaskBoard taskBoard;
 
     public TaskResponse(Task task) {

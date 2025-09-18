@@ -3,7 +3,7 @@ package com.taskapproacher.service.user;
 import com.taskapproacher.dao.user.UserDAO;
 import com.taskapproacher.entity.user.User;
 import com.taskapproacher.entity.task.TaskBoard;
-import com.taskapproacher.entity.user.UserResponse;
+import com.taskapproacher.entity.user.response.UserResponse;
 import com.taskapproacher.entity.task.response.TaskBoardResponse;
 import com.taskapproacher.constant.ExceptionMessage;
 import com.taskapproacher.constant.Role;
@@ -30,7 +30,6 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 //Tests naming convention: method_scenario_result
 @ExtendWith(MockitoExtension.class)

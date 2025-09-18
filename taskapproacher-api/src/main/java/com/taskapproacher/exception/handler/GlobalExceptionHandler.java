@@ -1,9 +1,8 @@
-package com.taskapproacher.exception;
+package com.taskapproacher.exception.handler;
 
 import com.taskapproacher.constant.ExceptionMessage;
 import com.taskapproacher.exception.custom.EntityAlreadyExistsException;
 import io.jsonwebtoken.ExpiredJwtException;
-import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.MalformedJwtException;
 import org.hibernate.HibernateException;
 import org.springframework.http.HttpStatus;
@@ -44,7 +43,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
     public ErrorResponse handleMethodArgumentTypeMismatchException(MethodArgumentTypeMismatchException exception) {
-        return ErrorResponse.create(exception, HttpStatus.BAD_REQUEST, ExceptionMessage.INVALID_DATA + ", please check it for mistakes");
+        return ErrorResponse.create(exception, HttpStatus.BAD_REQUEST, ExceptionMessage.INVALID_DATA_ID.toString());
     }
 
     @ExceptionHandler(ExpiredJwtException.class)

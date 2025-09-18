@@ -2,7 +2,7 @@ package com.taskapproacher.test.utils;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class ApproacherTestUtils {
+public class TestApproacherUtils {
     public static void assertStringsIfNotEmpty(Object firstValue, Object secondValue) {
         String firstString = (String) firstValue;
         String secondString = (String) secondValue;

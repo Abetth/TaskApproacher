@@ -2,18 +2,16 @@ package com.taskapproacher.dao.task;
 
 import com.taskapproacher.entity.task.Task;
 import com.taskapproacher.entity.task.TaskBoard;
-import com.taskapproacher.hibernate.HibernateSessionFactoryUtil;
-import com.taskapproacher.interfaces.GenericDAO;
+import com.taskapproacher.interfaces.dao.GenericDAO;
 
-import com.taskapproacher.interfaces.RelatedEntityDAO;
-import jakarta.persistence.PersistenceException;
+import com.taskapproacher.interfaces.dao.RelatedEntityDAO;
 
 import org.hibernate.HibernateException;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 
 import org.hibernate.Transaction;
-import org.hibernate.exception.DataException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -25,8 +23,9 @@ public class TaskBoardDAO implements GenericDAO<TaskBoard>, RelatedEntityDAO<Tas
 
     private final SessionFactory sessionFactory;
 
-    public TaskBoardDAO() {
-        sessionFactory = HibernateSessionFactoryUtil.getSessionFactory();
+    @Autowired
+    public TaskBoardDAO(SessionFactory sessionFactory) {
+        this.sessionFactory = sessionFactory;
     }
 
     @Override
@@ -81,7 +80,7 @@ public class TaskBoardDAO implements GenericDAO<TaskBoard>, RelatedEntityDAO<Tas
                 if (transaction != null && transaction.isActive()) {
                     transaction.rollback();
                 }
-                throw new HibernateException("Wrong data format");
+                throw new HibernateException("Wrong data");
             }
         } catch (Exception exception) {
             throw new HibernateException("Failed to save entry: " + exception.getMessage());

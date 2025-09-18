@@ -2,11 +2,10 @@ package com.taskapproacher.entity.task;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
-import com.fasterxml.jackson.annotation.JsonProperty;
 
 import com.taskapproacher.entity.task.response.TaskBoardResponse;
 import com.taskapproacher.entity.user.User;
-import com.taskapproacher.interfaces.TaskBoardMatcher;
+import com.taskapproacher.interfaces.matcher.TaskBoardMatcher;
 import jakarta.persistence.*;
 
 import lombok.AllArgsConstructor;
@@ -54,20 +53,14 @@ public class TaskBoard implements TaskBoardMatcher {
         this.user = response.getUser();
     }
 
-    public TaskBoard(String title, boolean sorted, List<Task> tasks, User user) {
-        this.ID = new UUID(0L, 0L);
-        this.title = title;
-        this.sorted = sorted;
-        this.tasks = tasks;
-        this.user = user;
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
+
         TaskBoard comparableTable = (TaskBoard) o;
-        return ID.equals(comparableTable.ID) && title.equals(comparableTable.title)
+
+        return title.equals(comparableTable.title)
                 && tasks.equals(comparableTable.tasks) && user.equals(comparableTable.user);
     }
 
@@ -78,7 +71,7 @@ public class TaskBoard implements TaskBoardMatcher {
 
     @Override
     public String toString() {
-        return  "[   Table: " + ID
+        return "[   Table: " + ID
                 + ", Title: " + title
                 + ", Sorted: " + sorted
                 + "User: " + user.getUsername() + "    ]";

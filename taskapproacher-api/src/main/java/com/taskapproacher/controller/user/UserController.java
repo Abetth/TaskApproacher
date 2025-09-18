@@ -2,7 +2,7 @@ package com.taskapproacher.controller.user;
 
 import com.taskapproacher.entity.task.response.TaskBoardResponse;
 import com.taskapproacher.entity.user.User;
-import com.taskapproacher.entity.user.UserResponse;
+import com.taskapproacher.entity.user.response.UserResponse;
 import com.taskapproacher.service.user.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -25,7 +25,7 @@ public class UserController {
     }
 
     @GetMapping("/profile")
-    @PreAuthorize("hasAnyRole('USER')")
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     public ResponseEntity<UserResponse> getUserProfile() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         User user = (User) authentication.getPrincipal();

@@ -1,4 +1,4 @@
-package com.taskapproacher.interfaces;
+package com.taskapproacher.interfaces.dao;
 
 import java.util.Optional;
 import java.util.UUID;

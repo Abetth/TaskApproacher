@@ -2,17 +2,11 @@ package com.taskapproacher.dao.task;
 
 import com.taskapproacher.entity.task.Task;
 
-import com.taskapproacher.hibernate.HibernateSessionFactoryUtil;
-import com.taskapproacher.interfaces.*;
-
-import jakarta.persistence.EntityNotFoundException;
-import jakarta.persistence.PersistenceException;
-
+import com.taskapproacher.interfaces.dao.GenericDAO;
 import org.hibernate.*;
-import org.hibernate.exception.DataException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -20,8 +14,9 @@ import java.util.UUID;
 public class TaskDAO implements GenericDAO<Task> {
     SessionFactory sessionFactory;
 
-    public TaskDAO() {
-        sessionFactory = HibernateSessionFactoryUtil.getSessionFactory();
+    @Autowired
+    public TaskDAO(SessionFactory sessionFactory) {
+        this.sessionFactory = sessionFactory;
     }
 
     @Override
@@ -56,7 +51,7 @@ public class TaskDAO implements GenericDAO<Task> {
                 if (transaction != null && transaction.isActive()) {
                     transaction.rollback();
                 }
-                throw new HibernateException("Wrong data format");
+                throw new HibernateException("Wrong data");
             }
         } catch (Exception exception) {
             throw new HibernateException("Failed to save entry: " + exception.getMessage());

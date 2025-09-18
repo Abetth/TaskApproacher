@@ -1,109 +1,66 @@
 package com.taskapproacher.controller.task;
 
-import com.taskapproacher.constant.Priority;
-import com.taskapproacher.constant.Role;
-import com.taskapproacher.entity.task.Task;
-import com.taskapproacher.entity.task.TaskBoard;
-import com.taskapproacher.entity.task.response.TaskBoardResponse;
-import com.taskapproacher.entity.task.response.TaskResponse;
-import com.taskapproacher.entity.user.User;
-import com.taskapproacher.entity.user.UserResponse;
-import com.taskapproacher.interfaces.TaskBoardMatcher;
-import com.taskapproacher.service.task.TaskBoardService;
-import com.taskapproacher.exception.GlobalExceptionHandler;
-import com.taskapproacher.constant.ExceptionMessage;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import jakarta.persistence.EntityNotFoundException;
+import com.taskapproacher.constant.ExceptionMessage;
+import com.taskapproacher.entity.security.request.AuthRequest;
+import com.taskapproacher.entity.security.response.AuthResponse;
+import com.taskapproacher.entity.task.Task;
+import com.taskapproacher.entity.task.TaskBoard;
+import com.taskapproacher.entity.user.User;
+import com.taskapproacher.interfaces.matcher.TaskBoardMatcher;
+import com.taskapproacher.test.utils.TestApproacherDataUtils;
+import com.taskapproacher.test.constant.EntityNumber;
+
 import org.hamcrest.core.StringContains;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultMatcher;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.BeforeEach;
-
-import org.mockito.Mock;
-import org.mockito.InjectMocks;
-import org.mockito.ArgumentMatchers;
-import org.mockito.junit.jupiter.MockitoExtension;
-
-import static org.mockito.Mockito.*;
-
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.request;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-// Illegal***Data = Empty || Null or any other unsuitable data
 //Tests naming convention: method_scenario_result
-@ExtendWith(MockitoExtension.class)
+@SpringBootTest
+@AutoConfigureMockMvc
+@ActiveProfiles("test")
 public class TaskBoardControllerTest {
-    @Mock
-    private TaskBoardService taskBoardService;
-    @InjectMocks
-    private TaskBoardController taskBoardController;
+    @Autowired
     private MockMvc mockMvc;
+    @Autowired
     private ObjectMapper objectMapper;
-
-    private String PATH_TO_API = "/api/boards/";
+    private final String PATH_TO_API = "/api/board/";
+    private String token;
 
     private TaskBoard createDefaultTaskBoard() {
-        User user = createDefaultUser(UUID.randomUUID());
         TaskBoard taskBoard = new TaskBoard();
-        taskBoard.setID(UUID.randomUUID());
-        taskBoard.setTitle("Test Task Board");
+        taskBoard.setTitle("Test Board Creation");
         taskBoard.setSorted(false);
-        taskBoard.setTasks(null);
-        taskBoard.setUser(user);
 
         return taskBoard;
     }
 
-    private Task createDefaultTask(UUID taskID) {
-        Task task = new Task();
-        task.setID(taskID);
-        task.setTitle("Default task");
-        task.setDescription("Default task description");
-        task.setPriority(Priority.STANDARD);
-        task.setDeadline(LocalDate.now());
-        task.setFinished(false);
-        task.setTaskBoard(null);
-
-        return task;
-    }
-
-    private List<Task> createDefaultListOfTasks() {
-        Task firstTask = createDefaultTask(UUID.randomUUID());
-        firstTask.setID(UUID.randomUUID());
-        firstTask.setTitle("First task");
-        Task secondTask = createDefaultTask(UUID.randomUUID());
-        secondTask.setID(UUID.randomUUID());
-        secondTask.setTitle("Second task");
+    private List<Task> createListOfPreInsertedTasks() {
+        Task firstTask = TestApproacherDataUtils.createPreInsertedTask(EntityNumber.FIRST);
+        Task secondTask = TestApproacherDataUtils.createPreInsertedTask(EntityNumber.SECOND);
 
         return List.of(firstTask, secondTask);
-    }
-
-    private User createDefaultUser(UUID userID) {
-        User user = new User();
-        user.setID(userID);
-        user.setUsername("User 1");
-        user.setPassword("Userpassword1");
-        user.setEmail("mail@mail.mail");
-        user.setRole(Role.USER);
-        user.setTaskBoards(null);
-
-        return user;
     }
 
     private ResultMatcher[] buildFailedMatchers(HttpStatus status, String path, ExceptionMessage exceptionMessage) {
@@ -113,7 +70,7 @@ public class TaskBoardControllerTest {
         matchers.add(status().is(statusCode));
         matchers.add(content().contentType(MediaType.APPLICATION_PROBLEM_JSON));
         matchers.add(jsonPath("$.type").value("about:blank"));
-        matchers.add(jsonPath("$.title").value("Bad Request"));
+        matchers.add(jsonPath("$.title").value(status.getReasonPhrase()));
         matchers.add(jsonPath("$.status").value(statusCode));
         matchers.add(jsonPath("$.detail").value(StringContains.containsString(exceptionMessage.toString())));
         matchers.add(jsonPath("$.instance").value(path));
@@ -130,19 +87,26 @@ public class TaskBoardControllerTest {
             return matchers.toArray(new ResultMatcher[0]);
         }
 
+        if (method != HttpMethod.POST) {
+            matchers.add(jsonPath("$.id").value(taskBoardMatcher.getID().toString()));
+            matchers.add(jsonPath("$.user.id").value(taskBoardMatcher.getUser().getID().toString()));
+        } else {
+            matchers.add(jsonPath("$.id").isNotEmpty());
+            matchers.add(jsonPath("$.user").isNotEmpty());
+        }
+
         matchers.add(content().contentType(MediaType.APPLICATION_JSON));
-        matchers.add(jsonPath("$.id").value(taskBoardMatcher.getID().toString()));
         matchers.add(jsonPath("$.title").value(taskBoardMatcher.getTitle()));
         matchers.add(jsonPath("$.sorted").value(taskBoardMatcher.isSorted()));
         matchers.add(jsonPath("$.tasks").value(taskBoardMatcher.getTasks()));
-        matchers.add(jsonPath("$.user.id").value(taskBoardMatcher.getUser().getID().toString()));
 
         return matchers.toArray(new ResultMatcher[0]);
     }
 
-    private MockHttpServletRequestBuilder buildRequest(HttpMethod method, String path, String objectJson) {
-        MockHttpServletRequestBuilder builder = MockMvcRequestBuilders.request(method, path)
-                .contentType(MediaType.APPLICATION_JSON);
+    private MockHttpServletRequestBuilder buildRequest(HttpMethod method, String token, String path, String objectJson) {
+        MockHttpServletRequestBuilder builder = request(method, path)
+                .contentType(MediaType.APPLICATION_JSON)
+                .header("Authorization", "Bearer " + token);
 
         if (method != HttpMethod.GET & method != HttpMethod.DELETE) {
             builder.content(objectJson);
@@ -151,228 +115,238 @@ public class TaskBoardControllerTest {
         return builder;
     }
 
-    private void performFailedRequest(HttpMethod method, HttpStatus status, String path, String objectJson, ExceptionMessage exceptionMessage) throws Exception {
+    private void performFailedRequest(HttpMethod method, HttpStatus status, String token, String path, String objectJson, ExceptionMessage exceptionMessage) throws Exception {
         ResultMatcher[] matchers = buildFailedMatchers(status, path, exceptionMessage);
-        MockHttpServletRequestBuilder builder = buildRequest(method, path, objectJson);
+        MockHttpServletRequestBuilder builder = buildRequest(method, token, path, objectJson);
 
         mockMvc.perform(builder).andExpectAll(matchers);
     }
 
-    private void performSuccessfulRequest(HttpMethod method, HttpStatus status, String path, String objectJson, TaskBoardMatcher taskBoardMatcher) throws Exception {
+    private void performSuccessfulRequest(HttpMethod method, HttpStatus status, String token, String path, String objectJson, TaskBoardMatcher taskBoardMatcher) throws Exception {
         ResultMatcher[] matchers = buildSuccessfulMatchers(method, status, taskBoardMatcher);
-        MockHttpServletRequestBuilder builder = buildRequest(method, path, objectJson);
+        MockHttpServletRequestBuilder builder = buildRequest(method, token, path, objectJson);
 
         mockMvc.perform(builder).andExpectAll(matchers);
+    }
+
+    private String getAccessToken(String username, String password) throws Exception {
+        AuthRequest request = new AuthRequest();
+        request.setUsername(username);
+        request.setPassword(password);
+
+        String path = "/api/auth/login";
+
+        String requestJson = objectMapper.writeValueAsString(request);
+
+        String tokenJson = mockMvc.perform(request(HttpMethod.POST, path)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestJson))
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        AuthResponse response = objectMapper.readValue(tokenJson, AuthResponse.class);
+
+        return response.getToken();
     }
 
     @BeforeEach
-    void setUp() {
-        mockMvc = MockMvcBuilders.standaloneSetup(taskBoardController)
-                .setControllerAdvice(GlobalExceptionHandler.class)
-                .build();
-        objectMapper = new ObjectMapper();
-        objectMapper.findAndRegisterModules();
+    public void setUp() throws Exception {
+        User preInsertedUser = TestApproacherDataUtils.createPreInsertedUser(EntityNumber.FIRST);
+        token = getAccessToken(preInsertedUser.getUsername(), preInsertedUser.getPassword());
     }
 
     @Test
-    void anyRequest_NullPath_ReturnsStatusCodeBadRequestAndErrorResponse() throws Exception {
+    @Sql(scripts = {"/data/sql/clearData.sql", "/data/sql/insertUsers.sql"})
+    void anyRequest_NullInPath_ReturnsStatusCodeBadRequestAndErrorResponse() throws Exception {
         TaskBoard request = createDefaultTaskBoard();
 
-        String taskBoardJson = objectMapper.writeValueAsString(request);
         String path = PATH_TO_API + null + "/tasks";
 
-        performFailedRequest(HttpMethod.GET, HttpStatus.BAD_REQUEST, path, taskBoardJson, ExceptionMessage.INVALID_DATA);
+        String taskBoardJson = objectMapper.writeValueAsString(request);
 
-        verify(taskBoardService, times(0)).findByID(ArgumentMatchers.any(UUID.class));
+        performFailedRequest(HttpMethod.GET, HttpStatus.BAD_REQUEST, token, path, taskBoardJson, ExceptionMessage.INVALID_DATA_ID);
     }
 
     @Test
-    void getTasksByBoard_ValidTaskBoardID_ReturnsStatusCodeOkAndListOfTaskResponse() throws Exception {
-        UUID taskBoardID = UUID.randomUUID();
-        List<TaskResponse> tasks = createDefaultListOfTasks().stream().map(TaskResponse::new).toList();
-
-        String path = PATH_TO_API + taskBoardID + "/tasks";
-
-        when(taskBoardService.findByTaskBoard(ArgumentMatchers.any(UUID.class))).thenReturn(tasks);
-
-        mockMvc.perform(MockMvcRequestBuilders.request(HttpMethod.GET, path)
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().is(HttpStatus.OK.value()))
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.[0].id").value(tasks.get(0).getID().toString()))
-                .andExpect(jsonPath("$.[0].title").value(tasks.get(0).getTitle()))
-                .andExpect(jsonPath("$.[1].id").value(tasks.get(1).getID().toString()))
-                .andExpect(jsonPath("$.[1].title").value(tasks.get(1).getTitle()));
-    }
-
-    @Test
-    void getTasksByBoard_InvalidTaskBoardID_ReturnsStatusCodeBadRequestAndErrorResponse() throws Exception {
-        UUID taskBoardID = UUID.randomUUID();
-
-        String path = PATH_TO_API + taskBoardID + "/tasks";
-
-        when(taskBoardService.findByTaskBoard(ArgumentMatchers.any(UUID.class)))
-                .thenThrow(new EntityNotFoundException(ExceptionMessage.NOT_FOUND.toString()));
-
-        performFailedRequest(HttpMethod.GET, HttpStatus.BAD_REQUEST, path, null, ExceptionMessage.NOT_FOUND);
-
-        verify(taskBoardService, times(1)).findByTaskBoard(ArgumentMatchers.any(UUID.class));
-    }
-
-    @Test
-    void getTasksByBoard_IllegalTaskBoardID_ReturnsStatusCodeBadRequestAndErrorResponse() throws Exception {
-        UUID taskBoardID = UUID.randomUUID();
-
-        String path = PATH_TO_API + taskBoardID + "/tasks";
-
-        when(taskBoardService.findByTaskBoard(ArgumentMatchers.any(UUID.class)))
-                .thenThrow(new IllegalArgumentException(ExceptionMessage.NULL.toString()));
-
-        performFailedRequest(HttpMethod.GET, HttpStatus.BAD_REQUEST, path, null, ExceptionMessage.NULL);
-
-        verify(taskBoardService, times(1)).findByTaskBoard(ArgumentMatchers.any(UUID.class));
-    }
-
-    @Test
-    void create_ValidTaskBoardData_ReturnsStatusCodeCreatedAndTaskBoardResponse() throws Exception {
-        UUID userID = UUID.randomUUID();
-        User user = createDefaultUser(userID);
+    @Sql(scripts = {"/data/sql/clearData.sql", "/data/sql/insertUsers.sql"})
+    void anyRequest_NullToken_ReturnsStatusCodeForbiddenAndErrorResponse() throws Exception {
+        User preInsertedUser = TestApproacherDataUtils.createPreInsertedUser(EntityNumber.FIRST);
+        UUID userID = preInsertedUser.getID();
 
         TaskBoard request = createDefaultTaskBoard();
-        TaskBoardResponse response = new TaskBoardResponse(request);
-        response.setID(UUID.randomUUID());
-        response.setUser(new UserResponse(user));
 
-        String requestJson = objectMapper.writeValueAsString(request);
         String path = PATH_TO_API + userID;
 
-        when(taskBoardService.create(ArgumentMatchers.any(UUID.class), ArgumentMatchers.any(TaskBoard.class)))
-                .thenReturn(response);
+        String requestJson = objectMapper.writeValueAsString(request);
 
-        performSuccessfulRequest(HttpMethod.POST, HttpStatus.CREATED, path, requestJson, response);
+        String token = null;
 
-        verify(taskBoardService, times(1))
-                .create(ArgumentMatchers.any(UUID.class), ArgumentMatchers.any(TaskBoard.class));
+        performFailedRequest(HttpMethod.POST, HttpStatus.FORBIDDEN, token, path, requestJson, ExceptionMessage.INVALID_AUTH_TOKEN);
     }
 
     @Test
-    void create_InvalidUserID_ReturnsStatusCodeBadRequestAndErrorResponse() throws Exception {
+    @Sql(scripts = {"/data/sql/clearData.sql", "/data/sql/insertUsers.sql", "/data/sql/insertBoards.sql", "/data/sql/insertTasks.sql"})
+    void getTasksByBoard_ValidTaskBoardID_ReturnsStatusCodeOkAndListOfTaskResponse() throws Exception {
+        TaskBoard preInsertedTaskBoard = TestApproacherDataUtils.createPreInsertedTaskBoard(EntityNumber.FIRST);
+        UUID taskBoardID = preInsertedTaskBoard.getID();
+
+        List<Task> preInsertedTasks = createListOfPreInsertedTasks();
+
+        String path = PATH_TO_API + taskBoardID + "/tasks";
+
+        mockMvc.perform(request(HttpMethod.GET, path)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header("Authorization", "Bearer " + token))
+                .andExpect(status().is(HttpStatus.OK.value()))
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.[0].id").value(preInsertedTasks.get(0).getID().toString()))
+                .andExpect(jsonPath("$.[0].title").value(preInsertedTasks.get(0).getTitle()))
+                .andExpect(jsonPath("$.[1].id").value(preInsertedTasks.get(1).getID().toString()))
+                .andExpect(jsonPath("$.[1].title").value(preInsertedTasks.get(1).getTitle()));
+    }
+
+    @Test
+    @Sql(scripts = {"/data/sql/clearData.sql", "/data/sql/insertUsers.sql", "/data/sql/insertBoards.sql", "/data/sql/insertTasks.sql"})
+    void getTasksByBoard_NonExistentTaskBoardID_ReturnsStatusCodeBadRequestAndErrorResponse() throws Exception {
+        UUID taskBoardID = UUID.randomUUID();
+
+        String path = PATH_TO_API + taskBoardID + "/tasks";
+
+        performFailedRequest(HttpMethod.GET, HttpStatus.BAD_REQUEST, token, path, null, ExceptionMessage.NOT_FOUND);
+    }
+
+    @Test
+    @Sql(scripts = {"/data/sql/clearData.sql", "/data/sql/insertUsers.sql", "/data/sql/insertBoards.sql", "/data/sql/insertTasks.sql"})
+    void getTasksByBoard_InvalidTaskBoardID_ReturnsStatusCodeForbiddenAndErrorResponse() throws Exception {
+        TaskBoard preInsertedTaskBoard = TestApproacherDataUtils.createPreInsertedTaskBoard(EntityNumber.THIRD);
+        UUID taskBoardID = preInsertedTaskBoard.getID();
+
+        String path = PATH_TO_API + taskBoardID + "/tasks";
+
+        performFailedRequest(HttpMethod.GET, HttpStatus.FORBIDDEN, token, path, null, ExceptionMessage.ACCESS_DENIED);
+    }
+
+    @Test
+    @Sql(scripts = {"/data/sql/clearData.sql", "/data/sql/insertUsers.sql"})
+    void create_ValidTaskBoardData_ReturnsStatusCodeCreatedAndTaskBoardResponse() throws Exception {
+        User preInsertedUser = TestApproacherDataUtils.createPreInsertedUser(EntityNumber.FIRST);
+        UUID userID = preInsertedUser.getID();
+
+        TaskBoard request = createDefaultTaskBoard();
+
+        String path = PATH_TO_API + userID;
+
+        String requestJson = objectMapper.writeValueAsString(request);
+
+        performSuccessfulRequest(HttpMethod.POST, HttpStatus.CREATED, token, path, requestJson, request);
+    }
+
+    @Test
+    @Sql(scripts = {"/data/sql/clearData.sql", "/data/sql/insertUsers.sql"})
+    void create_InvalidUserID_ReturnsStatusCodeForbiddenAndErrorResponse() throws Exception {
         UUID userID = UUID.randomUUID();
 
         TaskBoard requestBoard = createDefaultTaskBoard();
 
-        String requestJson = objectMapper.writeValueAsString(requestBoard);
         String path = PATH_TO_API + userID;
 
-        when(taskBoardService.create(ArgumentMatchers.any(UUID.class), ArgumentMatchers.any(TaskBoard.class)))
-                .thenThrow(new EntityNotFoundException(ExceptionMessage.NOT_FOUND.toString()));
+        String requestJson = objectMapper.writeValueAsString(requestBoard);
 
-        performFailedRequest(HttpMethod.POST, HttpStatus.BAD_REQUEST, path, requestJson, ExceptionMessage.NOT_FOUND);
-
-        verify(taskBoardService, times(1))
-                .create(ArgumentMatchers.any(UUID.class), ArgumentMatchers.any(TaskBoard.class));
+        performFailedRequest(HttpMethod.POST, HttpStatus.FORBIDDEN, token, path, requestJson, ExceptionMessage.ACCESS_DENIED);
     }
 
     @Test
+    @Sql(scripts = {"/data/sql/clearData.sql", "/data/sql/insertUsers.sql"})
     void create_IllegalTaskBoardData_ReturnsStatusCodeBadRequestAndErrorResponse() throws Exception {
-        UUID userID = UUID.randomUUID();
+        User preInsertedUser = TestApproacherDataUtils.createPreInsertedUser(EntityNumber.FIRST);
+        UUID userID = preInsertedUser.getID();
 
         TaskBoard request = createDefaultTaskBoard();
+        request.setTitle("");
 
-        String requestJson = objectMapper.writeValueAsString(request);
         String path = PATH_TO_API + userID;
 
-        when(taskBoardService.create(ArgumentMatchers.any(UUID.class), ArgumentMatchers.any(TaskBoard.class)))
-                .thenThrow(new IllegalArgumentException(ExceptionMessage.EMPTY.toString()));
+        String requestJson = objectMapper.writeValueAsString(request);
 
-        performFailedRequest(HttpMethod.POST, HttpStatus.BAD_REQUEST, path, requestJson, ExceptionMessage.EMPTY);
-
-        verify(taskBoardService, times(1))
-                .create(ArgumentMatchers.any(UUID.class), ArgumentMatchers.any(TaskBoard.class));
+        performFailedRequest(HttpMethod.POST, HttpStatus.BAD_REQUEST, token, path, requestJson, ExceptionMessage.EMPTY);
     }
 
     @Test
+    @Sql(scripts = {"/data/sql/clearData.sql", "/data/sql/insertUsers.sql", "/data/sql/insertBoards.sql"})
     void update_ValidTaskBoardData_ReturnsStatusCodeOkAndTaskBoardResponse() throws Exception {
-        UUID boardID = UUID.randomUUID();
-        UUID userID = UUID.randomUUID();
-        User user = createDefaultUser(userID);
+        TaskBoard preInsertedTaskBoard = TestApproacherDataUtils.createPreInsertedTaskBoard(EntityNumber.FIRST);
+        UUID taskBoardID = preInsertedTaskBoard.getID();
 
-        TaskBoard updateData = createDefaultTaskBoard();
-        updateData.setTitle("Updated title");
-        updateData.setSorted(true);
+        TaskBoard updatedTaskBoardData = TestApproacherDataUtils.createPreInsertedTaskBoard(EntityNumber.FIRST);
+        updatedTaskBoardData.setTitle("Updated title");
+        updatedTaskBoardData.setSorted(true);
 
-        TaskBoardResponse response = new TaskBoardResponse(updateData);
-        response.setID(boardID);
-        response.setUser(new UserResponse(user));
+        String path = PATH_TO_API + taskBoardID;
 
-        String updateDataJson = objectMapper.writeValueAsString(updateData);
-        String path = PATH_TO_API + boardID;
+        String updateDataJson = objectMapper.writeValueAsString(updatedTaskBoardData);
 
-        when(taskBoardService.update(ArgumentMatchers.any(UUID.class), ArgumentMatchers.any(TaskBoard.class)))
-                .thenReturn(response);
-
-        performSuccessfulRequest(HttpMethod.PATCH, HttpStatus.OK, path, updateDataJson, response);
-
-        verify(taskBoardService, times(1))
-                .update(ArgumentMatchers.any(UUID.class), ArgumentMatchers.any(TaskBoard.class));
+        performSuccessfulRequest(HttpMethod.PATCH, HttpStatus.OK, token, path, updateDataJson, updatedTaskBoardData);
     }
 
     @Test
-    void update_InvalidTaskBoardID_ReturnsStatusCodeBadRequestAndErrorResponse() throws Exception {
-        UUID boardID = UUID.randomUUID();
-        TaskBoard updateData = createDefaultTaskBoard();
+    @Sql(scripts = {"/data/sql/clearData.sql", "/data/sql/insertUsers.sql", "/data/sql/insertBoards.sql"})
+    void update_NonExistentTaskBoardID_ReturnsStatusCodeBadRequestAndErrorResponse() throws Exception {
+        UUID taskBoardID = UUID.randomUUID();
 
-        String updateDataJson = objectMapper.writeValueAsString(updateData);
-        String path = PATH_TO_API + boardID;
+        TaskBoard updatedTaskBoardData = TestApproacherDataUtils.createPreInsertedTaskBoard(EntityNumber.FIRST);
 
-        when(taskBoardService.update(ArgumentMatchers.any(UUID.class), ArgumentMatchers.any(TaskBoard.class)))
-                .thenThrow(new EntityNotFoundException(ExceptionMessage.NOT_FOUND.toString()));
+        String path = PATH_TO_API + taskBoardID;
 
-        performFailedRequest(HttpMethod.PATCH, HttpStatus.BAD_REQUEST, path, updateDataJson, ExceptionMessage.NOT_FOUND);
+        String updateDataJson = objectMapper.writeValueAsString(updatedTaskBoardData);
 
-        verify(taskBoardService, times(1)).
-                update(ArgumentMatchers.any(UUID.class), ArgumentMatchers.any(TaskBoard.class));
+        performFailedRequest(HttpMethod.PATCH, HttpStatus.BAD_REQUEST, token, path, updateDataJson, ExceptionMessage.NOT_FOUND);
     }
 
     @Test
-    void update_IllegalTaskBoardData_ReturnsStatusCodeBadRequestAndErrorResponse() throws Exception {
-        UUID boardID = UUID.randomUUID();
-        TaskBoard updateData = createDefaultTaskBoard();
+    @Sql(scripts = {"/data/sql/clearData.sql", "/data/sql/insertUsers.sql", "/data/sql/insertBoards.sql"})
+    void update_InvalidTaskBoardID_ReturnsStatusCodeForbiddenAndErrorResponse() throws Exception {
+        TaskBoard preInsertedTaskBoard = TestApproacherDataUtils.createPreInsertedTaskBoard(EntityNumber.THIRD);
+        UUID taskBoardID = preInsertedTaskBoard.getID();
 
-        String updateDataJson = objectMapper.writeValueAsString(updateData);
-        String path = PATH_TO_API + boardID;
+        TaskBoard updatedTaskBoardData = TestApproacherDataUtils.createPreInsertedTaskBoard(EntityNumber.FIRST);
 
-        when(taskBoardService.update(ArgumentMatchers.any(UUID.class), ArgumentMatchers.any(TaskBoard.class)))
-                .thenThrow(new IllegalArgumentException(ExceptionMessage.EMPTY.toString()));
+        String path = PATH_TO_API + taskBoardID;
 
-        performFailedRequest(HttpMethod.PATCH, HttpStatus.BAD_REQUEST, path, updateDataJson, ExceptionMessage.EMPTY);
+        String updateDataJson = objectMapper.writeValueAsString(updatedTaskBoardData);
 
-        verify(taskBoardService, times(1))
-                .update(ArgumentMatchers.any(UUID.class), ArgumentMatchers.any(TaskBoard.class));
+        performFailedRequest(HttpMethod.PATCH, HttpStatus.FORBIDDEN, token, path, updateDataJson, ExceptionMessage.ACCESS_DENIED);
     }
 
     @Test
+    @Sql(scripts = {"/data/sql/clearData.sql", "/data/sql/insertUsers.sql", "/data/sql/insertBoards.sql"})
     void delete_ValidTaskBoardID_ReturnsStatusCodeNoContent() throws Exception {
-        UUID boardID = UUID.randomUUID();
+        TaskBoard preInsertedTaskBoard = TestApproacherDataUtils.createPreInsertedTaskBoard(EntityNumber.FIRST);
+        UUID taskBoardID = preInsertedTaskBoard.getID();
 
-        String path = PATH_TO_API + boardID;
+        String path = PATH_TO_API + taskBoardID;
 
-        doNothing().when(taskBoardService).delete(ArgumentMatchers.any(UUID.class));
-
-        performSuccessfulRequest(HttpMethod.DELETE, HttpStatus.NO_CONTENT, path, null, null);
-
-        verify(taskBoardService, times(1)).delete(ArgumentMatchers.any(UUID.class));
+        performSuccessfulRequest(HttpMethod.DELETE, HttpStatus.NO_CONTENT, token, path, null, null);
     }
 
     @Test
-    void delete_IllegalTaskID_ReturnsStatusCodeBadRequestAndErrorResponse() throws Exception {
-        UUID boardID = UUID.randomUUID();
+    @Sql(scripts = {"/data/sql/clearData.sql", "/data/sql/insertUsers.sql", "/data/sql/insertBoards.sql"})
+    void delete_NonExistentTaskBoardID_ReturnsStatusCodeBadRequestAndErrorResponse() throws Exception {
+        UUID taskBoardID = UUID.randomUUID();
 
-        String path = PATH_TO_API + boardID;
+        String path = PATH_TO_API + taskBoardID;
 
-        doThrow(new IllegalArgumentException(ExceptionMessage.NULL.toString()))
-                .when(taskBoardService).delete(ArgumentMatchers.any(UUID.class));
+        performFailedRequest(HttpMethod.DELETE, HttpStatus.BAD_REQUEST, token, path, null, ExceptionMessage.NOT_FOUND);
+    }
 
-        performFailedRequest(HttpMethod.DELETE, HttpStatus.BAD_REQUEST, path, null, ExceptionMessage.NULL);
+    @Test
+    @Sql(scripts = {"/data/sql/clearData.sql", "/data/sql/insertUsers.sql", "/data/sql/insertBoards.sql"})
+    void delete_InvalidTaskBoardID_ReturnsStatusCodeForbiddenAndErrorResponse() throws Exception {
+        TaskBoard preInsertedTaskBoard = TestApproacherDataUtils.createPreInsertedTaskBoard(EntityNumber.THIRD);
+        UUID taskBoardID = preInsertedTaskBoard.getID();
+
+        String path = PATH_TO_API + taskBoardID;
+
+        performFailedRequest(HttpMethod.DELETE, HttpStatus.FORBIDDEN, token, path, null, ExceptionMessage.ACCESS_DENIED);
     }
 }

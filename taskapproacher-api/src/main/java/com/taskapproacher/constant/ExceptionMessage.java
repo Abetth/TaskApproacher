@@ -8,9 +8,10 @@ public enum ExceptionMessage {
     ALREADY_EXISTS("already exists"),
     BEFORE_CURRENT_DATE("can't be less than the current date"),
     CREATION_FAILURE("creation failure"),
-    INVALID_DATA("Data is invalid"),
+    INVALID_DATA_ID("Entity data or ID is invalid"),
     EXPIRED_AUTH("Authentication is expired"),
     INVALID_AUTH_TOKEN("Authentication token is invalid"),
+    INVALID_USER_DATA("Invalid user data"),
     ACCESS_DENIED("Access denied");
 
     private final String message;

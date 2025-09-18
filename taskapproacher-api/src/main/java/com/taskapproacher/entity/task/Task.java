@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.taskapproacher.constant.Priority;
 import com.taskapproacher.entity.task.request.TaskRequest;
 import com.taskapproacher.entity.task.response.TaskResponse;
-import com.taskapproacher.interfaces.TaskMatcher;
+import com.taskapproacher.interfaces.matcher.TaskMatcher;
 
 import jakarta.persistence.*;
 import jakarta.persistence.Table;
@@ -74,33 +74,6 @@ public class Task implements TaskMatcher {
         this.taskBoard = response.getTaskBoard();
     }
 
-    public Task(String title, String description, int priority, LocalDate deadline, boolean finished, TaskBoard list) {
-        this.ID = new UUID(0L, 0L);
-        this.title = title;
-        this.description = description;
-        this.priority = Priority.fromInt(priority);
-        this.deadline = deadline;
-        this.finished = finished;
-        this.taskBoard = list;
-    }
-
-    public Task(String title, String description, Priority priority, LocalDate deadline, boolean finished, TaskBoard list) {
-        this.ID = new UUID(0L, 0L);
-        this.title = title;
-        this.description = description;
-        this.priority = priority;
-        this.deadline = deadline;
-        this.finished = finished;
-        this.taskBoard = list;
-    }
-
-    public void setPriority(int priority) {
-        if (priority <= 0 || priority >= 11) {
-            throw new IllegalArgumentException("Priority out of bounds. Only values from 1 to 10 acceptable");
-        }
-        this.priority = Priority.fromInt(priority);
-    }
-
     public void setPriority(String priority) {
         this.priority = Priority.valueOf(priority);
     }
@@ -133,5 +106,16 @@ public class Task implements TaskMatcher {
     public int hashCode() {
         return 11 + title.hashCode() + description.hashCode() + priority.getPriority()
                 + deadline.hashCode() + taskBoard.hashCode();
+    }
+
+    @Override
+    public String toString() {
+        return  "[   Task: " + ID
+                + ", Title: " + title
+                + ", Description: " + description
+                + ", Finished: " + finished
+                + ", Priority: " + priority
+                + ", Deadline: " + deadline
+                + ", TaskBoard: " + taskBoard + "    ]";
     }
 }

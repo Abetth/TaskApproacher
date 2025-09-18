@@ -1,4 +1,4 @@
-package com.taskapproacher.interfaces;
+package com.taskapproacher.interfaces.matcher;
 import com.taskapproacher.constant.Priority;
 import com.taskapproacher.entity.task.TaskBoard;
 

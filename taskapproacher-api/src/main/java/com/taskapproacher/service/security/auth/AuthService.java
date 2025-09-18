@@ -1,19 +1,15 @@
 package com.taskapproacher.service.security.auth;
 
-import com.taskapproacher.entity.security.AuthRequest;
-import com.taskapproacher.entity.security.AuthResponse;
-import com.taskapproacher.entity.security.RegisterRequest;
+import com.taskapproacher.entity.security.request.AuthRequest;
+import com.taskapproacher.entity.security.response.AuthResponse;
+import com.taskapproacher.entity.security.request.RegisterRequest;
 import com.taskapproacher.entity.user.User;
-import com.taskapproacher.entity.user.UserResponse;
+import com.taskapproacher.entity.user.response.UserResponse;
 import com.taskapproacher.service.user.UserService;
-import com.taskapproacher.constant.ExceptionMessage;
-
-import jakarta.persistence.EntityNotFoundException;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -38,13 +34,10 @@ public class AuthService {
 
         UserResponse userResponse = userService.create(user);
 
-        try {
-            User createdUser = userService.findByUsername(userResponse.getUsername());
-            String jwtToken = jwtService.generateToken(createdUser);
-            return new AuthResponse(jwtToken);
-        } catch (EntityNotFoundException e) {
-            throw new UsernameNotFoundException("User " + ExceptionMessage.CREATION_FAILURE);
-        }
+        User createdUser = new User(userResponse);
+
+        String jwtToken = jwtService.generateToken(createdUser);
+        return new AuthResponse(jwtToken);
     }
 
     public AuthResponse authenticate(AuthRequest request) {

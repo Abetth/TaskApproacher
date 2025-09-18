@@ -3,16 +3,14 @@ package com.taskapproacher.dao.user;
 import com.taskapproacher.entity.task.TaskBoard;
 import com.taskapproacher.entity.task.response.TaskBoardResponse;
 import com.taskapproacher.entity.user.User;
-import com.taskapproacher.hibernate.HibernateSessionFactoryUtil;
-import com.taskapproacher.interfaces.GenericDAO;
-import com.taskapproacher.interfaces.RelatedEntityDAO;
-import jakarta.persistence.PersistenceException;
+import com.taskapproacher.interfaces.dao.GenericDAO;
+import com.taskapproacher.interfaces.dao.RelatedEntityDAO;
 import org.hibernate.HibernateException;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
-import org.hibernate.exception.DataException;
 import org.hibernate.query.Query;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import java.util.*;
@@ -22,8 +20,9 @@ import java.util.stream.Collectors;
 public class UserDAO implements GenericDAO<User>, RelatedEntityDAO<TaskBoardResponse, UUID> {
     SessionFactory sessionFactory;
 
-    public UserDAO() {
-        this.sessionFactory = HibernateSessionFactoryUtil.getSessionFactory();
+    @Autowired
+    public UserDAO(SessionFactory sessionFactory) {
+        this.sessionFactory = sessionFactory;
     }
 
     public Optional<User> findByUsername(String username) {
@@ -51,7 +50,7 @@ public class UserDAO implements GenericDAO<User>, RelatedEntityDAO<TaskBoardResp
             Boolean isExists = false;
             transaction = session.beginTransaction();
             Query<Boolean> query = session.createQuery(
-                    "SELECT CASE WHEN EXISTS (FROM User WHERE username = :username AND email = :email) THEN TRUE ELSE FALSE END"
+                    "SELECT CASE WHEN EXISTS (FROM User WHERE username = :username OR email = :email) THEN TRUE ELSE FALSE END"
             , Boolean.class);
             query.setParameter("username", user.getUsername());
             query.setParameter("email", user.getEmail());
@@ -120,7 +119,7 @@ public class UserDAO implements GenericDAO<User>, RelatedEntityDAO<TaskBoardResp
                 if (transaction != null && transaction.isActive()) {
                     transaction.rollback();
                 }
-                throw new HibernateException("Wrong data format");
+                throw new HibernateException("Wrong data");
             }
         } catch (Exception exception) {
             throw new HibernateException("Failed to save user: " + exception.getMessage());

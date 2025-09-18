@@ -7,12 +7,12 @@ import com.taskapproacher.entity.task.response.TaskBoardResponse;
 import com.taskapproacher.entity.task.response.TaskResponse;
 import com.taskapproacher.entity.user.User;
 import com.taskapproacher.dao.task.TaskBoardDAO;
-import com.taskapproacher.interfaces.TaskBoardMatcher;
+import com.taskapproacher.interfaces.matcher.TaskBoardMatcher;
 import com.taskapproacher.service.user.UserService;
 import com.taskapproacher.constant.ExceptionMessage;
 import com.taskapproacher.constant.Role;
 
-import com.taskapproacher.test.utils.ApproacherTestUtils;
+import com.taskapproacher.test.utils.TestApproacherUtils;
 
 import java.time.LocalDate;
 import java.util.UUID;
@@ -96,11 +96,11 @@ public class TaskBoardServiceTest {
 
     private void assertTaskBoardEquals(TaskBoardMatcher expected, TaskBoardMatcher actual) {
         assertAll(() -> {
-            ApproacherTestUtils.assertEqualsIfNotNull(expected.getID(), actual.getID());
-            ApproacherTestUtils.assertEqualsIfNotNull(expected.getTitle(), actual.getTitle());
-            ApproacherTestUtils.assertEqualsIfNotNull(expected.isSorted(), actual.isSorted());
-            ApproacherTestUtils.assertEqualsIfNotNull(expected.getTasks(), actual.getTasks());
-            ApproacherTestUtils.assertEqualsIfNotNull(expected.getUser(), actual.getUser());
+            TestApproacherUtils.assertEqualsIfNotNull(expected.getID(), actual.getID());
+            TestApproacherUtils.assertEqualsIfNotNull(expected.getTitle(), actual.getTitle());
+            TestApproacherUtils.assertEqualsIfNotNull(expected.isSorted(), actual.isSorted());
+            TestApproacherUtils.assertEqualsIfNotNull(expected.getTasks(), actual.getTasks());
+            TestApproacherUtils.assertEqualsIfNotNull(expected.getUser(), actual.getUser());
         });
     }
 
