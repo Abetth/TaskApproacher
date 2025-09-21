@@ -1,5 +1,7 @@
 package com.taskapproacher.constant;
 
+import com.taskapproacher.config.password.PasswordConstants;
+
 public enum ExceptionMessage {
     NOT_FOUND("not found"),
     NULL("can't be null"),
@@ -12,7 +14,9 @@ public enum ExceptionMessage {
     EXPIRED_AUTH("Authentication is expired"),
     INVALID_AUTH_TOKEN("Authentication token is invalid"),
     INVALID_USER_DATA("Invalid user data"),
-    ACCESS_DENIED("Access denied");
+    ACCESS_DENIED("Access denied"),
+    INVALID_PASSWORD_LENGTH("Password is too short, minimum length is " + PasswordConstants.MIN_LENGTH),
+    INVALID_USERNAME_LENGTH("Username should be from 3 to 32 characters long");
 
     private final String message;
 

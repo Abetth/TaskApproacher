@@ -83,12 +83,22 @@ public class UserService {
     public UserResponse update(UUID userID, User user) throws IllegalArgumentException, EntityNotFoundException {
         User updatedUser = findByID(userID);
 
-        if (user.getUsername() != null && !user.getUsername().isEmpty()) {
-            updatedUser.setUsername(user.getUsername());
+        String newUsername = user.getUsername();
+        if (newUsername != null && !newUsername.isEmpty() && !newUsername.equals(updatedUser.getUsername())) {
+
+            if (userDAO.isUsernameAlreadyTaken(newUsername)) {
+                throw new EntityAlreadyExistsException("User with this username " + ExceptionMessage.ALREADY_EXISTS);
+            }
+            updatedUser.setUsername(newUsername);
         }
 
-        if (user.getEmail() != null && !user.getEmail().isEmpty()) {
-            updatedUser.setEmail(user.getEmail());
+        String newEmail = user.getEmail();
+        if (newEmail != null && !newEmail.isEmpty() && !newEmail.equals(updatedUser.getEmail())) {
+
+            if (userDAO.isEmailAlreadyTaken(newEmail)) {
+                throw new EntityAlreadyExistsException("User with this email " + ExceptionMessage.ALREADY_EXISTS);
+            }
+            updatedUser.setEmail(newEmail);
         }
 
         if (user.getPassword() != null && !user.getPassword().isEmpty()) {

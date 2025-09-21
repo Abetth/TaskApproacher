@@ -14,6 +14,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+
 import org.hibernate.annotations.DynamicUpdate;
 
 import java.time.LocalDate;
@@ -32,11 +33,11 @@ public class Task implements TaskMatcher {
     private UUID ID;
 
     @Setter
-    @Column(name = "title", nullable = false)
+    @Column(name = "title", nullable = false, length = 510)
     private String title;
 
     @Setter
-    @Column(name = "description")
+    @Column(name = "description", length = 2040)
     private String description;
 
     @Column(name = "priority", nullable = false)

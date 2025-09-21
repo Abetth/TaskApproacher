@@ -5,6 +5,8 @@ import com.taskapproacher.entity.task.TaskBoard;
 import com.taskapproacher.constant.Role;
 import com.taskapproacher.entity.user.response.UserResponse;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -31,6 +33,7 @@ public class User implements UserDetails {
     private UUID ID;
 
     @Column(nullable = false, name = "username")
+    @Size(min = 3, max = 32)
     private String username;
 
     @Column(nullable = false, name = "user_password")

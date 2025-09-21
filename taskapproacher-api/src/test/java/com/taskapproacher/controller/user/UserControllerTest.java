@@ -268,6 +268,86 @@ public class UserControllerTest {
 
     @Test
     @Sql(scripts = {"/data/sql/clearData.sql", "/data/sql/insertUsers.sql"})
+    void update_AlreadyTakenUsername_ReturnsStatusCodeBadRequestAndErrorResponse() throws Exception {
+        User firstPreInsertedUser = TestApproacherDataUtils.createPreInsertedUser(EntityNumber.FIRST);
+        UUID userID = firstPreInsertedUser.getID();
+
+        User secondPreInsertedUser = TestApproacherDataUtils.createPreInsertedUser(EntityNumber.SECOND);
+        String alreadyTakenUsername = secondPreInsertedUser.getUsername();
+
+        String path = PATH_TO_API + userID;
+
+        User updateUserData = TestApproacherDataUtils.createPreInsertedUser(EntityNumber.FIRST);
+        updateUserData.setUsername(alreadyTakenUsername);
+
+        Map<String, Object> updateMap = buildUpdatePayload(updateUserData);
+
+        String updateDataJson = objectMapper.writeValueAsString(updateMap);
+
+        performFailedRequest(HttpMethod.PATCH, HttpStatus.BAD_REQUEST, token, path, updateDataJson, ExceptionMessage.ALREADY_EXISTS);
+    }
+
+    @Test
+    @Sql(scripts = {"/data/sql/clearData.sql", "/data/sql/insertUsers.sql"})
+    void update_AlreadyTakenEmail_ReturnsStatusCodeBadRequestAndErrorResponse() throws Exception {
+        User firstPreInsertedUser = TestApproacherDataUtils.createPreInsertedUser(EntityNumber.FIRST);
+        UUID userID = firstPreInsertedUser.getID();
+
+        User secondPreInsertedUser = TestApproacherDataUtils.createPreInsertedUser(EntityNumber.SECOND);
+        String alreadyTakenEmail = secondPreInsertedUser.getEmail();
+
+        String path = PATH_TO_API + userID;
+
+        User updateUserData = TestApproacherDataUtils.createPreInsertedUser(EntityNumber.FIRST);
+        updateUserData.setEmail(alreadyTakenEmail);
+
+        Map<String, Object> updateMap = buildUpdatePayload(updateUserData);
+
+        String updateDataJson = objectMapper.writeValueAsString(updateMap);
+
+        performFailedRequest(HttpMethod.PATCH, HttpStatus.BAD_REQUEST, token, path, updateDataJson, ExceptionMessage.ALREADY_EXISTS);
+    }
+
+    @Test
+    @Sql(scripts = {"/data/sql/clearData.sql", "/data/sql/insertUsers.sql"})
+    void update_InvalidUsername_ReturnsStatusCodeBadRequestAndErrorResponse() throws Exception {
+        User firstPreInsertedUser = TestApproacherDataUtils.createPreInsertedUser(EntityNumber.FIRST);
+        UUID userID = firstPreInsertedUser.getID();
+
+        String path = PATH_TO_API + userID;
+
+        User updateUserData = TestApproacherDataUtils.createPreInsertedUser(EntityNumber.FIRST);
+        updateUserData.setUsername("U");
+
+        Map<String, Object> updateMap = buildUpdatePayload(updateUserData);
+
+        String updateDataJson = objectMapper.writeValueAsString(updateMap);
+
+        performFailedRequest(HttpMethod.PATCH, HttpStatus.BAD_REQUEST, token, path, updateDataJson, ExceptionMessage.INVALID_USERNAME_LENGTH);
+    }
+
+    @Test
+    @Sql(scripts = {"/data/sql/clearData.sql", "/data/sql/insertUsers.sql"})
+    void update_InvalidPassword_ReturnsStatusCodeBadRequestAndErrorResponse() throws Exception {
+        User firstPreInsertedUser = TestApproacherDataUtils.createPreInsertedUser(EntityNumber.FIRST);
+        UUID userID = firstPreInsertedUser.getID();
+
+        String path = PATH_TO_API + userID;
+
+        User updateUserData = TestApproacherDataUtils.createPreInsertedUser(EntityNumber.FIRST);
+        updateUserData.setUsername("Updated Data 1");
+        updateUserData.setEmail("upml@m.m");
+        updateUserData.setPassword("11");
+
+        Map<String, Object> updateMap = buildUpdatePayload(updateUserData);
+
+        String updateDataJson = objectMapper.writeValueAsString(updateMap);
+
+        performFailedRequest(HttpMethod.PATCH, HttpStatus.BAD_REQUEST, token, path, updateDataJson, ExceptionMessage.INVALID_PASSWORD_LENGTH);
+    }
+
+    @Test
+    @Sql(scripts = {"/data/sql/clearData.sql", "/data/sql/insertUsers.sql"})
     void delete_ValidUserID_ReturnsStatusCodeNoContent() throws Exception {
         User preInsertedUser = TestApproacherDataUtils.createPreInsertedUser(EntityNumber.FIRST);
         UUID userID = preInsertedUser.getID();

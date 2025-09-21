@@ -136,7 +136,7 @@ public class AuthControllerTest {
         RegisterRequest request = new RegisterRequest();
         request.setUsername(username);
         request.setEmail("mail@mail.mail");
-        request.setPassword("123pass");
+        request.setPassword("123pass123");
 
         String path = PATH_TO_API + "register";
 
@@ -167,7 +167,7 @@ public class AuthControllerTest {
         RegisterRequest request = new RegisterRequest();
         request.setUsername(username);
         request.setEmail("mail@mail.mail");
-        request.setPassword("123pass");
+        request.setPassword("123pass123");
 
         String path = PATH_TO_API + "register";
 
@@ -184,7 +184,7 @@ public class AuthControllerTest {
         RegisterRequest request = new RegisterRequest();
         request.setUsername(username);
         request.setEmail("mail@mail.mail");
-        request.setPassword("123pass");
+        request.setPassword("123pass123");
 
         String path = PATH_TO_API + "register";
 
@@ -202,12 +202,46 @@ public class AuthControllerTest {
         RegisterRequest request = new RegisterRequest();
         request.setUsername(username);
         request.setEmail(email);
-        request.setPassword("123pass");
+        request.setPassword("123pass123");
 
         String path = PATH_TO_API + "register";
 
         String requestJson = objectMapper.writeValueAsString(request);
 
         performFailedRequest(HttpMethod.POST, HttpStatus.BAD_REQUEST, path, requestJson, ExceptionMessage.ALREADY_EXISTS);
+    }
+
+    @Test
+    @Sql(scripts = {"/data/sql/clearData.sql", "/data/sql/insertUsers.sql"})
+    void register_InvalidPassword_ReturnsStatusCodeBadRequestAndErrorResponse() throws Exception {
+        String username = "Test User";
+
+        RegisterRequest request = new RegisterRequest();
+        request.setUsername(username);
+        request.setEmail("mail@mail.mail");
+        request.setPassword("111");
+
+        String path = PATH_TO_API + "register";
+
+        String requestJson = objectMapper.writeValueAsString(request);
+
+        performFailedRequest(HttpMethod.POST, HttpStatus.BAD_REQUEST, path, requestJson, ExceptionMessage.INVALID_PASSWORD_LENGTH);
+    }
+
+    @Test
+    @Sql(scripts = {"/data/sql/clearData.sql", "/data/sql/insertUsers.sql"})
+    void register_InvalidUsername_ReturnsStatusCodeBadRequestAndErrorResponse() throws Exception {
+        String username = "T";
+
+        RegisterRequest request = new RegisterRequest();
+        request.setUsername(username);
+        request.setEmail("ma@mail.mail");
+        request.setPassword("111222333");
+
+        String path = PATH_TO_API + "register";
+
+        String requestJson = objectMapper.writeValueAsString(request);
+
+        performFailedRequest(HttpMethod.POST, HttpStatus.BAD_REQUEST, path, requestJson, ExceptionMessage.INVALID_USERNAME_LENGTH);
     }
 }

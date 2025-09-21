@@ -1,10 +1,12 @@
 package com.taskapproacher.dao.user;
 
+import com.taskapproacher.constant.ExceptionMessage;
 import com.taskapproacher.entity.task.TaskBoard;
 import com.taskapproacher.entity.task.response.TaskBoardResponse;
 import com.taskapproacher.entity.user.User;
 import com.taskapproacher.interfaces.dao.GenericDAO;
 import com.taskapproacher.interfaces.dao.RelatedEntityDAO;
+import jakarta.validation.ConstraintViolationException;
 import org.hibernate.HibernateException;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
@@ -50,8 +52,8 @@ public class UserDAO implements GenericDAO<User>, RelatedEntityDAO<TaskBoardResp
             Boolean isExists = false;
             transaction = session.beginTransaction();
             Query<Boolean> query = session.createQuery(
-                    "SELECT CASE WHEN EXISTS (FROM User WHERE username = :username OR email = :email) THEN TRUE ELSE FALSE END"
-            , Boolean.class);
+                    "SELECT CASE WHEN EXISTS (FROM User WHERE username = :username OR email = :email) THEN TRUE ELSE FALSE END",
+                    Boolean.class);
             query.setParameter("username", user.getUsername());
             query.setParameter("email", user.getEmail());
             isExists = query.getSingleResult();
@@ -63,6 +65,50 @@ public class UserDAO implements GenericDAO<User>, RelatedEntityDAO<TaskBoardResp
                 transaction.rollback();
             }
             throw new HibernateException("Failed to find user by name and mail");
+        }
+    }
+
+    public boolean isUsernameAlreadyTaken(String username) {
+        Transaction transaction = null;
+
+        try (Session session = sessionFactory.openSession()) {
+            Boolean isTaken = false;
+            transaction = session.beginTransaction();
+            Query<Boolean> query = session.
+                    createQuery("SELECT CASE WHEN EXISTS (FROM User WHERE username = :username)  THEN TRUE ELSE FALSE END",
+                            Boolean.class);
+            query.setParameter("username", username);
+            isTaken = query.getSingleResult();
+            transaction.commit();
+
+            return isTaken;
+        } catch (Exception exception) {
+            if (transaction != null && transaction.isActive()) {
+                transaction.rollback();
+            }
+            throw new HibernateException("Failed to search for requested data");
+        }
+    }
+
+    public boolean isEmailAlreadyTaken(String email) {
+        Transaction transaction = null;
+
+        try (Session session = sessionFactory.openSession()) {
+            Boolean isTaken = false;
+            transaction = session.beginTransaction();
+            Query<Boolean> query = session.
+                    createQuery("SELECT CASE WHEN EXISTS (FROM User WHERE email = :email)  THEN TRUE ELSE FALSE END",
+                            Boolean.class);
+            query.setParameter("email", email);
+            isTaken = query.getSingleResult();
+            transaction.commit();
+
+            return isTaken;
+        } catch (Exception exception) {
+            if (transaction != null && transaction.isActive()) {
+                transaction.rollback();
+            }
+            throw new HibernateException("Failed to search for requested data");
         }
     }
 
@@ -119,9 +165,17 @@ public class UserDAO implements GenericDAO<User>, RelatedEntityDAO<TaskBoardResp
                 if (transaction != null && transaction.isActive()) {
                     transaction.rollback();
                 }
+                if (exception instanceof ConstraintViolationException) {
+                    throw new ConstraintViolationException(null, null);
+                }
+
                 throw new HibernateException("Wrong data");
             }
         } catch (Exception exception) {
+            if (exception instanceof ConstraintViolationException) {
+                throw new ConstraintViolationException(ExceptionMessage.INVALID_USERNAME_LENGTH.toString(),
+                        ((ConstraintViolationException) exception).getConstraintViolations());
+            }
             throw new HibernateException("Failed to save user: " + exception.getMessage());
         }
         return user;
@@ -141,10 +195,18 @@ public class UserDAO implements GenericDAO<User>, RelatedEntityDAO<TaskBoardResp
                 if (transaction != null && transaction.isActive()) {
                     transaction.rollback();
                 }
+                if (exception instanceof ConstraintViolationException) {
+                    throw new ConstraintViolationException(null, null);
+                }
                 throw new HibernateException("Failed to save changes");
             }
         } catch (Exception exception) {
-            throw new HibernateException("Failed to update entry" + exception.getMessage());
+            if (exception instanceof ConstraintViolationException) {
+                throw new ConstraintViolationException(ExceptionMessage.INVALID_USERNAME_LENGTH.toString(),
+                        ((ConstraintViolationException) exception).getConstraintViolations());
+            }
+
+            throw new HibernateException("Failed to update user: " + exception.getMessage());
         }
     }
 

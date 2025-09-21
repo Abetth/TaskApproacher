@@ -316,7 +316,7 @@ public class TaskControllerTest {
         UUID taskID = preInsertedTask.getID();
 
         TaskRequest request = createDefaultTaskRequest();
-        request.setDeadline(LocalDate.now().minusDays(1));
+        request.setDeadline(LocalDate.now().minusDays(2));
 
         String path = PATH_TO_API + taskID;
 

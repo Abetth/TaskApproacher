@@ -404,7 +404,7 @@ public class UserServiceTest {
     }
 
     @Test
-    void create_ThisUserAlreadyExists_ThrowsEntityAlreadyExistsException() {
+    void create_UserAlreadyExists_ThrowsEntityAlreadyExistsException() {
         User user = createDefaultUser(UUID.randomUUID());
 
         when(userDAO.isUserExists(ArgumentMatchers.any(User.class))).thenReturn(true);
@@ -440,6 +440,8 @@ public class UserServiceTest {
         ArgumentCaptor<User> captor = ArgumentCaptor.forClass(User.class);
 
         when(userDAO.findByID(userID)).thenReturn(Optional.of(copyOfExistingUser));
+        when(userDAO.isUsernameAlreadyTaken(ArgumentMatchers.any(String.class))).thenReturn(false);
+        when(userDAO.isEmailAlreadyTaken(ArgumentMatchers.any(String.class))).thenReturn(false);
         when(passwordEncoder.encode(updateData.getPassword())).thenReturn(newEncodedPassword);
         when(userDAO.update(captor.capture())).thenAnswer(invocation -> invocation.getArgument(0));
 
@@ -458,6 +460,9 @@ public class UserServiceTest {
         assertEquals(updateData.getEmail(), response.getEmail());
 
         verify(userDAO, times(1)).findByID(userID);
+        verify(userDAO, times(1)).isUsernameAlreadyTaken(ArgumentMatchers.any(String.class));
+        verify(userDAO, times(1)).isEmailAlreadyTaken(ArgumentMatchers.any(String.class));
+        verify(passwordEncoder, times(1)).encode(ArgumentMatchers.any(String.class));
         verify(userDAO, times(1)).update(captor.capture());
     }
 
@@ -492,6 +497,9 @@ public class UserServiceTest {
         assertNotEquals(updateData.getEmail(), response.getEmail());
 
         verify(userDAO, times(1)).findByID(userID);
+        verify(passwordEncoder, times(0)).encode(ArgumentMatchers.any(String.class));
+        verify(userDAO, times(0)).isUsernameAlreadyTaken(ArgumentMatchers.any(String.class));
+        verify(userDAO, times(0)).isEmailAlreadyTaken(ArgumentMatchers.any(String.class));
         verify(userDAO, times(1)).update(captor.capture());
     }
 
@@ -529,6 +537,48 @@ public class UserServiceTest {
         assertNotEquals(updateData.getEmail(), response.getEmail());
 
         verify(userDAO, times(1)).findByID(userID);
+        verify(passwordEncoder, times(0)).encode(ArgumentMatchers.any(String.class));
+        verify(userDAO, times(0)).isUsernameAlreadyTaken(ArgumentMatchers.any(String.class));
+        verify(userDAO, times(0)).isEmailAlreadyTaken(ArgumentMatchers.any(String.class));
+        verify(userDAO, times(1)).update(captor.capture());
+    }
+
+    @Test
+    void update_UserFieldsAreTheSame_ReturnsUserResponseUserDataDidNotChanged() {
+        UUID userID = UUID.randomUUID();
+
+        User existingUser = createDefaultUser(userID);
+
+        User copyOfExistingUser = new User();
+        BeanUtils.copyProperties(existingUser, copyOfExistingUser);
+
+        User updateData = new User();
+        updateData.setUsername(existingUser.getUsername());
+        updateData.setEmail(existingUser.getEmail());
+
+        ArgumentCaptor<User> captor = ArgumentCaptor.forClass(User.class);
+
+        when(userDAO.findByID(userID)).thenReturn(Optional.of(copyOfExistingUser));
+        when(userDAO.update(captor.capture())).thenAnswer(invocation -> invocation.getArgument(0));
+
+        UserResponse response = userService.update(userID, updateData);
+        User capturedUser = captor.getValue();
+
+        assertEquals(existingUser.getID(), capturedUser.getID());
+        assertEquals(existingUser.getUsername(), capturedUser.getUsername());
+        assertEquals(existingUser.getPassword(), capturedUser.getPassword());
+        assertEquals(existingUser.getEmail(), capturedUser.getEmail());
+        assertEquals(existingUser.getRole(), capturedUser.getRole());
+        assertEquals(existingUser.getTaskBoards(), capturedUser.getTaskBoards());
+
+        assertNotNull(response);
+        assertEquals(updateData.getUsername(), response.getUsername());
+        assertEquals(updateData.getEmail(), response.getEmail());
+
+        verify(userDAO, times(1)).findByID(userID);
+        verify(passwordEncoder, times(0)).encode(ArgumentMatchers.any(String.class));
+        verify(userDAO, times(0)).isUsernameAlreadyTaken(ArgumentMatchers.any(String.class));
+        verify(userDAO, times(0)).isEmailAlreadyTaken(ArgumentMatchers.any(String.class));
         verify(userDAO, times(1)).update(captor.capture());
     }
 
@@ -548,6 +598,63 @@ public class UserServiceTest {
         assertTrue(actualMessage.contains(expectedMessage));
 
         verify(userDAO, times(1)).findByID(userID);
+        verify(passwordEncoder, times(0)).encode(ArgumentMatchers.any(String.class));
+        verify(userDAO, times(0)).isUsernameAlreadyTaken(ArgumentMatchers.any(String.class));
+        verify(userDAO, times(0)).isEmailAlreadyTaken(ArgumentMatchers.any(String.class));
+        verify(userDAO, times(0)).update(ArgumentMatchers.any(User.class));
+    }
+
+    @Test
+    void update_AlreadyTakenUsername_ThrowsEntityAlreadyExistsException() {
+        UUID userID = UUID.randomUUID();
+        User user = createDefaultUser(userID);
+
+        User updateData = new User();
+        updateData.setUsername("ABUsernameBA");
+
+        when(userDAO.findByID(userID)).thenReturn(Optional.of(user));
+        when(userDAO.isUsernameAlreadyTaken(ArgumentMatchers.any(String.class))).thenReturn(true);
+
+        EntityAlreadyExistsException exception = assertThrows(EntityAlreadyExistsException.class, () -> {
+            userService.update(userID, updateData);
+        });
+
+        String expectedMessage = "username " + ExceptionMessage.ALREADY_EXISTS;
+        String actualMessage = exception.getMessage();
+
+        assertTrue(actualMessage.contains(expectedMessage));
+
+        verify(userDAO, times(1)).findByID(userID);
+        verify(userDAO, times(1)).isUsernameAlreadyTaken(ArgumentMatchers.any(String.class));
+        verify(passwordEncoder, times(0)).encode(ArgumentMatchers.any(String.class));
+        verify(userDAO, times(0)).isEmailAlreadyTaken(ArgumentMatchers.any(String.class));
+        verify(userDAO, times(0)).update(ArgumentMatchers.any(User.class));
+    }
+
+    @Test
+    void update_AlreadyTakenEmail_ThrowsEntityAlreadyExistsException() {
+        UUID userID = UUID.randomUUID();
+        User user = createDefaultUser(userID);
+
+        User updateData = new User();
+        updateData.setEmail("AB@mail.mail");
+
+        when(userDAO.findByID(userID)).thenReturn(Optional.of(user));
+        when(userDAO.isEmailAlreadyTaken(ArgumentMatchers.any(String.class))).thenReturn(true);
+
+        EntityAlreadyExistsException exception = assertThrows(EntityAlreadyExistsException.class, () -> {
+            userService.update(userID, updateData);
+        });
+
+        String expectedMessage = "email " + ExceptionMessage.ALREADY_EXISTS;
+        String actualMessage = exception.getMessage();
+
+        assertTrue(actualMessage.contains(expectedMessage));
+
+        verify(userDAO, times(1)).findByID(userID);
+        verify(userDAO, times(0)).isUsernameAlreadyTaken(ArgumentMatchers.any(String.class));
+        verify(passwordEncoder, times(0)).encode(ArgumentMatchers.any(String.class));
+        verify(userDAO, times(1)).isEmailAlreadyTaken(ArgumentMatchers.any(String.class));
         verify(userDAO, times(0)).update(ArgumentMatchers.any(User.class));
     }
 

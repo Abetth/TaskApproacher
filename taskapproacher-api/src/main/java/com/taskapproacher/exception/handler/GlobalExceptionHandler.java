@@ -4,6 +4,7 @@ import com.taskapproacher.constant.ExceptionMessage;
 import com.taskapproacher.exception.custom.EntityAlreadyExistsException;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.MalformedJwtException;
+import jakarta.validation.ConstraintViolationException;
 import org.hibernate.HibernateException;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.ErrorResponse;
@@ -54,5 +55,10 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(MalformedJwtException.class)
     public ErrorResponse handleMalformedJwtException(MalformedJwtException exception) {
         return ErrorResponse.create(exception, HttpStatus.FORBIDDEN, ExceptionMessage.INVALID_AUTH_TOKEN.toString());
+    }
+
+    @ExceptionHandler(ConstraintViolationException.class)
+    public ErrorResponse handleConstraintViolationException(ConstraintViolationException exception) {
+        return ErrorResponse.create(exception, HttpStatus.BAD_REQUEST, exception.getMessage());
     }
 }
