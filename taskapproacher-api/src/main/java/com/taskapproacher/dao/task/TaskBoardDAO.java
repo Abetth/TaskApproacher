@@ -3,14 +3,13 @@ package com.taskapproacher.dao.task;
 import com.taskapproacher.entity.task.Task;
 import com.taskapproacher.entity.task.TaskBoard;
 import com.taskapproacher.interfaces.dao.GenericDAO;
-
 import com.taskapproacher.interfaces.dao.RelatedEntityDAO;
 
 import org.hibernate.HibernateException;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
-
 import org.hibernate.Transaction;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
@@ -29,102 +28,116 @@ public class TaskBoardDAO implements GenericDAO<TaskBoard>, RelatedEntityDAO<Tas
     }
 
     @Override
-    public Optional<TaskBoard> findByID(UUID uuid) {
+    public Optional<TaskBoard> findByID(UUID taskBoardID) {
         Transaction transaction = null;
-        TaskBoard taskBoard = null;
+        TaskBoard taskBoard;
 
         try (Session session = sessionFactory.openSession()) {
             transaction = session.beginTransaction();
-            taskBoard = session.get(TaskBoard.class, uuid);
+            taskBoard = session.get(TaskBoard.class, taskBoardID);
             transaction.commit();
         } catch (Exception exception) {
             if (transaction != null && transaction.isActive()) {
                 transaction.rollback();
             }
-            throw new HibernateException("Failed to find task board by id");
+
+            throw new HibernateException("[DB] Failed to find task board by id: " + taskBoardID, exception);
         }
 
         return Optional.ofNullable(taskBoard);
     }
 
     @Override
-    public List<Task> findRelatedEntitiesByID(UUID uuid) {
+    public List<Task> findRelatedEntitiesByID(UUID taskBoardID) {
         Transaction transaction = null;
         List<Task> tasks;
 
         try (Session session = sessionFactory.openSession()) {
             transaction = session.beginTransaction();
-            tasks = session.createQuery("FROM Task WHERE taskBoard.ID = :boardID", Task.class)
-                    .setParameter("boardID", uuid)
-                    .getResultList();
+            tasks = session.createQuery(
+                                   """
+                                           FROM Task\s
+                                            WHERE taskBoard.ID = :boardID
+                                           """,
+                                   Task.class)
+                           .setParameter("boardID", taskBoardID)
+                           .getResultList();
             transaction.commit();
         } catch (Exception exception) {
             if (transaction != null && transaction.isActive()) {
                 transaction.rollback();
             }
-            throw new HibernateException("Failed to get tasks");
+            throw new HibernateException("[DB] Failed to get tasks for board: " + taskBoardID, exception);
         }
         return tasks;
     }
 
     @Override
-    public TaskBoard save(TaskBoard entity) {
-        Transaction transaction = null;
+    public TaskBoard save(TaskBoard taskBoard) {
+        Transaction transaction;
 
         try (Session session = sessionFactory.openSession()) {
             transaction = session.beginTransaction();
             try {
-                session.persist(entity);
+                session.persist(taskBoard);
                 transaction.commit();
             } catch (Exception exception) {
                 if (transaction != null && transaction.isActive()) {
                     transaction.rollback();
                 }
-                throw new HibernateException("Wrong data");
+
+                throw exception;
             }
         } catch (Exception exception) {
-            throw new HibernateException("Failed to save entry: " + exception.getMessage());
+            throw new HibernateException("[DB] Failed to save task board: " + taskBoard, exception);
         }
-        return entity;
+        return taskBoard;
     }
 
     @Override
-    public TaskBoard update(TaskBoard entity) {
-        Transaction transaction = null;
+    public TaskBoard update(TaskBoard taskBoard) {
+        Transaction transaction;
 
         try (Session session = sessionFactory.openSession()) {
             transaction = session.beginTransaction();
 
             try {
-                TaskBoard merged = session.merge(entity);
+                TaskBoard merged = session.merge(taskBoard);
                 transaction.commit();
                 return merged;
             } catch (Exception exception) {
                 if (transaction != null && transaction.isActive()) {
                     transaction.rollback();
                 }
-                throw new HibernateException("Failed to save changes");
+
+                throw exception;
             }
         } catch (Exception exception) {
-            throw new HibernateException("Failed to update entry" + exception.getMessage());
+            throw new HibernateException("[DB] Failed to update task board: " + taskBoard, exception);
         }
     }
 
     @Override
-    public void delete(UUID uuid) {
+    public int delete(UUID taskBoardID) {
         Transaction transaction = null;
 
         try (Session session = sessionFactory.openSession()) {
             transaction = session.beginTransaction();
-            session.createQuery("DELETE FROM TaskBoard WHERE ID = :boardID")
-                    .setParameter("boardID", uuid)
-                    .executeUpdate();
+            int rowsAffected = session.createQuery(
+                                              """
+                                                      DELETE FROM TaskBoard\s
+                                                       WHERE ID = :boardID
+                                                      """
+                                      )
+                                      .setParameter("boardID", taskBoardID)
+                                      .executeUpdate();
             transaction.commit();
+            return rowsAffected;
         } catch (Exception exception) {
             if (transaction != null && transaction.isActive()) {
                 transaction.rollback();
             }
-            throw new HibernateException("Failed to delete entry");
+            throw new HibernateException("[DB] Failed to delete task board: " + taskBoardID, exception);
         }
     }
 }

@@ -1,17 +1,21 @@
 package com.taskapproacher.entity.user;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
-import com.taskapproacher.entity.task.TaskBoard;
+
 import com.taskapproacher.constant.Role;
+import com.taskapproacher.entity.task.TaskBoard;
 import com.taskapproacher.entity.user.response.UserResponse;
+
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+
 import lombok.AllArgsConstructor;
-import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Getter;
 import lombok.Setter;
+
 import org.hibernate.annotations.DynamicUpdate;
+
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -25,8 +29,8 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "users")
 @DynamicUpdate
+@Table(name = "users")
 public class User implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)

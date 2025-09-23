@@ -1,37 +1,36 @@
 package com.taskapproacher.service.task;
 
-import com.taskapproacher.entity.task.Task;
-import com.taskapproacher.entity.task.TaskBoard;
-import com.taskapproacher.dao.task.TaskDAO;
-import com.taskapproacher.entity.task.response.TaskResponse;
-import com.taskapproacher.entity.task.request.TaskRequest;
-import com.taskapproacher.interfaces.matcher.TaskMatcher;
-
-import com.taskapproacher.test.utils.TestApproacherUtils;
-
 import com.taskapproacher.constant.ExceptionMessage;
 import com.taskapproacher.constant.Priority;
+import com.taskapproacher.dao.task.TaskDAO;
+import com.taskapproacher.entity.task.Task;
+import com.taskapproacher.entity.task.TaskBoard;
+import com.taskapproacher.entity.task.request.TaskRequest;
+import com.taskapproacher.entity.task.response.TaskResponse;
+import com.taskapproacher.interfaces.matcher.TaskMatcher;
+import com.taskapproacher.test.utils.TestApproacherUtils;
 
 import jakarta.persistence.EntityNotFoundException;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
-import static org.mockito.Mockito.*;
-
+import org.mockito.ArgumentCaptor;
 import org.mockito.ArgumentMatchers;
-import org.mockito.Mock;
 import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import org.mockito.ArgumentCaptor;
 import org.springframework.beans.BeanUtils;
 
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
-import java.util.*;
+import java.util.Optional;
+import java.util.TimeZone;
+import java.util.UUID;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 //Tests naming convention: method_scenario_result
 @ExtendWith(MockitoExtension.class)
@@ -509,7 +508,7 @@ public class TaskServiceTest<T> {
     void delete_ValidTaskID_TaskDeletedSuccessfully() {
         UUID taskID = UUID.randomUUID();
 
-        doNothing().when(taskDAO).delete(taskID);
+        when(taskDAO.delete(taskID)).thenReturn(1);
 
         taskService.delete(taskID);
 
@@ -530,5 +529,23 @@ public class TaskServiceTest<T> {
         assertTrue(actualMessage.contains(expectedMessage));
 
         verify(taskDAO, times(0)).delete(taskID);
+    }
+
+    @Test
+    void delete_NoTasksDeleted_ThrowsEntityNotFoundException() {
+        UUID taskID = UUID.randomUUID();
+
+        when(taskDAO.delete(taskID)).thenReturn(0);
+
+        EntityNotFoundException exception = assertThrows(EntityNotFoundException.class, () -> {
+            taskService.delete(taskID);
+        });
+
+        String expectedMessage = ExceptionMessage.NOT_FOUND.toString();
+        String actualMessage = exception.getMessage();
+
+        assertTrue(actualMessage.contains(expectedMessage));
+
+        verify(taskDAO, times(1)).delete(taskID);
     }
 }

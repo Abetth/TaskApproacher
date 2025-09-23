@@ -2,9 +2,10 @@ package com.taskapproacher.entity.user.response;
 
 import com.taskapproacher.constant.Role;
 import com.taskapproacher.entity.user.User;
+
 import lombok.AllArgsConstructor;
-import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Getter;
 import lombok.Setter;
 
 import java.util.UUID;

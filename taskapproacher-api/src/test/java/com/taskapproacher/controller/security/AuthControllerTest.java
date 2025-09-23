@@ -3,15 +3,16 @@ package com.taskapproacher.controller.security;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import com.taskapproacher.constant.ExceptionMessage;
+
 import com.taskapproacher.entity.security.request.AuthRequest;
-import com.taskapproacher.entity.security.response.AuthResponse;
 import com.taskapproacher.entity.security.request.RegisterRequest;
+import com.taskapproacher.entity.security.response.AuthResponse;
 import com.taskapproacher.entity.user.User;
 import com.taskapproacher.service.security.UserDetailsServiceImpl;
 import com.taskapproacher.service.security.auth.JwtService;
 import com.taskapproacher.service.user.UserService;
-import com.taskapproacher.test.utils.TestApproacherDataUtils;
 import com.taskapproacher.test.constant.EntityNumber;
+import com.taskapproacher.test.utils.TestApproacherDataUtils;
 
 import org.hamcrest.core.StringContains;
 
@@ -29,13 +30,14 @@ import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultMatcher;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 
 //Tests naming convention: method_scenario_result
 @SpringBootTest
@@ -54,14 +56,6 @@ public class AuthControllerTest {
     private ObjectMapper objectMapper;
     private final String PATH_TO_API = "/api/auth/";
 
-    private MockHttpServletRequestBuilder buildRequest(HttpMethod method, String path, String objectJson) {
-        MockHttpServletRequestBuilder builder = MockMvcRequestBuilders.request(method, path)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectJson);
-
-        return builder;
-    }
-
     private ResultMatcher[] buildFailedMatchers(HttpStatus status, String path, ExceptionMessage exceptionMessage) {
         List<ResultMatcher> matchers = new ArrayList<>();
         int statusCode = status.value();
@@ -77,7 +71,16 @@ public class AuthControllerTest {
         return matchers.toArray(new ResultMatcher[0]);
     }
 
-    private void performFailedRequest(HttpMethod method, HttpStatus status, String path, String objectJson, ExceptionMessage exceptionMessage) throws Exception {
+    private MockHttpServletRequestBuilder buildRequest(HttpMethod method, String path, String objectJson) {
+        MockHttpServletRequestBuilder builder = request(method, path)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectJson);
+
+        return builder;
+    }
+
+    private void performFailedRequest(HttpMethod method, HttpStatus status, String path,
+                                      String objectJson, ExceptionMessage exceptionMessage) throws Exception {
         MockHttpServletRequestBuilder builder = buildRequest(method, path, objectJson);
         ResultMatcher[] matchers = buildFailedMatchers(status, path, exceptionMessage);
 
@@ -99,13 +102,13 @@ public class AuthControllerTest {
 
         String requestJson = objectMapper.writeValueAsString(request);
 
-        String tokenJson = mockMvc.perform(MockMvcRequestBuilders.request(HttpMethod.POST, path)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(requestJson))
-                .andExpect(status().is(HttpStatus.OK.value()))
-                .andReturn()
-                .getResponse()
-                .getContentAsString();
+        String tokenJson = mockMvc.perform(request(HttpMethod.POST, path)
+                                                   .contentType(MediaType.APPLICATION_JSON)
+                                                   .content(requestJson))
+                                  .andExpect(status().is(HttpStatus.OK.value()))
+                                  .andReturn()
+                                  .getResponse()
+                                  .getContentAsString();
 
         AuthResponse response = objectMapper.readValue(tokenJson, AuthResponse.class);
         UserDetails userDetails = userDetailsService.loadUserByUsername(username);
@@ -125,7 +128,8 @@ public class AuthControllerTest {
 
         String requestJson = objectMapper.writeValueAsString(request);
 
-        performFailedRequest(HttpMethod.POST, HttpStatus.UNAUTHORIZED, path, requestJson, ExceptionMessage.INVALID_USER_DATA);
+        performFailedRequest(HttpMethod.POST, HttpStatus.UNAUTHORIZED, path,
+                             requestJson, ExceptionMessage.INVALID_USER_DATA);
     }
 
     @Test
@@ -142,13 +146,13 @@ public class AuthControllerTest {
 
         String requestJson = objectMapper.writeValueAsString(request);
 
-        String tokenJson = mockMvc.perform(MockMvcRequestBuilders.request(HttpMethod.POST, path)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(requestJson))
-                .andExpect(status().is(HttpStatus.CREATED.value()))
-                .andReturn()
-                .getResponse()
-                .getContentAsString();
+        String tokenJson = mockMvc.perform(request(HttpMethod.POST, path)
+                                                   .contentType(MediaType.APPLICATION_JSON)
+                                                   .content(requestJson))
+                                  .andExpect(status().is(HttpStatus.CREATED.value()))
+                                  .andReturn()
+                                  .getResponse()
+                                  .getContentAsString();
 
         AuthResponse response = objectMapper.readValue(tokenJson, AuthResponse.class);
         User createdUser = userService.findByUsername(username);
@@ -173,7 +177,8 @@ public class AuthControllerTest {
 
         String requestJson = objectMapper.writeValueAsString(request);
 
-        performFailedRequest(HttpMethod.POST, HttpStatus.BAD_REQUEST, path, requestJson, ExceptionMessage.EMPTY);
+        performFailedRequest(HttpMethod.POST, HttpStatus.BAD_REQUEST, path,
+                             requestJson, ExceptionMessage.EMPTY);
     }
 
     @Test
@@ -190,7 +195,8 @@ public class AuthControllerTest {
 
         String requestJson = objectMapper.writeValueAsString(request);
 
-        performFailedRequest(HttpMethod.POST, HttpStatus.BAD_REQUEST, path, requestJson, ExceptionMessage.ALREADY_EXISTS);
+        performFailedRequest(HttpMethod.POST, HttpStatus.BAD_REQUEST, path,
+                             requestJson, ExceptionMessage.ALREADY_EXISTS);
     }
 
     @Test
@@ -208,7 +214,8 @@ public class AuthControllerTest {
 
         String requestJson = objectMapper.writeValueAsString(request);
 
-        performFailedRequest(HttpMethod.POST, HttpStatus.BAD_REQUEST, path, requestJson, ExceptionMessage.ALREADY_EXISTS);
+        performFailedRequest(HttpMethod.POST, HttpStatus.BAD_REQUEST, path,
+                             requestJson, ExceptionMessage.ALREADY_EXISTS);
     }
 
     @Test
@@ -225,7 +232,8 @@ public class AuthControllerTest {
 
         String requestJson = objectMapper.writeValueAsString(request);
 
-        performFailedRequest(HttpMethod.POST, HttpStatus.BAD_REQUEST, path, requestJson, ExceptionMessage.INVALID_PASSWORD_LENGTH);
+        performFailedRequest(HttpMethod.POST, HttpStatus.BAD_REQUEST, path,
+                             requestJson, ExceptionMessage.INVALID_PASSWORD_LENGTH);
     }
 
     @Test
@@ -242,6 +250,7 @@ public class AuthControllerTest {
 
         String requestJson = objectMapper.writeValueAsString(request);
 
-        performFailedRequest(HttpMethod.POST, HttpStatus.BAD_REQUEST, path, requestJson, ExceptionMessage.INVALID_USERNAME_LENGTH);
+        performFailedRequest(HttpMethod.POST, HttpStatus.BAD_REQUEST, path,
+                             requestJson, ExceptionMessage.INVALID_USERNAME_LENGTH);
     }
 }

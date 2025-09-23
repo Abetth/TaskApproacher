@@ -2,18 +2,21 @@ package com.taskapproacher.exception.handler;
 
 import com.taskapproacher.constant.ExceptionMessage;
 import com.taskapproacher.exception.custom.EntityAlreadyExistsException;
+
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.MalformedJwtException;
-import jakarta.validation.ConstraintViolationException;
-import org.hibernate.HibernateException;
-import org.springframework.http.HttpStatus;
-import org.springframework.web.ErrorResponse;
-import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.validation.ConstraintViolationException;
+
+import org.hibernate.HibernateException;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.web.ErrorResponse;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -39,7 +42,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(HibernateException.class)
     public ErrorResponse handleHibernateException(HibernateException exception) {
-        return ErrorResponse.create(exception, HttpStatus.BAD_REQUEST, exception.getMessage());
+        return ErrorResponse.create(exception, HttpStatus.BAD_REQUEST, "Database error. Please try later.");
     }
 
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)

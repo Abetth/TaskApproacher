@@ -1,28 +1,28 @@
 package com.taskapproacher.service.security.access;
 
 import com.taskapproacher.constant.ExceptionMessage;
-import com.taskapproacher.dao.task.TaskDAO;
-import com.taskapproacher.dao.task.TaskBoardDAO;
-import com.taskapproacher.entity.task.Task;
-import com.taskapproacher.entity.user.User;
-import com.taskapproacher.entity.task.TaskBoard;
-
-import static org.junit.jupiter.api.Assertions.*;
-
 import com.taskapproacher.constant.Priority;
+import com.taskapproacher.dao.task.TaskBoardDAO;
+import com.taskapproacher.dao.task.TaskDAO;
+import com.taskapproacher.entity.task.Task;
+import com.taskapproacher.entity.task.TaskBoard;
+import com.taskapproacher.entity.user.User;
+
 import jakarta.persistence.EntityNotFoundException;
+
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
-import org.mockito.junit.jupiter.MockitoExtension;
-
-import static org.mockito.Mockito.*;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDate;
-import java.util.UUID;
 import java.util.Optional;
+import java.util.UUID;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 public class AccessCheckServiceTest {

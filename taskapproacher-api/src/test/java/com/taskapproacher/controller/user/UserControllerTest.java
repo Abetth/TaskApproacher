@@ -7,8 +7,8 @@ import com.taskapproacher.entity.security.request.AuthRequest;
 import com.taskapproacher.entity.security.response.AuthResponse;
 import com.taskapproacher.entity.task.TaskBoard;
 import com.taskapproacher.entity.user.User;
-import com.taskapproacher.test.utils.TestApproacherDataUtils;
 import com.taskapproacher.test.constant.EntityNumber;
+import com.taskapproacher.test.utils.TestApproacherDataUtils;
 
 import org.hamcrest.core.StringContains;
 
@@ -97,7 +97,8 @@ public class UserControllerTest {
         return matchers.toArray(new ResultMatcher[0]);
     }
 
-    private MockHttpServletRequestBuilder buildRequest(HttpMethod method, String token, String path, String objectJson) {
+    private MockHttpServletRequestBuilder buildRequest(HttpMethod method, String token,
+                                                       String path, String objectJson) {
         MockHttpServletRequestBuilder builder = request(method, path)
                 .contentType(MediaType.APPLICATION_JSON)
                 .header("Authorization", "Bearer " + token);
@@ -109,14 +110,16 @@ public class UserControllerTest {
         return builder;
     }
 
-    private void performFailedRequest(HttpMethod method, HttpStatus status, String token, String path, String objectJson, ExceptionMessage exceptionMessage) throws Exception {
+    private void performFailedRequest(HttpMethod method, HttpStatus status, String token, String path,
+                                      String objectJson, ExceptionMessage exceptionMessage) throws Exception {
         MockHttpServletRequestBuilder builder = buildRequest(method, token, path, objectJson);
         ResultMatcher[] matchers = buildFailedMatchers(status, path, exceptionMessage);
 
         mockMvc.perform(builder).andExpectAll(matchers);
     }
 
-    private void performSuccessfulRequest(HttpMethod method, HttpStatus status, String token, String path, String objectJson, User user) throws Exception {
+    private void performSuccessfulRequest(HttpMethod method, HttpStatus status, String token, String path,
+                                          String objectJson, User user) throws Exception {
 
         MockHttpServletRequestBuilder builder = buildRequest(method, token, path, objectJson);
         ResultMatcher[] matchers = buildSuccessfulMatchers(method, status, user);
@@ -134,8 +137,8 @@ public class UserControllerTest {
         String requestJson = objectMapper.writeValueAsString(request);
 
         String tokenJson = mockMvc.perform(request(HttpMethod.POST, path)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(requestJson))
+                                                   .contentType(MediaType.APPLICATION_JSON)
+                                                   .content(requestJson))
                 .andReturn()
                 .getResponse()
                 .getContentAsString();
@@ -157,7 +160,8 @@ public class UserControllerTest {
     void anyRequest_NullInPath_ReturnsStatusCodeBadRequestAndErrorResponse() throws Exception {
         String path = PATH_TO_API + null + "/boards";
 
-        performFailedRequest(HttpMethod.GET, HttpStatus.BAD_REQUEST, token, path, null, ExceptionMessage.INVALID_DATA_ID);
+        performFailedRequest(HttpMethod.GET, HttpStatus.BAD_REQUEST, token,
+                             path, null, ExceptionMessage.INVALID_DATA_ID);
     }
 
     @Test
@@ -167,7 +171,8 @@ public class UserControllerTest {
 
         String token = null;
 
-        performFailedRequest(HttpMethod.GET, HttpStatus.FORBIDDEN, token, path, null, ExceptionMessage.INVALID_AUTH_TOKEN);
+        performFailedRequest(HttpMethod.GET, HttpStatus.FORBIDDEN, token,
+                             path, null, ExceptionMessage.INVALID_AUTH_TOKEN);
     }
 
 
@@ -178,7 +183,8 @@ public class UserControllerTest {
 
         User preInsertedUser = TestApproacherDataUtils.createPreInsertedUser(EntityNumber.FIRST);
 
-        performSuccessfulRequest(HttpMethod.GET, HttpStatus.OK, token, path, null, preInsertedUser);
+        performSuccessfulRequest(HttpMethod.GET, HttpStatus.OK, token,
+                                 path, null, preInsertedUser);
     }
 
     @Test
@@ -192,8 +198,8 @@ public class UserControllerTest {
         String path = PATH_TO_API + userID + "/boards";
 
         mockMvc.perform(request(HttpMethod.GET, path)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .header("Authorization", "Bearer " + token))
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .header("Authorization", "Bearer " + token))
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().is(HttpStatus.OK.value()))
                 .andExpect(jsonPath("$.[0].id").value(preInsertedTaskBoards.get(0).getID().toString()))
@@ -207,7 +213,8 @@ public class UserControllerTest {
 
         String path = PATH_TO_API + userID + "/boards";
 
-        performFailedRequest(HttpMethod.GET, HttpStatus.FORBIDDEN, token, path, null, ExceptionMessage.ACCESS_DENIED);
+        performFailedRequest(HttpMethod.GET, HttpStatus.FORBIDDEN, token,
+                             path, null, ExceptionMessage.ACCESS_DENIED);
     }
 
     @Test
@@ -227,7 +234,8 @@ public class UserControllerTest {
 
         String updateDataJson = objectMapper.writeValueAsString(userUpdatePayloadMap);
 
-        performSuccessfulRequest(HttpMethod.PATCH, HttpStatus.OK, token, path, updateDataJson, updatedUserData);
+        performSuccessfulRequest(HttpMethod.PATCH, HttpStatus.OK, token,
+                                 path, updateDataJson, updatedUserData);
     }
 
     @Test
@@ -247,7 +255,8 @@ public class UserControllerTest {
 
         String updateDataJson = objectMapper.writeValueAsString(userUpdatePayloadMap);
 
-        performSuccessfulRequest(HttpMethod.PATCH, HttpStatus.OK, token, path, updateDataJson, preInsertedUser);
+        performSuccessfulRequest(HttpMethod.PATCH, HttpStatus.OK, token,
+                                 path, updateDataJson, preInsertedUser);
     }
 
     @Test
@@ -263,7 +272,8 @@ public class UserControllerTest {
 
         String updateDataJson = objectMapper.writeValueAsString(updateMap);
 
-        performFailedRequest(HttpMethod.PATCH, HttpStatus.FORBIDDEN, token, path, updateDataJson, ExceptionMessage.ACCESS_DENIED);
+        performFailedRequest(HttpMethod.PATCH, HttpStatus.FORBIDDEN, token,
+                             path, updateDataJson, ExceptionMessage.ACCESS_DENIED);
     }
 
     @Test
@@ -284,7 +294,8 @@ public class UserControllerTest {
 
         String updateDataJson = objectMapper.writeValueAsString(updateMap);
 
-        performFailedRequest(HttpMethod.PATCH, HttpStatus.BAD_REQUEST, token, path, updateDataJson, ExceptionMessage.ALREADY_EXISTS);
+        performFailedRequest(HttpMethod.PATCH, HttpStatus.BAD_REQUEST, token,
+                             path, updateDataJson, ExceptionMessage.ALREADY_EXISTS);
     }
 
     @Test
@@ -305,7 +316,8 @@ public class UserControllerTest {
 
         String updateDataJson = objectMapper.writeValueAsString(updateMap);
 
-        performFailedRequest(HttpMethod.PATCH, HttpStatus.BAD_REQUEST, token, path, updateDataJson, ExceptionMessage.ALREADY_EXISTS);
+        performFailedRequest(HttpMethod.PATCH, HttpStatus.BAD_REQUEST, token,
+                             path, updateDataJson, ExceptionMessage.ALREADY_EXISTS);
     }
 
     @Test
@@ -323,7 +335,8 @@ public class UserControllerTest {
 
         String updateDataJson = objectMapper.writeValueAsString(updateMap);
 
-        performFailedRequest(HttpMethod.PATCH, HttpStatus.BAD_REQUEST, token, path, updateDataJson, ExceptionMessage.INVALID_USERNAME_LENGTH);
+        performFailedRequest(HttpMethod.PATCH, HttpStatus.BAD_REQUEST, token,
+                             path, updateDataJson, ExceptionMessage.INVALID_USERNAME_LENGTH);
     }
 
     @Test
@@ -343,7 +356,8 @@ public class UserControllerTest {
 
         String updateDataJson = objectMapper.writeValueAsString(updateMap);
 
-        performFailedRequest(HttpMethod.PATCH, HttpStatus.BAD_REQUEST, token, path, updateDataJson, ExceptionMessage.INVALID_PASSWORD_LENGTH);
+        performFailedRequest(HttpMethod.PATCH, HttpStatus.BAD_REQUEST, token,
+                             path, updateDataJson, ExceptionMessage.INVALID_PASSWORD_LENGTH);
     }
 
     @Test
@@ -354,7 +368,8 @@ public class UserControllerTest {
 
         String path = PATH_TO_API + userID;
 
-        performSuccessfulRequest(HttpMethod.DELETE, HttpStatus.NO_CONTENT, token, path, null, null);
+        performSuccessfulRequest(HttpMethod.DELETE, HttpStatus.NO_CONTENT, token,
+                                 path, null, null);
     }
 
     @Test
@@ -364,6 +379,7 @@ public class UserControllerTest {
 
         String path = PATH_TO_API + userID;
 
-        performFailedRequest(HttpMethod.DELETE, HttpStatus.FORBIDDEN, token, path, null, ExceptionMessage.ACCESS_DENIED);
+        performFailedRequest(HttpMethod.DELETE, HttpStatus.FORBIDDEN, token,
+                             path, null, ExceptionMessage.ACCESS_DENIED);
     }
 }

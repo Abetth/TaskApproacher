@@ -2,15 +2,15 @@ package com.taskapproacher.entity.task.request;
 
 import com.taskapproacher.entity.task.Task;
 import com.taskapproacher.entity.task.TaskBoard;
-
-import java.time.LocalDate;
-import java.util.UUID;
-
 import com.taskapproacher.interfaces.matcher.TaskMatcher;
+
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
+
+import java.time.LocalDate;
+import java.util.UUID;
 
 @AllArgsConstructor
 @NoArgsConstructor

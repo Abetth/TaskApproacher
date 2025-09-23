@@ -3,9 +3,10 @@ package com.taskapproacher.entity.task.response;
 import com.taskapproacher.entity.task.Task;
 import com.taskapproacher.entity.task.TaskBoard;
 import com.taskapproacher.interfaces.matcher.TaskMatcher;
+
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 import lombok.Getter;
+import lombok.Setter;
 
 import java.time.LocalDate;
 import java.util.UUID;

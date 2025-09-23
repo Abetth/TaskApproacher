@@ -26,8 +26,8 @@ public enum Priority {
 
     public static Priority fromInt(Integer priority) {
         return Arrays.stream(values())
-                .filter(p -> p.priority.equals(priority))
-                .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("No priority found for value: " + priority));
+                     .filter(p -> p.priority.equals(priority))
+                     .findFirst()
+                     .orElseThrow(() -> new IllegalArgumentException("No priority found for value: " + priority));
     }
 }

@@ -8,11 +8,10 @@ import com.taskapproacher.entity.task.response.TaskResponse;
 import com.taskapproacher.interfaces.matcher.TaskMatcher;
 
 import jakarta.persistence.*;
-import jakarta.persistence.Table;
 
 import lombok.AllArgsConstructor;
-import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Getter;
 import lombok.Setter;
 
 import org.hibernate.annotations.DynamicUpdate;

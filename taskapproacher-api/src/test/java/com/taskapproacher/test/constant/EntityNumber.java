@@ -11,8 +11,4 @@ public enum EntityNumber {
     EntityNumber(int number) {
         this.number = number;
     }
-
-    public int getIntValue() {
-        return this.number;
-    }
 }

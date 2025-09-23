@@ -1,10 +1,12 @@
 package com.taskapproacher.controller.security;
 
 import com.taskapproacher.entity.security.request.AuthRequest;
-import com.taskapproacher.entity.security.response.AuthResponse;
 import com.taskapproacher.entity.security.request.RegisterRequest;
+import com.taskapproacher.entity.security.response.AuthResponse;
 import com.taskapproacher.service.security.auth.AuthService;
+
 import jakarta.validation.Valid;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;

@@ -1,9 +1,9 @@
 package com.taskapproacher.controller.task;
 
 import com.taskapproacher.entity.task.Task;
-import com.taskapproacher.service.task.TaskService;
-import com.taskapproacher.entity.task.response.TaskResponse;
 import com.taskapproacher.entity.task.request.TaskRequest;
+import com.taskapproacher.entity.task.response.TaskResponse;
+import com.taskapproacher.service.task.TaskService;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;

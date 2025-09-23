@@ -1,8 +1,8 @@
 package com.taskapproacher.service.security.auth;
 
 import com.taskapproacher.entity.security.request.AuthRequest;
-import com.taskapproacher.entity.security.response.AuthResponse;
 import com.taskapproacher.entity.security.request.RegisterRequest;
+import com.taskapproacher.entity.security.response.AuthResponse;
 import com.taskapproacher.entity.user.User;
 import com.taskapproacher.entity.user.response.UserResponse;
 import com.taskapproacher.service.user.UserService;

@@ -1,7 +1,8 @@
 package com.taskapproacher.service.security;
 
-import com.taskapproacher.dao.user.UserDAO;
 import com.taskapproacher.constant.ExceptionMessage;
+import com.taskapproacher.dao.user.UserDAO;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -19,7 +20,8 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        return userDAO.findByUsername(username)
-                .orElseThrow(() -> new UsernameNotFoundException("User " + ExceptionMessage.NOT_FOUND + ": " + username));
+        return userDAO.findByUsername(username).orElseThrow(
+                () -> new UsernameNotFoundException("User " + ExceptionMessage.NOT_FOUND + ": " + username)
+        );
     }
 }

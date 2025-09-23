@@ -6,16 +6,21 @@ import com.taskapproacher.entity.task.response.TaskBoardResponse;
 import com.taskapproacher.entity.user.User;
 import com.taskapproacher.interfaces.dao.GenericDAO;
 import com.taskapproacher.interfaces.dao.RelatedEntityDAO;
+
 import jakarta.validation.ConstraintViolationException;
+
 import org.hibernate.HibernateException;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
 import org.hibernate.query.Query;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
-import java.util.*;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Repository
@@ -32,8 +37,14 @@ public class UserDAO implements GenericDAO<User>, RelatedEntityDAO<TaskBoardResp
 
         try (Session session = sessionFactory.openSession()) {
             transaction = session.beginTransaction();
-            Query<User> query = session.createQuery("FROM User WHERE username = :username", User.class)
-                    .setParameter("username", username);
+            Query<User> query = session.createQuery(
+                                               """
+
+                                                       FROM User\s
+                                                       WHERE username = :username
+                                                       """,
+                                               User.class)
+                                       .setParameter("username", username);
             transaction.commit();
 
             return Optional.ofNullable(query.uniqueResult());
@@ -41,7 +52,7 @@ public class UserDAO implements GenericDAO<User>, RelatedEntityDAO<TaskBoardResp
             if (transaction != null && transaction.isActive()) {
                 transaction.rollback();
             }
-            throw new HibernateException("Failed to find user by username");
+            throw new HibernateException("[DB] Failed to find user by username: " + username, exception);
         }
     }
 
@@ -49,10 +60,14 @@ public class UserDAO implements GenericDAO<User>, RelatedEntityDAO<TaskBoardResp
         Transaction transaction = null;
 
         try (Session session = sessionFactory.openSession()) {
-            Boolean isExists = false;
+            Boolean isExists;
             transaction = session.beginTransaction();
             Query<Boolean> query = session.createQuery(
-                    "SELECT CASE WHEN EXISTS (FROM User WHERE username = :username OR email = :email) THEN TRUE ELSE FALSE END",
+                    """
+                            SELECT CASE WHEN EXISTS\s
+                            (FROM User WHERE username = :username OR email = :email)\s
+                            THEN TRUE ELSE FALSE END
+                            """,
                     Boolean.class);
             query.setParameter("username", user.getUsername());
             query.setParameter("email", user.getEmail());
@@ -64,7 +79,7 @@ public class UserDAO implements GenericDAO<User>, RelatedEntityDAO<TaskBoardResp
             if (transaction != null && transaction.isActive()) {
                 transaction.rollback();
             }
-            throw new HibernateException("Failed to find user by name and mail");
+            throw new HibernateException("[DB] Failed to find user: " + user.getUsername(), exception);
         }
     }
 
@@ -72,11 +87,15 @@ public class UserDAO implements GenericDAO<User>, RelatedEntityDAO<TaskBoardResp
         Transaction transaction = null;
 
         try (Session session = sessionFactory.openSession()) {
-            Boolean isTaken = false;
+            Boolean isTaken;
             transaction = session.beginTransaction();
-            Query<Boolean> query = session.
-                    createQuery("SELECT CASE WHEN EXISTS (FROM User WHERE username = :username)  THEN TRUE ELSE FALSE END",
-                            Boolean.class);
+            Query<Boolean> query = session.createQuery(
+                    """
+                            SELECT CASE WHEN EXISTS\s
+                            (FROM User WHERE username = :username)\s
+                            THEN TRUE ELSE FALSE END
+                            """,
+                    Boolean.class);
             query.setParameter("username", username);
             isTaken = query.getSingleResult();
             transaction.commit();
@@ -86,7 +105,7 @@ public class UserDAO implements GenericDAO<User>, RelatedEntityDAO<TaskBoardResp
             if (transaction != null && transaction.isActive()) {
                 transaction.rollback();
             }
-            throw new HibernateException("Failed to search for requested data");
+            throw new HibernateException("[DB] Failed to find user with username: " + username, exception);
         }
     }
 
@@ -94,11 +113,16 @@ public class UserDAO implements GenericDAO<User>, RelatedEntityDAO<TaskBoardResp
         Transaction transaction = null;
 
         try (Session session = sessionFactory.openSession()) {
-            Boolean isTaken = false;
+            Boolean isTaken;
             transaction = session.beginTransaction();
-            Query<Boolean> query = session.
-                    createQuery("SELECT CASE WHEN EXISTS (FROM User WHERE email = :email)  THEN TRUE ELSE FALSE END",
-                            Boolean.class);
+            Query<Boolean> query = session.createQuery(
+                    """
+
+                            SELECT CASE WHEN EXISTS\s
+                            (FROM User WHERE email = :email)\s
+                            THEN TRUE ELSE FALSE END
+                            """,
+                    Boolean.class);
             query.setParameter("email", email);
             isTaken = query.getSingleResult();
             transaction.commit();
@@ -108,14 +132,14 @@ public class UserDAO implements GenericDAO<User>, RelatedEntityDAO<TaskBoardResp
             if (transaction != null && transaction.isActive()) {
                 transaction.rollback();
             }
-            throw new HibernateException("Failed to search for requested data");
+            throw new HibernateException("[DB] Failed to find user with email" + email, exception);
         }
     }
 
     @Override
     public Optional<User> findByID(UUID userID) {
         Transaction transaction = null;
-        User user = null;
+        User user;
 
         try (Session session = sessionFactory.openSession()) {
             transaction = session.beginTransaction();
@@ -125,28 +149,33 @@ public class UserDAO implements GenericDAO<User>, RelatedEntityDAO<TaskBoardResp
             if (transaction != null && transaction.isActive()) {
                 transaction.rollback();
             }
-            throw new HibernateException("Failed to get user by id");
+            throw new HibernateException("[DB] Failed to find user by id: " + userID, exception);
         }
 
         return Optional.ofNullable(user);
     }
 
     @Override
-    public List<TaskBoardResponse> findRelatedEntitiesByID(UUID uuid) {
+    public List<TaskBoardResponse> findRelatedEntitiesByID(UUID userID) {
         Transaction transaction = null;
         List<TaskBoard> taskBoards;
 
         try (Session session = sessionFactory.openSession()) {
             transaction = session.beginTransaction();
-            taskBoards = session.createQuery("FROM TaskBoard WHERE user.ID = :id", TaskBoard.class)
-                    .setParameter("id", uuid)
-                    .getResultList();
+            taskBoards = session.createQuery(
+                                        """
+                                                FROM TaskBoard\s
+                                                WHERE user.ID = :id
+                                                """,
+                                        TaskBoard.class)
+                                .setParameter("id", userID)
+                                .getResultList();
             transaction.commit();
         } catch (Exception exception) {
             if (transaction != null && transaction.isActive()) {
                 transaction.rollback();
             }
-            throw new HibernateException("Failed to get task boards");
+            throw new HibernateException("[DB] Failed to get task boards for user: " + userID, exception);
         }
 
         return taskBoards.stream().map(TaskBoardResponse::new).collect(Collectors.toList());
@@ -154,7 +183,7 @@ public class UserDAO implements GenericDAO<User>, RelatedEntityDAO<TaskBoardResp
 
     @Override
     public User save(User user) {
-        Transaction transaction = null;
+        Transaction transaction;
 
         try (Session session = sessionFactory.openSession()) {
             transaction = session.beginTransaction();
@@ -165,25 +194,25 @@ public class UserDAO implements GenericDAO<User>, RelatedEntityDAO<TaskBoardResp
                 if (transaction != null && transaction.isActive()) {
                     transaction.rollback();
                 }
-                if (exception instanceof ConstraintViolationException) {
-                    throw new ConstraintViolationException(null, null);
-                }
 
-                throw new HibernateException("Wrong data");
+                throw exception;
             }
         } catch (Exception exception) {
             if (exception instanceof ConstraintViolationException) {
-                throw new ConstraintViolationException(ExceptionMessage.INVALID_USERNAME_LENGTH.toString(),
-                        ((ConstraintViolationException) exception).getConstraintViolations());
+                throw new ConstraintViolationException(
+                        ExceptionMessage.INVALID_USERNAME_LENGTH.toString(),
+                        ((ConstraintViolationException) exception).getConstraintViolations()
+                );
             }
-            throw new HibernateException("Failed to save user: " + exception.getMessage());
+
+            throw new HibernateException("[DB] Failed to save user: " + user.getUsername(), exception);
         }
         return user;
     }
 
     @Override
     public User update(User user) {
-        Transaction transaction = null;
+        Transaction transaction;
 
         try (Session session = sessionFactory.openSession()) {
             transaction = session.beginTransaction();
@@ -195,36 +224,41 @@ public class UserDAO implements GenericDAO<User>, RelatedEntityDAO<TaskBoardResp
                 if (transaction != null && transaction.isActive()) {
                     transaction.rollback();
                 }
-                if (exception instanceof ConstraintViolationException) {
-                    throw new ConstraintViolationException(null, null);
-                }
-                throw new HibernateException("Failed to save changes");
+
+                throw exception;
             }
         } catch (Exception exception) {
             if (exception instanceof ConstraintViolationException) {
-                throw new ConstraintViolationException(ExceptionMessage.INVALID_USERNAME_LENGTH.toString(),
-                        ((ConstraintViolationException) exception).getConstraintViolations());
+                throw new ConstraintViolationException(
+                        ExceptionMessage.INVALID_USERNAME_LENGTH.toString(),
+                        ((ConstraintViolationException) exception).getConstraintViolations()
+                );
             }
 
-            throw new HibernateException("Failed to update user: " + exception.getMessage());
+            throw new HibernateException("[DB] Failed to update user: " + user.getUsername(), exception);
         }
     }
 
     @Override
-    public void delete(UUID userID) {
+    public int delete(UUID userID) {
         Transaction transaction = null;
 
         try (Session session = sessionFactory.openSession()) {
             transaction = session.beginTransaction();
-            session.createQuery("DELETE FROM User WHERE ID = :userID")
-                    .setParameter("userID", userID)
-                    .executeUpdate();
+            int rowsAffected = session.createQuery(
+                                              """
+                                                      DELETE FROM User\s
+                                                      WHERE ID = :userID"""
+                                      )
+                                      .setParameter("userID", userID)
+                                      .executeUpdate();
             transaction.commit();
+            return rowsAffected;
         } catch (Exception exception) {
             if (transaction != null && transaction.isActive()) {
                 transaction.rollback();
             }
-            throw new HibernateException("Failed to delete entry");
+            throw new HibernateException("[DB] Failed to delete user: " + userID, exception);
         }
     }
 }

@@ -1,18 +1,18 @@
 package com.taskapproacher.service.user;
 
+import com.taskapproacher.constant.ExceptionMessage;
+import com.taskapproacher.constant.Role;
 import com.taskapproacher.dao.user.UserDAO;
 import com.taskapproacher.entity.task.response.TaskBoardResponse;
 import com.taskapproacher.entity.user.User;
 import com.taskapproacher.entity.user.response.UserResponse;
-import com.taskapproacher.constant.Role;
 import com.taskapproacher.exception.custom.EntityAlreadyExistsException;
-import com.taskapproacher.constant.ExceptionMessage;
 
 import jakarta.persistence.EntityNotFoundException;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -34,20 +34,26 @@ public class UserService {
             throw new IllegalArgumentException("User id " + ExceptionMessage.NULL);
         }
 
-        return userDAO.findByID(userID).orElseThrow(() -> new EntityNotFoundException("User " + ExceptionMessage.NOT_FOUND));
+        return userDAO.findByID(userID).orElseThrow(
+                () -> new EntityNotFoundException("User " + ExceptionMessage.NOT_FOUND)
+        );
     }
 
     public User findByUsername(String username) throws IllegalArgumentException, UsernameNotFoundException {
         if (username == null || username.isEmpty()) {
-            ExceptionMessage error = (username == null) ? ExceptionMessage.NULL : ExceptionMessage.EMPTY;
+            ExceptionMessage error = (username == null) ? ExceptionMessage.NULL
+                    : ExceptionMessage.EMPTY;
+
             throw new IllegalArgumentException("Username " + error);
         }
 
-        return userDAO.findByUsername(username)
-                .orElseThrow(() -> new UsernameNotFoundException("User " + ExceptionMessage.NOT_FOUND + ": " + username));
+        return userDAO.findByUsername(username).orElseThrow(
+                () -> new UsernameNotFoundException("User " + ExceptionMessage.NOT_FOUND + ": " + username)
+        );
     }
 
-    public List<TaskBoardResponse> findBoardsByUser(UUID userID) throws IllegalArgumentException, EntityNotFoundException {
+    public List<TaskBoardResponse> findBoardsByUser(UUID userID)
+            throws IllegalArgumentException, EntityNotFoundException {
         findByID(userID);
 
         return userDAO.findRelatedEntitiesByID(userID);
@@ -101,18 +107,23 @@ public class UserService {
             updatedUser.setEmail(newEmail);
         }
 
-        if (user.getPassword() != null && !user.getPassword().isEmpty()) {
+        String newPassword = user.getPassword();
+        if (newPassword != null && !newPassword.isEmpty()) {
             updatedUser.setPassword(passwordEncoder.encode(user.getPassword()));
         }
 
         return new UserResponse(userDAO.update(updatedUser));
     }
 
-    public void delete(UUID userID) throws IllegalArgumentException {
+    public void delete(UUID userID) throws IllegalArgumentException, EntityNotFoundException {
         if (userID == null) {
             throw new IllegalArgumentException("User id " + ExceptionMessage.NULL);
         }
 
-        userDAO.delete(userID);
+        int entriesAffected = userDAO.delete(userID);
+
+        if (entriesAffected == 0) {
+            throw new EntityNotFoundException("User with ID: " + userID + " not found for deletion");
+        }
     }
 }

@@ -1,10 +1,13 @@
 package com.taskapproacher.exception.handler;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 import com.taskapproacher.constant.ExceptionMessage;
+
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.AuthenticationException;
@@ -18,7 +21,8 @@ public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Override
-    public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException) throws IOException, ServletException {
+    public void commence(HttpServletRequest request, HttpServletResponse response,
+                         AuthenticationException authException) throws IOException, ServletException {
         int status = HttpStatus.UNAUTHORIZED.value();
         String message = ExceptionMessage.INVALID_USER_DATA.toString();
 

@@ -1,40 +1,37 @@
 package com.taskapproacher.service.task;
 
+import com.taskapproacher.constant.ExceptionMessage;
 import com.taskapproacher.constant.Priority;
-import com.taskapproacher.entity.task.TaskBoard;
+import com.taskapproacher.constant.Role;
+import com.taskapproacher.dao.task.TaskBoardDAO;
 import com.taskapproacher.entity.task.Task;
+import com.taskapproacher.entity.task.TaskBoard;
 import com.taskapproacher.entity.task.response.TaskBoardResponse;
 import com.taskapproacher.entity.task.response.TaskResponse;
 import com.taskapproacher.entity.user.User;
-import com.taskapproacher.dao.task.TaskBoardDAO;
 import com.taskapproacher.interfaces.matcher.TaskBoardMatcher;
 import com.taskapproacher.service.user.UserService;
-import com.taskapproacher.constant.ExceptionMessage;
-import com.taskapproacher.constant.Role;
-
 import com.taskapproacher.test.utils.TestApproacherUtils;
 
-import java.time.LocalDate;
-import java.util.UUID;
-import java.util.Optional;
-import java.util.List;
-
 import jakarta.persistence.EntityNotFoundException;
-
-import org.mockito.junit.jupiter.MockitoExtension;
-
-import org.springframework.beans.BeanUtils;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
-import static org.junit.jupiter.api.Assertions.*;
-
-import org.mockito.Mock;
-import org.mockito.InjectMocks;
-import org.mockito.ArgumentMatchers;
 import org.mockito.ArgumentCaptor;
+import org.mockito.ArgumentMatchers;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
+import org.springframework.beans.BeanUtils;
+
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 //Tests naming convention: method_scenario_result
@@ -217,7 +214,8 @@ public class TaskBoardServiceTest {
         TaskBoard taskBoard = createDefaultTaskBoard(null, null);
 
         when(userService.findByID(userID)).thenReturn(user);
-        when(taskBoardDAO.save(ArgumentMatchers.any(TaskBoard.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(taskBoardDAO.save(ArgumentMatchers.any(TaskBoard.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
 
         TaskBoardResponse response = taskBoardService.create(userID, taskBoard);
 
@@ -446,7 +444,7 @@ public class TaskBoardServiceTest {
     void delete_ValidTaskBoardID_TaskBoardDeletedSuccessfully() {
         UUID boardID = UUID.randomUUID();
 
-        doNothing().when(taskBoardDAO).delete(boardID);
+        when(taskBoardDAO.delete(boardID)).thenReturn(1);
 
         taskBoardService.delete(boardID);
 
@@ -467,5 +465,23 @@ public class TaskBoardServiceTest {
         assertTrue(actualMessage.contains(expectedMessage));
 
         verify(taskBoardDAO, times(0)).delete(boardID);
+    }
+
+    @Test
+    void delete_NoTaskBoardsDeleted_ThrowsEntityNotFoundException() {
+        UUID boardID = UUID.randomUUID();
+
+        when(taskBoardDAO.delete(boardID)).thenReturn(0);
+
+        EntityNotFoundException exception = assertThrows(EntityNotFoundException.class, () -> {
+            taskBoardService.delete(boardID);
+        });
+
+        String expectedMessage = ExceptionMessage.NOT_FOUND.toString();
+        String actualMessage = exception.getMessage();
+
+        assertTrue(actualMessage.contains(expectedMessage));
+
+        verify(taskBoardDAO, times(1)).delete(boardID);
     }
 }

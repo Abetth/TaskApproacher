@@ -1,10 +1,7 @@
 package com.taskapproacher.interfaces.matcher;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.taskapproacher.entity.task.Task;
 import com.taskapproacher.entity.user.User;
-import jakarta.persistence.*;
 
 import java.util.List;
 import java.util.UUID;

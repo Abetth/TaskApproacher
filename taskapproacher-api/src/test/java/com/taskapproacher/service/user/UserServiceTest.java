@@ -1,17 +1,15 @@
 package com.taskapproacher.service.user;
 
-import com.taskapproacher.dao.user.UserDAO;
-import com.taskapproacher.entity.user.User;
-import com.taskapproacher.entity.task.TaskBoard;
-import com.taskapproacher.entity.user.response.UserResponse;
-import com.taskapproacher.entity.task.response.TaskBoardResponse;
 import com.taskapproacher.constant.ExceptionMessage;
 import com.taskapproacher.constant.Role;
+import com.taskapproacher.dao.user.UserDAO;
+import com.taskapproacher.entity.task.TaskBoard;
+import com.taskapproacher.entity.task.response.TaskBoardResponse;
+import com.taskapproacher.entity.user.User;
+import com.taskapproacher.entity.user.response.UserResponse;
 import com.taskapproacher.exception.custom.EntityAlreadyExistsException;
 
 import jakarta.persistence.EntityNotFoundException;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -20,16 +18,18 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.ArgumentMatchers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import static org.mockito.Mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import org.springframework.beans.BeanUtils;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 //Tests naming convention: method_scenario_result
 @ExtendWith(MockitoExtension.class)
@@ -662,7 +662,7 @@ public class UserServiceTest {
     void delete_ValidUserID_UserDeletedSuccessfully() {
         UUID userID = UUID.randomUUID();
 
-        doNothing().when(userDAO).delete(userID);
+        when(userDAO.delete(userID)).thenReturn(1);
 
         userService.delete(userID);
 
@@ -683,5 +683,23 @@ public class UserServiceTest {
         assertTrue(actualMessage.contains(expectedMessage));
 
         verify(userDAO, times(0)).delete(userID);
+    }
+
+    @Test
+    void delete_NoUsersDeleted_ThrowsEntityNotFoundException() {
+        UUID userID = UUID.randomUUID();
+
+        when(userDAO.delete(userID)).thenReturn(0);
+
+        EntityNotFoundException exception = assertThrows(EntityNotFoundException.class, () -> {
+            userService.delete(userID);
+        });
+
+        String expectedMessage = ExceptionMessage.NOT_FOUND.toString();
+        String actualMessage = exception.getMessage();
+
+        assertTrue(actualMessage.contains(expectedMessage));
+
+        verify(userDAO, times(1)).delete(userID);
     }
 }

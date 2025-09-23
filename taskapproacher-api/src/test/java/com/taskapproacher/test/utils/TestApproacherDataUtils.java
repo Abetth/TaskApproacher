@@ -46,6 +46,7 @@ public class TestApproacherDataUtils {
 
     public static TaskBoard createPreInsertedTaskBoard(EntityNumber entityNumber) {
         TaskBoard taskBoard = new TaskBoard();
+
         final User DEFINED_FIRST_USER = createPreInsertedUser(EntityNumber.FIRST);
         final User DEFINED_SECOND_USER = createPreInsertedUser(EntityNumber.SECOND);
 
@@ -86,6 +87,7 @@ public class TestApproacherDataUtils {
 
     public static Task createPreInsertedTask(EntityNumber entityNumber) {
         Task task = new Task();
+
         final TaskBoard DEFINED_FIRST_TASK_BOARD = createPreInsertedTaskBoard(EntityNumber.FIRST);
         final TaskBoard DEFINED_THIRD_TASK_BOARD = createPreInsertedTaskBoard(EntityNumber.THIRD);
 

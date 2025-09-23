@@ -5,9 +5,10 @@ import com.taskapproacher.entity.task.TaskBoard;
 import com.taskapproacher.entity.user.User;
 import com.taskapproacher.entity.user.response.UserResponse;
 import com.taskapproacher.interfaces.matcher.TaskBoardMatcher;
+
 import lombok.AllArgsConstructor;
-import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Getter;
 import lombok.Setter;
 
 import java.util.List;

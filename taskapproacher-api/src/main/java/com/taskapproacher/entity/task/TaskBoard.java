@@ -6,12 +6,14 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.taskapproacher.entity.task.response.TaskBoardResponse;
 import com.taskapproacher.entity.user.User;
 import com.taskapproacher.interfaces.matcher.TaskBoardMatcher;
+
 import jakarta.persistence.*;
 
 import lombok.AllArgsConstructor;
-import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Getter;
 import lombok.Setter;
+
 import org.hibernate.annotations.DynamicUpdate;
 
 import java.util.List;
@@ -19,13 +21,12 @@ import java.util.UUID;
 
 @Getter
 @Setter
-@Entity
 @NoArgsConstructor
 @AllArgsConstructor
+@Entity
 @DynamicUpdate
 @Table(name = "task_boards")
 public class TaskBoard implements TaskBoardMatcher {
-
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID ID;
