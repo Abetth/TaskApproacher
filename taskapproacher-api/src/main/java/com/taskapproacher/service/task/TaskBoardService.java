@@ -1,7 +1,7 @@
 package com.taskapproacher.service.task;
 
 import com.taskapproacher.constant.ExceptionMessage;
-import com.taskapproacher.dao.task.TaskBoardDAO;
+import com.taskapproacher.repository.task.TaskBoardRepository;
 import com.taskapproacher.entity.task.Task;
 import com.taskapproacher.entity.task.TaskBoard;
 import com.taskapproacher.entity.task.response.TaskBoardResponse;
@@ -19,12 +19,12 @@ import java.util.stream.Collectors;
 
 @Service
 public class TaskBoardService {
-    private final TaskBoardDAO taskBoardDAO;
+    private final TaskBoardRepository taskBoardRepository;
     private final UserService userService;
 
     @Autowired
-    public TaskBoardService(TaskBoardDAO taskBoardDAO, UserService userService) {
-        this.taskBoardDAO = taskBoardDAO;
+    public TaskBoardService(TaskBoardRepository taskBoardRepository, UserService userService) {
+        this.taskBoardRepository = taskBoardRepository;
         this.userService = userService;
     }
 
@@ -33,7 +33,7 @@ public class TaskBoardService {
             throw new IllegalArgumentException("Task board id " + ExceptionMessage.NULL);
         }
 
-        return taskBoardDAO.findByID(taskBoardID).orElseThrow(
+        return taskBoardRepository.findByID(taskBoardID).orElseThrow(
                 () -> new EntityNotFoundException("Task board " + ExceptionMessage.NOT_FOUND)
         );
     }
@@ -42,7 +42,7 @@ public class TaskBoardService {
             throws IllegalArgumentException, EntityNotFoundException {
         findByID(taskBoardID);
 
-        List<Task> tasks = taskBoardDAO.findRelatedEntitiesByID(taskBoardID);
+        List<Task> tasks = taskBoardRepository.findRelatedEntitiesByID(taskBoardID);
 
         return tasks.stream().map(TaskResponse::new).collect(Collectors.toList());
     }
@@ -57,7 +57,7 @@ public class TaskBoardService {
 
         taskBoard.setUser(userService.findByID(userID));
 
-        return new TaskBoardResponse(taskBoardDAO.save(taskBoard));
+        return new TaskBoardResponse(taskBoardRepository.save(taskBoard));
     }
 
     public TaskBoardResponse update(UUID taskBoardID, TaskBoard taskBoard)
@@ -69,7 +69,7 @@ public class TaskBoardService {
         }
         updatedBoard.setSorted(taskBoard.isSorted());
 
-        return new TaskBoardResponse(taskBoardDAO.update(updatedBoard));
+        return new TaskBoardResponse(taskBoardRepository.update(updatedBoard));
     }
 
     public void delete(UUID taskBoardID) throws IllegalArgumentException {
@@ -77,10 +77,8 @@ public class TaskBoardService {
             throw new IllegalArgumentException("Board id " + ExceptionMessage.NULL);
         }
 
-        int entriesAffected = taskBoardDAO.delete(taskBoardID);
+        TaskBoard taskBoard = findByID(taskBoardID);
 
-        if (entriesAffected == 0) {
-            throw new EntityNotFoundException("Task board with ID: " + taskBoardID + " not found for deletion");
-        }
+        taskBoardRepository.delete(taskBoard);
     }
 }

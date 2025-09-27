@@ -2,7 +2,7 @@ package com.taskapproacher.service.user;
 
 import com.taskapproacher.constant.ExceptionMessage;
 import com.taskapproacher.constant.Role;
-import com.taskapproacher.dao.user.UserDAO;
+import com.taskapproacher.repository.user.UserRepository;
 import com.taskapproacher.entity.task.response.TaskBoardResponse;
 import com.taskapproacher.entity.user.User;
 import com.taskapproacher.entity.user.response.UserResponse;
@@ -20,12 +20,12 @@ import java.util.UUID;
 
 @Service
 public class UserService {
-    private final UserDAO userDAO;
+    private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
     @Autowired
-    public UserService(UserDAO userDAO, PasswordEncoder passwordEncoder) {
-        this.userDAO = userDAO;
+    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+        this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
     }
 
@@ -34,7 +34,7 @@ public class UserService {
             throw new IllegalArgumentException("User id " + ExceptionMessage.NULL);
         }
 
-        return userDAO.findByID(userID).orElseThrow(
+        return userRepository.findByID(userID).orElseThrow(
                 () -> new EntityNotFoundException("User " + ExceptionMessage.NOT_FOUND)
         );
     }
@@ -47,7 +47,7 @@ public class UserService {
             throw new IllegalArgumentException("Username " + error);
         }
 
-        return userDAO.findByUsername(username).orElseThrow(
+        return userRepository.findByUsername(username).orElseThrow(
                 () -> new UsernameNotFoundException("User " + ExceptionMessage.NOT_FOUND + ": " + username)
         );
     }
@@ -56,7 +56,7 @@ public class UserService {
             throws IllegalArgumentException, EntityNotFoundException {
         findByID(userID);
 
-        return userDAO.findRelatedEntitiesByID(userID);
+        return userRepository.findRelatedEntitiesByID(userID);
     }
 
     public UserResponse create(User user) throws IllegalArgumentException, EntityAlreadyExistsException {
@@ -79,10 +79,10 @@ public class UserService {
         createdUser.setPassword(passwordEncoder.encode(user.getPassword()));
         createdUser.setRole(Role.USER);
 
-        if (userDAO.isUserExists(createdUser)) {
+        if (userRepository.isUserExists(createdUser)) {
             throw new EntityAlreadyExistsException("User " + ExceptionMessage.ALREADY_EXISTS);
         } else {
-            return new UserResponse(userDAO.save(createdUser));
+            return new UserResponse(userRepository.save(createdUser));
         }
     }
 
@@ -92,7 +92,7 @@ public class UserService {
         String newUsername = user.getUsername();
         if (newUsername != null && !newUsername.isEmpty() && !newUsername.equals(updatedUser.getUsername())) {
 
-            if (userDAO.isUsernameAlreadyTaken(newUsername)) {
+            if (userRepository.isUsernameAlreadyTaken(newUsername)) {
                 throw new EntityAlreadyExistsException("User with this username " + ExceptionMessage.ALREADY_EXISTS);
             }
             updatedUser.setUsername(newUsername);
@@ -101,7 +101,7 @@ public class UserService {
         String newEmail = user.getEmail();
         if (newEmail != null && !newEmail.isEmpty() && !newEmail.equals(updatedUser.getEmail())) {
 
-            if (userDAO.isEmailAlreadyTaken(newEmail)) {
+            if (userRepository.isEmailAlreadyTaken(newEmail)) {
                 throw new EntityAlreadyExistsException("User with this email " + ExceptionMessage.ALREADY_EXISTS);
             }
             updatedUser.setEmail(newEmail);
@@ -112,7 +112,7 @@ public class UserService {
             updatedUser.setPassword(passwordEncoder.encode(user.getPassword()));
         }
 
-        return new UserResponse(userDAO.update(updatedUser));
+        return new UserResponse(userRepository.update(updatedUser));
     }
 
     public void delete(UUID userID) throws IllegalArgumentException, EntityNotFoundException {
@@ -120,10 +120,8 @@ public class UserService {
             throw new IllegalArgumentException("User id " + ExceptionMessage.NULL);
         }
 
-        int entriesAffected = userDAO.delete(userID);
+        User user = findByID(userID);
 
-        if (entriesAffected == 0) {
-            throw new EntityNotFoundException("User with ID: " + userID + " not found for deletion");
-        }
+        userRepository.delete(user);
     }
 }

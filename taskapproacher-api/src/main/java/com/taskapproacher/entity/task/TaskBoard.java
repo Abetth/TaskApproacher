@@ -41,7 +41,7 @@ public class TaskBoard implements TaskBoardMatcher {
     @JsonManagedReference
     private List<Task> tasks;
 
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne
     @JoinColumn(name = "user_id")
     @JsonBackReference
     private User user;

@@ -1,4 +1,4 @@
-package com.taskapproacher.dao.user;
+package com.taskapproacher.repository.user;
 
 import com.taskapproacher.constant.ExceptionMessage;
 import com.taskapproacher.entity.task.TaskBoard;
@@ -24,11 +24,11 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Repository
-public class UserDAO implements GenericDAO<User>, RelatedEntityDAO<TaskBoardResponse, UUID> {
+public class UserRepository implements GenericDAO<User>, RelatedEntityDAO<TaskBoardResponse, UUID> {
     SessionFactory sessionFactory;
 
     @Autowired
-    public UserDAO(SessionFactory sessionFactory) {
+    public UserRepository(SessionFactory sessionFactory) {
         this.sessionFactory = sessionFactory;
     }
 
@@ -240,25 +240,18 @@ public class UserDAO implements GenericDAO<User>, RelatedEntityDAO<TaskBoardResp
     }
 
     @Override
-    public int delete(UUID userID) {
+    public void delete(User user) {
         Transaction transaction = null;
 
         try (Session session = sessionFactory.openSession()) {
             transaction = session.beginTransaction();
-            int rowsAffected = session.createQuery(
-                                              """
-                                                      DELETE FROM User\s
-                                                      WHERE ID = :userID"""
-                                      )
-                                      .setParameter("userID", userID)
-                                      .executeUpdate();
+            session.remove(user);
             transaction.commit();
-            return rowsAffected;
         } catch (Exception exception) {
             if (transaction != null && transaction.isActive()) {
                 transaction.rollback();
             }
-            throw new HibernateException("[DB] Failed to delete user: " + userID, exception);
+            throw new HibernateException("[DB] Failed to delete user: " + user.getID(), exception);
         }
     }
 }

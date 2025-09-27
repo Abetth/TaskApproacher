@@ -7,5 +7,5 @@ public interface GenericDAO<T> {
     Optional<T> findByID(UUID uuid);
     T save(T entity);
     T update(T entity);
-    int delete(UUID uuid);
+    void delete(T entity);
 }

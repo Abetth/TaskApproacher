@@ -1,4 +1,4 @@
-package com.taskapproacher.dao.task;
+package com.taskapproacher.repository.task;
 
 import com.taskapproacher.entity.task.Task;
 import com.taskapproacher.interfaces.dao.GenericDAO;
@@ -15,11 +15,11 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Repository
-public class TaskDAO implements GenericDAO<Task> {
+public class TaskRepository implements GenericDAO<Task> {
     SessionFactory sessionFactory;
 
     @Autowired
-    public TaskDAO(SessionFactory sessionFactory) {
+    public TaskRepository(SessionFactory sessionFactory) {
         this.sessionFactory = sessionFactory;
     }
 
@@ -30,7 +30,7 @@ public class TaskDAO implements GenericDAO<Task> {
 
         try (Session session = sessionFactory.openSession()) {
             transaction = session.beginTransaction();
-            task = session.get(Task.class, taskID);
+            task = session.find(Task.class, taskID);
             transaction.commit();
         } catch (Exception exception) {
             if (transaction != null && transaction.isActive()) {
@@ -86,27 +86,19 @@ public class TaskDAO implements GenericDAO<Task> {
     }
 
     @Override
-    public int delete(UUID taskID) {
+    public void delete(Task task) {
         Transaction transaction = null;
 
         try (Session session = sessionFactory.openSession()) {
             transaction = session.beginTransaction();
-            int rowsAffected = session.createQuery(
-                                              """
-                                                      DELETE FROM Task\s
-                                                       WHERE ID = :taskID
-                                                       """
-                                      )
-                                      .setParameter("taskID", taskID)
-                                      .executeUpdate();
+            session.remove(task);
             transaction.commit();
-            return rowsAffected;
         } catch (Exception exception) {
             if (transaction != null && transaction.isActive()) {
                 transaction.rollback();
             }
 
-            throw new HibernateException("[DB] Failed to delete task: " + taskID, exception);
+            throw new HibernateException("[DB] Failed to delete task: " + task.getID(), exception);
         }
     }
 }

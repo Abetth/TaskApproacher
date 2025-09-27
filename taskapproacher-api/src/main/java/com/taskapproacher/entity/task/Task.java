@@ -51,7 +51,7 @@ public class Task implements TaskMatcher {
     private boolean finished;
 
     @Setter
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne
     @JoinColumn(name = "task_board_id")
     @JsonBackReference
     private TaskBoard taskBoard;
@@ -98,14 +98,13 @@ public class Task implements TaskMatcher {
 
         return title.equals(comparableTask.title)
                 && description.equals(comparableTask.description) && priority.equals(comparableTask.priority)
-                && deadline.equals(comparableTask.deadline) && finished == comparableTask.finished
-                && taskBoard.equals(comparableTask.taskBoard);
+                && deadline.equals(comparableTask.deadline) && finished == comparableTask.finished;
     }
 
     @Override
     public int hashCode() {
         return 11 + title.hashCode() + description.hashCode() + priority.getPriority()
-                + deadline.hashCode() + taskBoard.hashCode();
+                + deadline.hashCode();
     }
 
     @Override

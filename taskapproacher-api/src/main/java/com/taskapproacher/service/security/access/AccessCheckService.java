@@ -1,8 +1,8 @@
 package com.taskapproacher.service.security.access;
 
 import com.taskapproacher.constant.ExceptionMessage;
-import com.taskapproacher.dao.task.TaskBoardDAO;
-import com.taskapproacher.dao.task.TaskDAO;
+import com.taskapproacher.repository.task.TaskBoardRepository;
+import com.taskapproacher.repository.task.TaskRepository;
 import com.taskapproacher.entity.task.Task;
 import com.taskapproacher.entity.task.TaskBoard;
 
@@ -15,13 +15,13 @@ import java.util.UUID;
 
 @Service
 public class AccessCheckService {
-    private final TaskBoardDAO taskBoardDAO;
-    private final TaskDAO taskDAO;
+    private final TaskBoardRepository taskBoardRepository;
+    private final TaskRepository taskRepository;
 
     @Autowired
-    public AccessCheckService(TaskBoardDAO taskBoardDAO, TaskDAO taskDAO) {
-        this.taskBoardDAO = taskBoardDAO;
-        this.taskDAO = taskDAO;
+    public AccessCheckService(TaskBoardRepository taskBoardRepository, TaskRepository taskRepository) {
+        this.taskBoardRepository = taskBoardRepository;
+        this.taskRepository = taskRepository;
     }
 
     public boolean hasAccessToBoard(UUID boardID, UUID principalID) throws IllegalArgumentException {
@@ -31,8 +31,8 @@ public class AccessCheckService {
             throw new IllegalArgumentException(wrongValue + ExceptionMessage.NULL);
         }
 
-        TaskBoard foundBoard = taskBoardDAO.findByID(boardID)
-                .orElseThrow(() -> new EntityNotFoundException("Task board " + ExceptionMessage.NOT_FOUND));
+        TaskBoard foundBoard = taskBoardRepository.findByID(boardID)
+                                                  .orElseThrow(() -> new EntityNotFoundException("Task board " + ExceptionMessage.NOT_FOUND));
 
         return foundBoard.getUser().getID().equals(principalID);
 
@@ -45,8 +45,8 @@ public class AccessCheckService {
             throw new IllegalArgumentException(wrongValue + ExceptionMessage.NULL);
         }
 
-        Task task = taskDAO.findByID(taskID)
-                .orElseThrow(() -> new EntityNotFoundException("Task " + ExceptionMessage.NOT_FOUND));
+        Task task = taskRepository.findByID(taskID)
+                                  .orElseThrow(() -> new EntityNotFoundException("Task " + ExceptionMessage.NOT_FOUND));
 
         return task.getTaskBoard().getUser().getID().equals(principalID);
     }

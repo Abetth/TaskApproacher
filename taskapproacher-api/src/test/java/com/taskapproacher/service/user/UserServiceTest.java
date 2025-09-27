@@ -2,7 +2,7 @@ package com.taskapproacher.service.user;
 
 import com.taskapproacher.constant.ExceptionMessage;
 import com.taskapproacher.constant.Role;
-import com.taskapproacher.dao.user.UserDAO;
+import com.taskapproacher.repository.user.UserRepository;
 import com.taskapproacher.entity.task.TaskBoard;
 import com.taskapproacher.entity.task.response.TaskBoardResponse;
 import com.taskapproacher.entity.user.User;
@@ -39,7 +39,7 @@ public class UserServiceTest {
     @Mock
     private PasswordEncoder passwordEncoder;
     @Mock
-    private UserDAO userDAO;
+    private UserRepository userRepository;
 
     private User createDefaultUser(UUID userID) {
         User user = new User();
@@ -78,7 +78,7 @@ public class UserServiceTest {
         UUID userID = UUID.randomUUID();
         User mockUser = createDefaultUser(userID);
 
-        when(userDAO.findByID(userID)).thenReturn(Optional.of(mockUser));
+        when(userRepository.findByID(userID)).thenReturn(Optional.of(mockUser));
 
         User user = userService.findByID(userID);
 
@@ -87,14 +87,14 @@ public class UserServiceTest {
         assertEquals(mockUser.getEmail(), user.getEmail());
         assertEquals(mockUser.getRole(), user.getRole());
 
-        verify(userDAO, times(1)).findByID(userID);
+        verify(userRepository, times(1)).findByID(userID);
     }
 
     @Test
     void findByID_InvalidID_ThrowsEntityNotFoundException() {
         UUID userID = UUID.randomUUID();
 
-        when(userDAO.findByID(userID)).thenReturn(Optional.empty());
+        when(userRepository.findByID(userID)).thenReturn(Optional.empty());
 
         EntityNotFoundException exception = assertThrows(EntityNotFoundException.class, () -> {
             userService.findByID(userID);
@@ -106,7 +106,7 @@ public class UserServiceTest {
 
         assertTrue(actualMessage.contains(expectedMessage));
 
-        verify(userDAO, times(1)).findByID(userID);
+        verify(userRepository, times(1)).findByID(userID);
     }
 
     @Test
@@ -122,7 +122,7 @@ public class UserServiceTest {
 
         assertTrue(actualMessage.contains(expectedMessage));
 
-        verify(userDAO, times(0)).findByID(userID);
+        verify(userRepository, times(0)).findByID(userID);
     }
 
     @Test
@@ -130,21 +130,21 @@ public class UserServiceTest {
         UUID userID = UUID.randomUUID();
         User mockUser = createDefaultUser(userID);
 
-        when(userDAO.findByUsername(mockUser.getUsername())).thenReturn(Optional.of(mockUser));
+        when(userRepository.findByUsername(mockUser.getUsername())).thenReturn(Optional.of(mockUser));
 
         User user = userService.findByUsername(mockUser.getUsername());
 
         assertEquals(userID, user.getID());
         assertEquals(mockUser.getUsername(), user.getUsername());
 
-        verify(userDAO, times(1)).findByUsername(mockUser.getUsername());
+        verify(userRepository, times(1)).findByUsername(mockUser.getUsername());
     }
 
     @Test
     void findByUsername_InvalidUsername_ThrowsUsernameNotFoundException() {
         String username = "Wrong username";
 
-        when(userDAO.findByUsername(username)).thenReturn(Optional.empty());
+        when(userRepository.findByUsername(username)).thenReturn(Optional.empty());
 
         UsernameNotFoundException exception = assertThrows(UsernameNotFoundException.class, () -> {
             userService.findByUsername(username);
@@ -155,7 +155,7 @@ public class UserServiceTest {
 
         assertTrue(actualMessage.contains(expectedMessage));
 
-        verify(userDAO, times(1)).findByUsername(username);
+        verify(userRepository, times(1)).findByUsername(username);
     }
 
     @Test
@@ -171,7 +171,7 @@ public class UserServiceTest {
 
         assertTrue(actualMessage.contains(expectedMessage));
 
-        verify(userDAO, times(0)).findByUsername(username);
+        verify(userRepository, times(0)).findByUsername(username);
     }
 
     @Test
@@ -187,7 +187,7 @@ public class UserServiceTest {
 
         assertTrue(actualMessage.contains(expectedMessage));
 
-        verify(userDAO, times(0)).findByUsername(username);
+        verify(userRepository, times(0)).findByUsername(username);
     }
 
     @Test
@@ -200,8 +200,8 @@ public class UserServiceTest {
                 .map(TaskBoardResponse::new)
                 .toList();
 
-        when(userDAO.findByID(userID)).thenReturn(Optional.of(user));
-        when(userDAO.findRelatedEntitiesByID(userID)).thenReturn(mockBoards);
+        when(userRepository.findByID(userID)).thenReturn(Optional.of(user));
+        when(userRepository.findRelatedEntitiesByID(userID)).thenReturn(mockBoards);
 
         List<TaskBoardResponse> responseBoards = userService.findBoardsByUser(userID);
 
@@ -209,8 +209,8 @@ public class UserServiceTest {
         assertEquals(responseBoards.get(0).getID(), mockBoards.get(0).getID());
         assertEquals(responseBoards.get(1).getID(), mockBoards.get(1).getID());
 
-        verify(userDAO, times(1)).findByID(userID);
-        verify(userDAO, times(1)).findRelatedEntitiesByID(userID);
+        verify(userRepository, times(1)).findByID(userID);
+        verify(userRepository, times(1)).findRelatedEntitiesByID(userID);
     }
 
     @Test
@@ -218,15 +218,15 @@ public class UserServiceTest {
         UUID userID = UUID.randomUUID();
         User user = createDefaultUser(userID);
 
-        when(userDAO.findByID(userID)).thenReturn(Optional.of(user));
-        when(userDAO.findRelatedEntitiesByID(userID)).thenReturn(List.of());
+        when(userRepository.findByID(userID)).thenReturn(Optional.of(user));
+        when(userRepository.findRelatedEntitiesByID(userID)).thenReturn(List.of());
 
         List<TaskBoardResponse> responseBoards = userService.findBoardsByUser(userID);
 
         assertEquals(responseBoards.size(), 0);
 
-        verify(userDAO, times(1)).findByID(userID);
-        verify(userDAO, times(1)).findRelatedEntitiesByID(userID);
+        verify(userRepository, times(1)).findByID(userID);
+        verify(userRepository, times(1)).findRelatedEntitiesByID(userID);
     }
 
     @Test
@@ -242,15 +242,15 @@ public class UserServiceTest {
 
         assertTrue(actualMessage.contains(expectedMessage));
 
-        verify(userDAO, times(0)).findByID(userID);
-        verify(userDAO, times(0)).findRelatedEntitiesByID(userID);
+        verify(userRepository, times(0)).findByID(userID);
+        verify(userRepository, times(0)).findRelatedEntitiesByID(userID);
     }
 
     @Test
     void findBoardsByUser_InvalidUserID_ThrowsEntityNotFoundException() {
         UUID userID = UUID.randomUUID();
 
-        when(userDAO.findByID(userID)).thenReturn(Optional.empty());
+        when(userRepository.findByID(userID)).thenReturn(Optional.empty());
 
         EntityNotFoundException exception = assertThrows(EntityNotFoundException.class, () -> {
            userService.findBoardsByUser(userID);
@@ -261,8 +261,8 @@ public class UserServiceTest {
 
         assertTrue(actualMessage.contains(expectedMessage));
 
-        verify(userDAO, times(1)).findByID(userID);
-        verify(userDAO, times(0)).findRelatedEntitiesByID(userID);
+        verify(userRepository, times(1)).findByID(userID);
+        verify(userRepository, times(0)).findRelatedEntitiesByID(userID);
     }
 
     @Test
@@ -273,8 +273,8 @@ public class UserServiceTest {
 
         ArgumentCaptor<User> captor = ArgumentCaptor.forClass(User.class);
 
-        when(userDAO.save(captor.capture())).thenAnswer(invocation -> invocation.getArgument(0));
-        when(userDAO.isUserExists(ArgumentMatchers.any(User.class))).thenReturn(false);
+        when(userRepository.save(captor.capture())).thenAnswer(invocation -> invocation.getArgument(0));
+        when(userRepository.isUserExists(ArgumentMatchers.any(User.class))).thenReturn(false);
         when(passwordEncoder.encode(user.getPassword())).thenReturn(encodedPassword);
 
         UserResponse response = userService.create(user);
@@ -291,8 +291,8 @@ public class UserServiceTest {
         assertEquals(user.getUsername(), response.getUsername());
         assertEquals(user.getEmail(), response.getEmail());
 
-        verify(userDAO, times(1)).save(captor.capture());
-        verify(userDAO, times(1)).isUserExists(ArgumentMatchers.any(User.class));
+        verify(userRepository, times(1)).save(captor.capture());
+        verify(userRepository, times(1)).isUserExists(ArgumentMatchers.any(User.class));
     }
 
     @Test
@@ -309,8 +309,8 @@ public class UserServiceTest {
 
         assertTrue(actualMessage.contains(expectedMessage));
 
-        verify(userDAO, times(0)).isUserExists(ArgumentMatchers.any(User.class));
-        verify(userDAO, times(0)).save(ArgumentMatchers.any(User.class));
+        verify(userRepository, times(0)).isUserExists(ArgumentMatchers.any(User.class));
+        verify(userRepository, times(0)).save(ArgumentMatchers.any(User.class));
     }
 
     @Test
@@ -327,8 +327,8 @@ public class UserServiceTest {
 
         assertTrue(actualMessage.contains(expectedMessage));
 
-        verify(userDAO, times(0)).isUserExists(ArgumentMatchers.any(User.class));
-        verify(userDAO, times(0)).save(ArgumentMatchers.any(User.class));
+        verify(userRepository, times(0)).isUserExists(ArgumentMatchers.any(User.class));
+        verify(userRepository, times(0)).save(ArgumentMatchers.any(User.class));
     }
 
     @Test
@@ -345,8 +345,8 @@ public class UserServiceTest {
 
         assertTrue(actualMessage.contains(expectedMessage));
 
-        verify(userDAO, times(0)).isUserExists(ArgumentMatchers.any(User.class));
-        verify(userDAO, times(0)).save(ArgumentMatchers.any(User.class));
+        verify(userRepository, times(0)).isUserExists(ArgumentMatchers.any(User.class));
+        verify(userRepository, times(0)).save(ArgumentMatchers.any(User.class));
     }
 
     @Test
@@ -363,8 +363,8 @@ public class UserServiceTest {
 
         assertTrue(actualMessage.contains(expectedMessage));
 
-        verify(userDAO, times(0)).isUserExists(ArgumentMatchers.any(User.class));
-        verify(userDAO, times(0)).save(ArgumentMatchers.any(User.class));
+        verify(userRepository, times(0)).isUserExists(ArgumentMatchers.any(User.class));
+        verify(userRepository, times(0)).save(ArgumentMatchers.any(User.class));
     }
 
     @Test
@@ -381,8 +381,8 @@ public class UserServiceTest {
 
         assertTrue(actualMessage.contains(expectedMessage));
 
-        verify(userDAO, times(0)).isUserExists(ArgumentMatchers.any(User.class));
-        verify(userDAO, times(0)).save(ArgumentMatchers.any(User.class));
+        verify(userRepository, times(0)).isUserExists(ArgumentMatchers.any(User.class));
+        verify(userRepository, times(0)).save(ArgumentMatchers.any(User.class));
     }
 
     @Test
@@ -399,15 +399,15 @@ public class UserServiceTest {
 
         assertTrue(actualMessage.contains(expectedMessage));
 
-        verify(userDAO, times(0)).isUserExists(ArgumentMatchers.any(User.class));
-        verify(userDAO, times(0)).save(ArgumentMatchers.any(User.class));
+        verify(userRepository, times(0)).isUserExists(ArgumentMatchers.any(User.class));
+        verify(userRepository, times(0)).save(ArgumentMatchers.any(User.class));
     }
 
     @Test
     void create_UserAlreadyExists_ThrowsEntityAlreadyExistsException() {
         User user = createDefaultUser(UUID.randomUUID());
 
-        when(userDAO.isUserExists(ArgumentMatchers.any(User.class))).thenReturn(true);
+        when(userRepository.isUserExists(ArgumentMatchers.any(User.class))).thenReturn(true);
 
         EntityAlreadyExistsException exception = assertThrows(EntityAlreadyExistsException.class, () -> {
             userService.create(user);
@@ -418,8 +418,8 @@ public class UserServiceTest {
 
         assertTrue(actualMessage.contains(expectedMessage));
 
-        verify(userDAO, times(1)).isUserExists(ArgumentMatchers.any(User.class));
-        verify(userDAO, times(0)).save(ArgumentMatchers.any(User.class));
+        verify(userRepository, times(1)).isUserExists(ArgumentMatchers.any(User.class));
+        verify(userRepository, times(0)).save(ArgumentMatchers.any(User.class));
     }
 
     @Test
@@ -439,11 +439,11 @@ public class UserServiceTest {
 
         ArgumentCaptor<User> captor = ArgumentCaptor.forClass(User.class);
 
-        when(userDAO.findByID(userID)).thenReturn(Optional.of(copyOfExistingUser));
-        when(userDAO.isUsernameAlreadyTaken(ArgumentMatchers.any(String.class))).thenReturn(false);
-        when(userDAO.isEmailAlreadyTaken(ArgumentMatchers.any(String.class))).thenReturn(false);
+        when(userRepository.findByID(userID)).thenReturn(Optional.of(copyOfExistingUser));
+        when(userRepository.isUsernameAlreadyTaken(ArgumentMatchers.any(String.class))).thenReturn(false);
+        when(userRepository.isEmailAlreadyTaken(ArgumentMatchers.any(String.class))).thenReturn(false);
         when(passwordEncoder.encode(updateData.getPassword())).thenReturn(newEncodedPassword);
-        when(userDAO.update(captor.capture())).thenAnswer(invocation -> invocation.getArgument(0));
+        when(userRepository.update(captor.capture())).thenAnswer(invocation -> invocation.getArgument(0));
 
         UserResponse response  = userService.update(userID, updateData);
         User capturedUser = captor.getValue();
@@ -459,11 +459,11 @@ public class UserServiceTest {
         assertEquals(updateData.getUsername(), response.getUsername());
         assertEquals(updateData.getEmail(), response.getEmail());
 
-        verify(userDAO, times(1)).findByID(userID);
-        verify(userDAO, times(1)).isUsernameAlreadyTaken(ArgumentMatchers.any(String.class));
-        verify(userDAO, times(1)).isEmailAlreadyTaken(ArgumentMatchers.any(String.class));
+        verify(userRepository, times(1)).findByID(userID);
+        verify(userRepository, times(1)).isUsernameAlreadyTaken(ArgumentMatchers.any(String.class));
+        verify(userRepository, times(1)).isEmailAlreadyTaken(ArgumentMatchers.any(String.class));
         verify(passwordEncoder, times(1)).encode(ArgumentMatchers.any(String.class));
-        verify(userDAO, times(1)).update(captor.capture());
+        verify(userRepository, times(1)).update(captor.capture());
     }
 
     @Test
@@ -479,8 +479,8 @@ public class UserServiceTest {
 
         ArgumentCaptor<User> captor = ArgumentCaptor.forClass(User.class);
 
-        when(userDAO.findByID(userID)).thenReturn(Optional.of(copyOfExistingUser));
-        when(userDAO.update(captor.capture())).thenAnswer(invocation -> invocation.getArgument(0));
+        when(userRepository.findByID(userID)).thenReturn(Optional.of(copyOfExistingUser));
+        when(userRepository.update(captor.capture())).thenAnswer(invocation -> invocation.getArgument(0));
 
         UserResponse response = userService.update(userID, updateData);
         User capturedUser = captor.getValue();
@@ -496,11 +496,11 @@ public class UserServiceTest {
         assertNotEquals(updateData.getUsername(), response.getUsername());
         assertNotEquals(updateData.getEmail(), response.getEmail());
 
-        verify(userDAO, times(1)).findByID(userID);
+        verify(userRepository, times(1)).findByID(userID);
         verify(passwordEncoder, times(0)).encode(ArgumentMatchers.any(String.class));
-        verify(userDAO, times(0)).isUsernameAlreadyTaken(ArgumentMatchers.any(String.class));
-        verify(userDAO, times(0)).isEmailAlreadyTaken(ArgumentMatchers.any(String.class));
-        verify(userDAO, times(1)).update(captor.capture());
+        verify(userRepository, times(0)).isUsernameAlreadyTaken(ArgumentMatchers.any(String.class));
+        verify(userRepository, times(0)).isEmailAlreadyTaken(ArgumentMatchers.any(String.class));
+        verify(userRepository, times(1)).update(captor.capture());
     }
 
     @Test
@@ -519,8 +519,8 @@ public class UserServiceTest {
 
         ArgumentCaptor<User> captor = ArgumentCaptor.forClass(User.class);
 
-        when(userDAO.findByID(userID)).thenReturn(Optional.of(copyOfExistingUser));
-        when(userDAO.update(captor.capture())).thenAnswer(invocation -> invocation.getArgument(0));
+        when(userRepository.findByID(userID)).thenReturn(Optional.of(copyOfExistingUser));
+        when(userRepository.update(captor.capture())).thenAnswer(invocation -> invocation.getArgument(0));
 
         UserResponse response = userService.update(userID, updateData);
         User capturedUser = captor.getValue();
@@ -536,11 +536,11 @@ public class UserServiceTest {
         assertNotEquals(updateData.getUsername(), response.getUsername());
         assertNotEquals(updateData.getEmail(), response.getEmail());
 
-        verify(userDAO, times(1)).findByID(userID);
+        verify(userRepository, times(1)).findByID(userID);
         verify(passwordEncoder, times(0)).encode(ArgumentMatchers.any(String.class));
-        verify(userDAO, times(0)).isUsernameAlreadyTaken(ArgumentMatchers.any(String.class));
-        verify(userDAO, times(0)).isEmailAlreadyTaken(ArgumentMatchers.any(String.class));
-        verify(userDAO, times(1)).update(captor.capture());
+        verify(userRepository, times(0)).isUsernameAlreadyTaken(ArgumentMatchers.any(String.class));
+        verify(userRepository, times(0)).isEmailAlreadyTaken(ArgumentMatchers.any(String.class));
+        verify(userRepository, times(1)).update(captor.capture());
     }
 
     @Test
@@ -558,8 +558,8 @@ public class UserServiceTest {
 
         ArgumentCaptor<User> captor = ArgumentCaptor.forClass(User.class);
 
-        when(userDAO.findByID(userID)).thenReturn(Optional.of(copyOfExistingUser));
-        when(userDAO.update(captor.capture())).thenAnswer(invocation -> invocation.getArgument(0));
+        when(userRepository.findByID(userID)).thenReturn(Optional.of(copyOfExistingUser));
+        when(userRepository.update(captor.capture())).thenAnswer(invocation -> invocation.getArgument(0));
 
         UserResponse response = userService.update(userID, updateData);
         User capturedUser = captor.getValue();
@@ -575,18 +575,18 @@ public class UserServiceTest {
         assertEquals(updateData.getUsername(), response.getUsername());
         assertEquals(updateData.getEmail(), response.getEmail());
 
-        verify(userDAO, times(1)).findByID(userID);
+        verify(userRepository, times(1)).findByID(userID);
         verify(passwordEncoder, times(0)).encode(ArgumentMatchers.any(String.class));
-        verify(userDAO, times(0)).isUsernameAlreadyTaken(ArgumentMatchers.any(String.class));
-        verify(userDAO, times(0)).isEmailAlreadyTaken(ArgumentMatchers.any(String.class));
-        verify(userDAO, times(1)).update(captor.capture());
+        verify(userRepository, times(0)).isUsernameAlreadyTaken(ArgumentMatchers.any(String.class));
+        verify(userRepository, times(0)).isEmailAlreadyTaken(ArgumentMatchers.any(String.class));
+        verify(userRepository, times(1)).update(captor.capture());
     }
 
     @Test
     void update_InvalidUserID_ThrowsEntityNotFoundException() {
         UUID userID = UUID.randomUUID();
 
-        when(userDAO.findByID(userID)).thenReturn(Optional.empty());
+        when(userRepository.findByID(userID)).thenReturn(Optional.empty());
 
         EntityNotFoundException exception = assertThrows(EntityNotFoundException.class, () -> {
             userService.update(userID, new User());
@@ -597,11 +597,11 @@ public class UserServiceTest {
 
         assertTrue(actualMessage.contains(expectedMessage));
 
-        verify(userDAO, times(1)).findByID(userID);
+        verify(userRepository, times(1)).findByID(userID);
         verify(passwordEncoder, times(0)).encode(ArgumentMatchers.any(String.class));
-        verify(userDAO, times(0)).isUsernameAlreadyTaken(ArgumentMatchers.any(String.class));
-        verify(userDAO, times(0)).isEmailAlreadyTaken(ArgumentMatchers.any(String.class));
-        verify(userDAO, times(0)).update(ArgumentMatchers.any(User.class));
+        verify(userRepository, times(0)).isUsernameAlreadyTaken(ArgumentMatchers.any(String.class));
+        verify(userRepository, times(0)).isEmailAlreadyTaken(ArgumentMatchers.any(String.class));
+        verify(userRepository, times(0)).update(ArgumentMatchers.any(User.class));
     }
 
     @Test
@@ -612,8 +612,8 @@ public class UserServiceTest {
         User updateData = new User();
         updateData.setUsername("ABUsernameBA");
 
-        when(userDAO.findByID(userID)).thenReturn(Optional.of(user));
-        when(userDAO.isUsernameAlreadyTaken(ArgumentMatchers.any(String.class))).thenReturn(true);
+        when(userRepository.findByID(userID)).thenReturn(Optional.of(user));
+        when(userRepository.isUsernameAlreadyTaken(ArgumentMatchers.any(String.class))).thenReturn(true);
 
         EntityAlreadyExistsException exception = assertThrows(EntityAlreadyExistsException.class, () -> {
             userService.update(userID, updateData);
@@ -624,11 +624,11 @@ public class UserServiceTest {
 
         assertTrue(actualMessage.contains(expectedMessage));
 
-        verify(userDAO, times(1)).findByID(userID);
-        verify(userDAO, times(1)).isUsernameAlreadyTaken(ArgumentMatchers.any(String.class));
+        verify(userRepository, times(1)).findByID(userID);
+        verify(userRepository, times(1)).isUsernameAlreadyTaken(ArgumentMatchers.any(String.class));
         verify(passwordEncoder, times(0)).encode(ArgumentMatchers.any(String.class));
-        verify(userDAO, times(0)).isEmailAlreadyTaken(ArgumentMatchers.any(String.class));
-        verify(userDAO, times(0)).update(ArgumentMatchers.any(User.class));
+        verify(userRepository, times(0)).isEmailAlreadyTaken(ArgumentMatchers.any(String.class));
+        verify(userRepository, times(0)).update(ArgumentMatchers.any(User.class));
     }
 
     @Test
@@ -639,8 +639,8 @@ public class UserServiceTest {
         User updateData = new User();
         updateData.setEmail("AB@mail.mail");
 
-        when(userDAO.findByID(userID)).thenReturn(Optional.of(user));
-        when(userDAO.isEmailAlreadyTaken(ArgumentMatchers.any(String.class))).thenReturn(true);
+        when(userRepository.findByID(userID)).thenReturn(Optional.of(user));
+        when(userRepository.isEmailAlreadyTaken(ArgumentMatchers.any(String.class))).thenReturn(true);
 
         EntityAlreadyExistsException exception = assertThrows(EntityAlreadyExistsException.class, () -> {
             userService.update(userID, updateData);
@@ -651,26 +651,30 @@ public class UserServiceTest {
 
         assertTrue(actualMessage.contains(expectedMessage));
 
-        verify(userDAO, times(1)).findByID(userID);
-        verify(userDAO, times(0)).isUsernameAlreadyTaken(ArgumentMatchers.any(String.class));
+        verify(userRepository, times(1)).findByID(userID);
+        verify(userRepository, times(0)).isUsernameAlreadyTaken(ArgumentMatchers.any(String.class));
         verify(passwordEncoder, times(0)).encode(ArgumentMatchers.any(String.class));
-        verify(userDAO, times(1)).isEmailAlreadyTaken(ArgumentMatchers.any(String.class));
-        verify(userDAO, times(0)).update(ArgumentMatchers.any(User.class));
+        verify(userRepository, times(1)).isEmailAlreadyTaken(ArgumentMatchers.any(String.class));
+        verify(userRepository, times(0)).update(ArgumentMatchers.any(User.class));
     }
 
     @Test
     void delete_ValidUserID_UserDeletedSuccessfully() {
         UUID userID = UUID.randomUUID();
 
-        when(userDAO.delete(userID)).thenReturn(1);
+        User user = createDefaultUser(userID);
+
+        when(userRepository.findByID(userID)).thenReturn(Optional.of(user));
+        doNothing().when(userRepository).delete(ArgumentMatchers.any(User.class));
 
         userService.delete(userID);
 
-        verify(userDAO, times(1)).delete(userID);
+        verify(userRepository, times(1)).findByID(userID);
+        verify(userRepository, times(1)).delete(ArgumentMatchers.any(User.class));
     }
 
     @Test
-    void delete_InvalidUserID_ThrowsIllegalArgumentException() {
+    void delete_NulldUserID_ThrowsIllegalArgumentException() {
         UUID userID = null;
 
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
@@ -682,14 +686,16 @@ public class UserServiceTest {
 
         assertTrue(actualMessage.contains(expectedMessage));
 
-        verify(userDAO, times(0)).delete(userID);
+        verify(userRepository, times(0)).findByID(ArgumentMatchers.any(UUID.class));
+        verify(userRepository, times(0)).delete(ArgumentMatchers.any(User.class));
     }
 
     @Test
-    void delete_NoUsersDeleted_ThrowsEntityNotFoundException() {
+    void delete_InvalidUserID_ThrowsEntityNotFoundException() {
         UUID userID = UUID.randomUUID();
 
-        when(userDAO.delete(userID)).thenReturn(0);
+        when(userRepository.findByID(userID))
+                .thenThrow(new EntityNotFoundException(ExceptionMessage.NOT_FOUND.toString()));
 
         EntityNotFoundException exception = assertThrows(EntityNotFoundException.class, () -> {
             userService.delete(userID);
@@ -700,6 +706,7 @@ public class UserServiceTest {
 
         assertTrue(actualMessage.contains(expectedMessage));
 
-        verify(userDAO, times(1)).delete(userID);
+        verify(userRepository, times(1)).findByID(userID);
+        verify(userRepository, times(0)).delete(ArgumentMatchers.any(User.class));
     }
 }

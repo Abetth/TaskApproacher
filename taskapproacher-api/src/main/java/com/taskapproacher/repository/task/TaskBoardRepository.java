@@ -1,4 +1,4 @@
-package com.taskapproacher.dao.task;
+package com.taskapproacher.repository.task;
 
 import com.taskapproacher.entity.task.Task;
 import com.taskapproacher.entity.task.TaskBoard;
@@ -18,12 +18,12 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Repository
-public class TaskBoardDAO implements GenericDAO<TaskBoard>, RelatedEntityDAO<Task, UUID> {
+public class TaskBoardRepository implements GenericDAO<TaskBoard>, RelatedEntityDAO<Task, UUID> {
 
     private final SessionFactory sessionFactory;
 
     @Autowired
-    public TaskBoardDAO(SessionFactory sessionFactory) {
+    public TaskBoardRepository(SessionFactory sessionFactory) {
         this.sessionFactory = sessionFactory;
     }
 
@@ -34,7 +34,7 @@ public class TaskBoardDAO implements GenericDAO<TaskBoard>, RelatedEntityDAO<Tas
 
         try (Session session = sessionFactory.openSession()) {
             transaction = session.beginTransaction();
-            taskBoard = session.get(TaskBoard.class, taskBoardID);
+            taskBoard = session.find(TaskBoard.class, taskBoardID);
             transaction.commit();
         } catch (Exception exception) {
             if (transaction != null && transaction.isActive()) {
@@ -118,26 +118,19 @@ public class TaskBoardDAO implements GenericDAO<TaskBoard>, RelatedEntityDAO<Tas
     }
 
     @Override
-    public int delete(UUID taskBoardID) {
+    public void delete(TaskBoard taskBoard) {
         Transaction transaction = null;
+
 
         try (Session session = sessionFactory.openSession()) {
             transaction = session.beginTransaction();
-            int rowsAffected = session.createQuery(
-                                              """
-                                                      DELETE FROM TaskBoard\s
-                                                       WHERE ID = :boardID
-                                                      """
-                                      )
-                                      .setParameter("boardID", taskBoardID)
-                                      .executeUpdate();
+            session.remove(taskBoard);
             transaction.commit();
-            return rowsAffected;
         } catch (Exception exception) {
             if (transaction != null && transaction.isActive()) {
                 transaction.rollback();
             }
-            throw new HibernateException("[DB] Failed to delete task board: " + taskBoardID, exception);
+            throw new HibernateException("[DB] Failed to delete task board: " + taskBoard.getID(), exception);
         }
     }
 }

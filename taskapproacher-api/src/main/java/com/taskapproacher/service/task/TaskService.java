@@ -2,7 +2,7 @@ package com.taskapproacher.service.task;
 
 import com.taskapproacher.constant.ExceptionMessage;
 import com.taskapproacher.constant.Priority;
-import com.taskapproacher.dao.task.TaskDAO;
+import com.taskapproacher.repository.task.TaskRepository;
 import com.taskapproacher.entity.task.Task;
 import com.taskapproacher.entity.task.TaskBoard;
 import com.taskapproacher.entity.task.request.TaskRequest;
@@ -19,12 +19,12 @@ import java.util.UUID;
 
 @Service
 public class TaskService {
-    private final TaskDAO taskDAO;
+    private final TaskRepository taskRepository;
     private final TaskBoardService taskBoardService;
 
     @Autowired
-    public TaskService(TaskDAO taskDAO, TaskBoardService taskBoardService) {
-        this.taskDAO = taskDAO;
+    public TaskService(TaskRepository taskRepository, TaskBoardService taskBoardService) {
+        this.taskRepository = taskRepository;
         this.taskBoardService = taskBoardService;
     }
 
@@ -33,7 +33,7 @@ public class TaskService {
             throw new IllegalArgumentException("Task id " + ExceptionMessage.NULL);
         }
 
-        return taskDAO.findByID(taskID).orElseThrow(
+        return taskRepository.findByID(taskID).orElseThrow(
                 () -> new EntityNotFoundException("Task " + ExceptionMessage.NOT_FOUND)
         );
     }
@@ -67,7 +67,7 @@ public class TaskService {
         Task taskFromRequest = new Task(request);
         taskFromRequest.setTaskBoard(boardForTask);
 
-        return new TaskResponse(taskDAO.save(taskFromRequest));
+        return new TaskResponse(taskRepository.save(taskFromRequest));
     }
 
     public TaskResponse update(UUID taskID, TaskRequest request, String timeZone)
@@ -100,7 +100,7 @@ public class TaskService {
             updatedTask.setTaskBoard(request.getTaskBoard());
         }
 
-        return new TaskResponse(taskDAO.update(updatedTask));
+        return new TaskResponse(taskRepository.update(updatedTask));
     }
 
     public void delete(UUID taskID) throws IllegalArgumentException {
@@ -108,10 +108,8 @@ public class TaskService {
             throw new IllegalArgumentException("Task id " + ExceptionMessage.NULL);
         }
 
-        int entriesAffected = taskDAO.delete(taskID);
+        Task task = findByID(taskID);
 
-        if (entriesAffected == 0) {
-            throw new EntityNotFoundException("Task with ID: " + taskID + " not found for deletion");
-        }
+        taskRepository.delete(task);
     }
 }

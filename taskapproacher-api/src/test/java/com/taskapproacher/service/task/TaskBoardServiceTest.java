@@ -3,7 +3,7 @@ package com.taskapproacher.service.task;
 import com.taskapproacher.constant.ExceptionMessage;
 import com.taskapproacher.constant.Priority;
 import com.taskapproacher.constant.Role;
-import com.taskapproacher.dao.task.TaskBoardDAO;
+import com.taskapproacher.repository.task.TaskBoardRepository;
 import com.taskapproacher.entity.task.Task;
 import com.taskapproacher.entity.task.TaskBoard;
 import com.taskapproacher.entity.task.response.TaskBoardResponse;
@@ -38,7 +38,7 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 public class TaskBoardServiceTest {
     @Mock
-    private TaskBoardDAO taskBoardDAO;
+    private TaskBoardRepository taskBoardRepository;
     @Mock
     private UserService userService;
     @InjectMocks
@@ -107,13 +107,13 @@ public class TaskBoardServiceTest {
 
         TaskBoard mockBoard = createDefaultTaskBoard(boardID, new User());
 
-        when(taskBoardDAO.findByID(boardID)).thenReturn(Optional.of(mockBoard));
+        when(taskBoardRepository.findByID(boardID)).thenReturn(Optional.of(mockBoard));
 
         TaskBoard taskBoard = taskBoardService.findByID(boardID);
 
         assertTaskBoardEquals(mockBoard, taskBoard);
 
-        verify(taskBoardDAO, times(1)).findByID(boardID);
+        verify(taskBoardRepository, times(1)).findByID(boardID);
     }
 
     @Test
@@ -129,14 +129,14 @@ public class TaskBoardServiceTest {
 
         assertTrue(actualMessage.contains(expectedMessage));
 
-        verify(taskBoardDAO, times(0)).findByID(boardID);
+        verify(taskBoardRepository, times(0)).findByID(boardID);
     }
 
     @Test
     void findByID_InvalidTaskBoardID_ThrowsEntityNotFoundException() {
         UUID boardID = UUID.randomUUID();
 
-        when(taskBoardDAO.findByID(boardID)).thenReturn(Optional.empty());
+        when(taskBoardRepository.findByID(boardID)).thenReturn(Optional.empty());
 
         EntityNotFoundException exception = assertThrows(EntityNotFoundException.class, () -> {
             taskBoardService.findByID(boardID);
@@ -147,7 +147,7 @@ public class TaskBoardServiceTest {
 
         assertTrue(actualMessage.contains(expectedMessage));
 
-        verify(taskBoardDAO, times(1)).findByID(boardID);
+        verify(taskBoardRepository, times(1)).findByID(boardID);
     }
 
     @Test
@@ -159,8 +159,8 @@ public class TaskBoardServiceTest {
 
         List<Task> mockListOfTasks = createDefaultListOfTasks();
 
-        when(taskBoardDAO.findByID(boardID)).thenReturn(Optional.of(taskBoard));
-        when(taskBoardDAO.findRelatedEntitiesByID(boardID)).thenReturn(mockListOfTasks);
+        when(taskBoardRepository.findByID(boardID)).thenReturn(Optional.of(taskBoard));
+        when(taskBoardRepository.findRelatedEntitiesByID(boardID)).thenReturn(mockListOfTasks);
 
         List<TaskResponse> listOfTasks = taskBoardService.findByTaskBoard(boardID);
 
@@ -168,8 +168,8 @@ public class TaskBoardServiceTest {
         assertEquals(listOfTasks.get(0).getID(), mockListOfTasks.get(0).getID());
         assertEquals(listOfTasks.get(1).getID(), mockListOfTasks.get(1).getID());
 
-        verify(taskBoardDAO, times(1)).findByID(boardID);
-        verify(taskBoardDAO, times(1)).findRelatedEntitiesByID(boardID);
+        verify(taskBoardRepository, times(1)).findByID(boardID);
+        verify(taskBoardRepository, times(1)).findRelatedEntitiesByID(boardID);
     }
 
     @Test
@@ -185,14 +185,14 @@ public class TaskBoardServiceTest {
 
         assertTrue(actualMessage.contains(expectedMessage));
 
-        verify(taskBoardDAO, times(0)).findRelatedEntitiesByID(boardID);
+        verify(taskBoardRepository, times(0)).findRelatedEntitiesByID(boardID);
     }
 
     @Test
     void findByTaskBoard_InvalidTaskBoardID_ThrowsEntityNotFoundException() {
         UUID boardID = UUID.randomUUID();
 
-        when(taskBoardDAO.findByID(boardID)).thenReturn(Optional.empty());
+        when(taskBoardRepository.findByID(boardID)).thenReturn(Optional.empty());
 
         EntityNotFoundException exception = assertThrows(EntityNotFoundException.class, () -> {
             taskBoardService.findByTaskBoard(boardID);
@@ -203,7 +203,7 @@ public class TaskBoardServiceTest {
 
         assertTrue(actualMessage.contains(expectedMessage));
 
-        verify(taskBoardDAO, times(1)).findByID(boardID);
+        verify(taskBoardRepository, times(1)).findByID(boardID);
     }
 
     @Test
@@ -214,7 +214,7 @@ public class TaskBoardServiceTest {
         TaskBoard taskBoard = createDefaultTaskBoard(null, null);
 
         when(userService.findByID(userID)).thenReturn(user);
-        when(taskBoardDAO.save(ArgumentMatchers.any(TaskBoard.class)))
+        when(taskBoardRepository.save(ArgumentMatchers.any(TaskBoard.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
 
         TaskBoardResponse response = taskBoardService.create(userID, taskBoard);
@@ -223,7 +223,7 @@ public class TaskBoardServiceTest {
         assertEquals(user, response.getUser());
 
         verify(userService, times(1)).findByID(userID);
-        verify(taskBoardDAO, times(1)).save(ArgumentMatchers.any(TaskBoard.class));
+        verify(taskBoardRepository, times(1)).save(ArgumentMatchers.any(TaskBoard.class));
     }
 
     @Test
@@ -242,7 +242,7 @@ public class TaskBoardServiceTest {
 
         assertTrue(actualMessage.contains(expectedMessage));
 
-        verify(taskBoardDAO, times(0)).save(ArgumentMatchers.any(TaskBoard.class));
+        verify(taskBoardRepository, times(0)).save(ArgumentMatchers.any(TaskBoard.class));
     }
 
     @Test
@@ -261,7 +261,7 @@ public class TaskBoardServiceTest {
 
         assertTrue(actualMessage.contains(expectedMessage));
 
-        verify(taskBoardDAO, times(0)).save(ArgumentMatchers.any(TaskBoard.class));
+        verify(taskBoardRepository, times(0)).save(ArgumentMatchers.any(TaskBoard.class));
     }
 
     @Test
@@ -277,7 +277,7 @@ public class TaskBoardServiceTest {
         });
 
         verify(userService, times(1)).findByID(userID);
-        verify(taskBoardDAO, times(0)).save(ArgumentMatchers.any(TaskBoard.class));
+        verify(taskBoardRepository, times(0)).save(ArgumentMatchers.any(TaskBoard.class));
     }
 
     @Test
@@ -293,7 +293,7 @@ public class TaskBoardServiceTest {
         });
 
         verify(userService, times(1)).findByID(userID);
-        verify(taskBoardDAO, times(0)).save(ArgumentMatchers.any(TaskBoard.class));
+        verify(taskBoardRepository, times(0)).save(ArgumentMatchers.any(TaskBoard.class));
     }
 
     @Test
@@ -316,8 +316,8 @@ public class TaskBoardServiceTest {
 
         ArgumentCaptor<TaskBoard> captor = ArgumentCaptor.forClass(TaskBoard.class);
 
-        when(taskBoardDAO.findByID(boardID)).thenReturn(Optional.of(copyOfExistingTaskBoard));
-        when(taskBoardDAO.update(captor.capture())).thenAnswer(invocation -> invocation.getArgument(0));
+        when(taskBoardRepository.findByID(boardID)).thenReturn(Optional.of(copyOfExistingTaskBoard));
+        when(taskBoardRepository.update(captor.capture())).thenAnswer(invocation -> invocation.getArgument(0));
 
         TaskBoardResponse response = taskBoardService.update(boardID, updateData);
         TaskBoard capturedBoard = captor.getValue();
@@ -332,8 +332,8 @@ public class TaskBoardServiceTest {
         assertEquals(updateData.getTitle(), response.getTitle());
         assertEquals(updateData.isSorted(), response.isSorted());
 
-        verify(taskBoardDAO, times(1)).findByID(boardID);
-        verify(taskBoardDAO, times(1)).update(captor.capture());
+        verify(taskBoardRepository, times(1)).findByID(boardID);
+        verify(taskBoardRepository, times(1)).update(captor.capture());
     }
 
     @Test
@@ -349,14 +349,14 @@ public class TaskBoardServiceTest {
 
         assertTrue(actualMessage.contains(expectedMessage));
 
-        verify(taskBoardDAO, times(0)).update(ArgumentMatchers.any(TaskBoard.class));
+        verify(taskBoardRepository, times(0)).update(ArgumentMatchers.any(TaskBoard.class));
     }
 
     @Test
     void update_InvalidTaskBoardID_ThrowsEntityNotFoundException() {
         UUID boardID = UUID.randomUUID();
 
-        when(taskBoardDAO.findByID(boardID)).thenReturn(Optional.empty());
+        when(taskBoardRepository.findByID(boardID)).thenReturn(Optional.empty());
 
         EntityNotFoundException exception = assertThrows(EntityNotFoundException.class, () -> {
             taskBoardService.update(boardID, new TaskBoard());
@@ -367,8 +367,8 @@ public class TaskBoardServiceTest {
 
         assertTrue(actualMessage.contains(expectedMessage));
 
-        verify(taskBoardDAO, times(1)).findByID(boardID);
-        verify(taskBoardDAO, times(0)).update(ArgumentMatchers.any(TaskBoard.class));
+        verify(taskBoardRepository, times(1)).findByID(boardID);
+        verify(taskBoardRepository, times(0)).update(ArgumentMatchers.any(TaskBoard.class));
     }
 
     @Test
@@ -390,8 +390,8 @@ public class TaskBoardServiceTest {
 
         ArgumentCaptor<TaskBoard> captor = ArgumentCaptor.forClass(TaskBoard.class);
 
-        when(taskBoardDAO.findByID(boardID)).thenReturn(Optional.of(copyOfExistingTaskBoard));
-        when(taskBoardDAO.update(captor.capture())).thenAnswer(invocation -> invocation.getArgument(0));
+        when(taskBoardRepository.findByID(boardID)).thenReturn(Optional.of(copyOfExistingTaskBoard));
+        when(taskBoardRepository.update(captor.capture())).thenAnswer(invocation -> invocation.getArgument(0));
 
         TaskBoardResponse response = taskBoardService.update(boardID, updateData);
         TaskBoard capturedTaskBoard = captor.getValue();
@@ -401,8 +401,8 @@ public class TaskBoardServiceTest {
         assertNotNull(response);
         assertNotEquals(updateData.getTitle(), response.getTitle());
 
-        verify(taskBoardDAO, times(1)).findByID(boardID);
-        verify(taskBoardDAO, times(1)).update(captor.capture());
+        verify(taskBoardRepository, times(1)).findByID(boardID);
+        verify(taskBoardRepository, times(1)).update(captor.capture());
     }
 
     @Test
@@ -425,8 +425,8 @@ public class TaskBoardServiceTest {
 
         ArgumentCaptor<TaskBoard> captor = ArgumentCaptor.forClass(TaskBoard.class);
 
-        when(taskBoardDAO.findByID(boardID)).thenReturn(Optional.of(copyOfExistingTaskBoard));
-        when(taskBoardDAO.update(captor.capture())).thenAnswer(invocation -> invocation.getArgument(0));
+        when(taskBoardRepository.findByID(boardID)).thenReturn(Optional.of(copyOfExistingTaskBoard));
+        when(taskBoardRepository.update(captor.capture())).thenAnswer(invocation -> invocation.getArgument(0));
 
         TaskBoardResponse response = taskBoardService.update(boardID, updateData);
         TaskBoard capturedTaskBoard = captor.getValue();
@@ -436,19 +436,23 @@ public class TaskBoardServiceTest {
         assertNotNull(response);
         assertNotEquals(updateData.getTitle(), response.getTitle());
 
-        verify(taskBoardDAO, times(1)).findByID(boardID);
-        verify(taskBoardDAO, times(1)).update(captor.capture());
+        verify(taskBoardRepository, times(1)).findByID(boardID);
+        verify(taskBoardRepository, times(1)).update(captor.capture());
     }
 
     @Test
     void delete_ValidTaskBoardID_TaskBoardDeletedSuccessfully() {
         UUID boardID = UUID.randomUUID();
 
-        when(taskBoardDAO.delete(boardID)).thenReturn(1);
+        TaskBoard taskBoard = createDefaultTaskBoard(boardID, new User());
+
+        when(taskBoardRepository.findByID(boardID)).thenReturn(Optional.of(taskBoard));
+        doNothing().when(taskBoardRepository).delete(ArgumentMatchers.any(TaskBoard.class));
 
         taskBoardService.delete(boardID);
 
-        verify(taskBoardDAO, times(1)).delete(boardID);
+        verify(taskBoardRepository, times(1)).findByID(boardID);
+        verify(taskBoardRepository, times(1)).delete(ArgumentMatchers.any(TaskBoard.class));
     }
 
     @Test
@@ -464,14 +468,16 @@ public class TaskBoardServiceTest {
 
         assertTrue(actualMessage.contains(expectedMessage));
 
-        verify(taskBoardDAO, times(0)).delete(boardID);
+        verify(taskBoardRepository, times(0)).findByID(ArgumentMatchers.any(UUID.class));
+        verify(taskBoardRepository, times(0)).delete(ArgumentMatchers.any(TaskBoard.class));
     }
 
     @Test
-    void delete_NoTaskBoardsDeleted_ThrowsEntityNotFoundException() {
+    void delete_InvalidTaskBoardID_ThrowsEntityNotFoundException() {
         UUID boardID = UUID.randomUUID();
 
-        when(taskBoardDAO.delete(boardID)).thenReturn(0);
+        when(taskBoardRepository.findByID(boardID))
+                .thenThrow(new EntityNotFoundException(ExceptionMessage.NOT_FOUND.toString()));
 
         EntityNotFoundException exception = assertThrows(EntityNotFoundException.class, () -> {
             taskBoardService.delete(boardID);
@@ -482,6 +488,7 @@ public class TaskBoardServiceTest {
 
         assertTrue(actualMessage.contains(expectedMessage));
 
-        verify(taskBoardDAO, times(1)).delete(boardID);
+        verify(taskBoardRepository, times(1)).findByID(boardID);
+        verify(taskBoardRepository, times(0)).delete(ArgumentMatchers.any(TaskBoard.class));
     }
 }

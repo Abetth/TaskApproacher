@@ -2,7 +2,7 @@ package com.taskapproacher.service.task;
 
 import com.taskapproacher.constant.ExceptionMessage;
 import com.taskapproacher.constant.Priority;
-import com.taskapproacher.dao.task.TaskDAO;
+import com.taskapproacher.repository.task.TaskRepository;
 import com.taskapproacher.entity.task.Task;
 import com.taskapproacher.entity.task.TaskBoard;
 import com.taskapproacher.entity.task.request.TaskRequest;
@@ -36,7 +36,7 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 public class TaskServiceTest<T> {
     @Mock
-    private TaskDAO taskDAO;
+    private TaskRepository taskRepository;
     @Mock
     private TaskBoardService taskBoardService;
     @InjectMocks
@@ -105,20 +105,20 @@ public class TaskServiceTest<T> {
 
         Task mockTask = createDefaultTask(taskID, new TaskBoard());
 
-        when(taskDAO.findByID(taskID)).thenReturn(Optional.of(mockTask));
+        when(taskRepository.findByID(taskID)).thenReturn(Optional.of(mockTask));
 
         Task task = taskService.findByID(taskID);
 
         assertTaskEquals(mockTask, task);
 
-        verify(taskDAO, times(1)).findByID(taskID);
+        verify(taskRepository, times(1)).findByID(taskID);
     }
 
     @Test
     void findByID_InvalidTaskID_ThrowsEntityNotFoundException() {
         UUID taskID = UUID.randomUUID();
 
-        when(taskDAO.findByID(taskID)).thenReturn(Optional.empty());
+        when(taskRepository.findByID(taskID)).thenReturn(Optional.empty());
 
         EntityNotFoundException exception = assertThrows(EntityNotFoundException.class, () -> {
             taskService.findByID(taskID);
@@ -129,7 +129,7 @@ public class TaskServiceTest<T> {
 
         assertTrue(actualMessage.contains(expectedMessage));
 
-        verify(taskDAO, times(1)).findByID(taskID);
+        verify(taskRepository, times(1)).findByID(taskID);
     }
 
     @Test
@@ -145,7 +145,7 @@ public class TaskServiceTest<T> {
 
         assertTrue(actualMessage.contains(expectedMessage));
 
-        verify(taskDAO, times(0)).findByID(taskID);
+        verify(taskRepository, times(0)).findByID(taskID);
     }
 
     @Test
@@ -156,7 +156,7 @@ public class TaskServiceTest<T> {
 
         TaskRequest request = createDefaultTaskRequest(null);
 
-        when(taskDAO.save(ArgumentMatchers.any(Task.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(taskRepository.save(ArgumentMatchers.any(Task.class))).thenAnswer(invocation -> invocation.getArgument(0));
         when(taskBoardService.findByID(boardID)).thenReturn(taskBoard);
 
         TaskResponse response = taskService.create(boardID, request, DEFAULT_TIME_ZONE);
@@ -164,7 +164,7 @@ public class TaskServiceTest<T> {
         assertTaskEquals(request, response);
         assertEquals(taskBoard, response.getTaskBoard());
 
-        verify(taskDAO, times(1)).save(ArgumentMatchers.any(Task.class));
+        verify(taskRepository, times(1)).save(ArgumentMatchers.any(Task.class));
         verify(taskBoardService, times(1)).findByID(boardID);
     }
 
@@ -182,7 +182,7 @@ public class TaskServiceTest<T> {
         });
 
         verify(taskBoardService, times(1)).findByID(boardID);
-        verify(taskDAO, times(0)).save(ArgumentMatchers.any(Task.class));
+        verify(taskRepository, times(0)).save(ArgumentMatchers.any(Task.class));
     }
 
     @Test
@@ -206,7 +206,7 @@ public class TaskServiceTest<T> {
         assertTrue(actualMessage.contains(expectedMessage));
 
         verify(taskBoardService, times(1)).findByID(boardID);
-        verify(taskDAO, times(0)).save(ArgumentMatchers.any(Task.class));
+        verify(taskRepository, times(0)).save(ArgumentMatchers.any(Task.class));
     }
 
     @Test
@@ -230,7 +230,7 @@ public class TaskServiceTest<T> {
         assertTrue(actualMessage.contains(expectedMessage));
 
         verify(taskBoardService, times(1)).findByID(boardID);
-        verify(taskDAO, times(0)).save(ArgumentMatchers.any(Task.class));
+        verify(taskRepository, times(0)).save(ArgumentMatchers.any(Task.class));
     }
 
     @Test
@@ -245,7 +245,7 @@ public class TaskServiceTest<T> {
         ArgumentCaptor<Task> captor = ArgumentCaptor.forClass(Task.class);
 
         when(taskBoardService.findByID(boardID)).thenReturn(taskBoard);
-        when(taskDAO.save(captor.capture())).thenAnswer(invocation -> invocation.getArgument(0));
+        when(taskRepository.save(captor.capture())).thenAnswer(invocation -> invocation.getArgument(0));
 
         TaskResponse response = taskService.create(boardID, request, DEFAULT_TIME_ZONE);
         Task capturedTask = captor.getValue();
@@ -258,7 +258,7 @@ public class TaskServiceTest<T> {
         assertEquals(taskBoard, response.getTaskBoard());
 
         verify(taskBoardService, times(1)).findByID(boardID);
-        verify(taskDAO, times(1)).save(captor.capture());
+        verify(taskRepository, times(1)).save(captor.capture());
     }
 
     @Test
@@ -273,7 +273,7 @@ public class TaskServiceTest<T> {
         ArgumentCaptor<Task> captor = ArgumentCaptor.forClass(Task.class);
 
         when(taskBoardService.findByID(boardID)).thenReturn(taskBoard);
-        when(taskDAO.save(captor.capture())).thenAnswer(invocation -> invocation.getArgument(0));
+        when(taskRepository.save(captor.capture())).thenAnswer(invocation -> invocation.getArgument(0));
 
         TaskResponse response = taskService.create(boardID, request, DEFAULT_TIME_ZONE);
         Task capturedTask = captor.getValue();
@@ -286,7 +286,7 @@ public class TaskServiceTest<T> {
         assertEquals(taskBoard, response.getTaskBoard());
 
         verify(taskBoardService, times(1)).findByID(boardID);
-        verify(taskDAO, times(1)).save(captor.capture());
+        verify(taskRepository, times(1)).save(captor.capture());
     }
 
     @Test
@@ -310,7 +310,7 @@ public class TaskServiceTest<T> {
         assertTrue(actualMessage.contains(expectedMessage));
 
         verify(taskBoardService, times(1)).findByID(boardID);
-        verify(taskDAO, times(0)).save(ArgumentMatchers.any(Task.class));
+        verify(taskRepository, times(0)).save(ArgumentMatchers.any(Task.class));
     }
 
     @Test
@@ -327,7 +327,7 @@ public class TaskServiceTest<T> {
         ArgumentCaptor<Task> captor = ArgumentCaptor.forClass(Task.class);
 
         when(taskBoardService.findByID(boardID)).thenReturn(taskBoard);
-        when(taskDAO.save(captor.capture())).thenAnswer(invocation -> invocation.getArgument(0));
+        when(taskRepository.save(captor.capture())).thenAnswer(invocation -> invocation.getArgument(0));
 
         String testTimeZone = "Pacific/Tahiti";
 
@@ -341,7 +341,7 @@ public class TaskServiceTest<T> {
         assertEquals(taskBoard, response.getTaskBoard());
 
         verify(taskBoardService, times(1)).findByID(boardID);
-        verify(taskDAO, times(1)).save(captor.capture());
+        verify(taskRepository, times(1)).save(captor.capture());
     }
 
     @Test
@@ -365,7 +365,7 @@ public class TaskServiceTest<T> {
         assertTrue(actualMessage.contains(expectedMessage));
 
         verify(taskBoardService, times(1)).findByID(boardID);
-        verify(taskDAO, times(0)).save(ArgumentMatchers.any(Task.class));
+        verify(taskRepository, times(0)).save(ArgumentMatchers.any(Task.class));
     }
 
     @Test
@@ -388,8 +388,8 @@ public class TaskServiceTest<T> {
 
         ArgumentCaptor<Task> captor = ArgumentCaptor.forClass(Task.class);
 
-        when(taskDAO.findByID(taskID)).thenReturn(Optional.of(copyOfExistingTask));
-        when(taskDAO.update(captor.capture())).thenAnswer(invocation -> invocation.getArgument(0));
+        when(taskRepository.findByID(taskID)).thenReturn(Optional.of(copyOfExistingTask));
+        when(taskRepository.update(captor.capture())).thenAnswer(invocation -> invocation.getArgument(0));
 
         TaskResponse response = taskService.update(taskID, updateData, DEFAULT_TIME_ZONE);
         Task capturedTask = captor.getValue();
@@ -407,8 +407,8 @@ public class TaskServiceTest<T> {
         assertTaskEquals(updateData, response);
         assertEquals(taskID, response.getID());
 
-        verify(taskDAO, times(1)).findByID(taskID);
-        verify(taskDAO, times(1)).update(captor.capture());
+        verify(taskRepository, times(1)).findByID(taskID);
+        verify(taskRepository, times(1)).update(captor.capture());
     }
 
     @Test
@@ -430,8 +430,8 @@ public class TaskServiceTest<T> {
 
         ArgumentCaptor<Task> captor = ArgumentCaptor.forClass(Task.class);
 
-        when(taskDAO.findByID(taskID)).thenReturn(Optional.of(copyOfExistingTask));
-        when(taskDAO.update(captor.capture())).thenAnswer(invocation -> invocation.getArgument(0));
+        when(taskRepository.findByID(taskID)).thenReturn(Optional.of(copyOfExistingTask));
+        when(taskRepository.update(captor.capture())).thenAnswer(invocation -> invocation.getArgument(0));
 
         TaskResponse response = taskService.update(taskID, updateData, DEFAULT_TIME_ZONE);
         Task capturedTask = captor.getValue();
@@ -442,8 +442,8 @@ public class TaskServiceTest<T> {
         assertNotEquals(updateData.getTitle(), response.getTitle());
         assertEquals(updateData.getTaskBoard(), response.getTaskBoard());
 
-        verify(taskDAO, times(1)).findByID(taskID);
-        verify(taskDAO, times(1)).update(captor.capture());
+        verify(taskRepository, times(1)).findByID(taskID);
+        verify(taskRepository, times(1)).update(captor.capture());
     }
 
     @Test
@@ -462,8 +462,8 @@ public class TaskServiceTest<T> {
 
         ArgumentCaptor<Task> captor = ArgumentCaptor.forClass(Task.class);
 
-        when(taskDAO.findByID(taskID)).thenReturn(Optional.of(copyOfExistingTask));
-        when(taskDAO.update(captor.capture())).thenAnswer(invocation -> invocation.getArgument(0));
+        when(taskRepository.findByID(taskID)).thenReturn(Optional.of(copyOfExistingTask));
+        when(taskRepository.update(captor.capture())).thenAnswer(invocation -> invocation.getArgument(0));
 
         TaskResponse response = taskService.update(taskID, updateData, DEFAULT_TIME_ZONE);
         Task capturedTask = captor.getValue();
@@ -473,8 +473,8 @@ public class TaskServiceTest<T> {
         assertNotEquals(updateData.getID(), response.getID());
         assertNotEquals(updateData.getTitle(), response.getTitle());
 
-        verify(taskDAO, times(1)).findByID(taskID);
-        verify(taskDAO, times(1)).update(captor.capture());
+        verify(taskRepository, times(1)).findByID(taskID);
+        verify(taskRepository, times(1)).update(captor.capture());
     }
 
     @Test
@@ -489,7 +489,7 @@ public class TaskServiceTest<T> {
         TaskRequest updateData = createDefaultTaskRequest(taskBoard);
         updateData.setDeadline(LocalDate.now().minusDays(1));
 
-        when(taskDAO.findByID(taskID)).thenReturn(Optional.of(existingTask));
+        when(taskRepository.findByID(taskID)).thenReturn(Optional.of(existingTask));
 
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
             taskService.update(taskID, updateData, DEFAULT_TIME_ZONE);
@@ -500,19 +500,23 @@ public class TaskServiceTest<T> {
 
         assertTrue(actualMessage.contains(expectedMessage));
 
-        verify(taskDAO, times(1)).findByID(taskID);
-        verify(taskDAO, times(0)).update(ArgumentMatchers.any(Task.class));
+        verify(taskRepository, times(1)).findByID(taskID);
+        verify(taskRepository, times(0)).update(ArgumentMatchers.any(Task.class));
     }
 
     @Test
     void delete_ValidTaskID_TaskDeletedSuccessfully() {
         UUID taskID = UUID.randomUUID();
 
-        when(taskDAO.delete(taskID)).thenReturn(1);
+        Task task = createDefaultTask(taskID, new TaskBoard());
+
+        when(taskRepository.findByID(taskID)).thenReturn(Optional.of(task));
+        doNothing().when(taskRepository).delete(ArgumentMatchers.any(Task.class));
 
         taskService.delete(taskID);
 
-        verify(taskDAO, times(1)).delete(taskID);
+        verify(taskRepository, times(1)).findByID(taskID);
+        verify(taskRepository, times(1)).delete(ArgumentMatchers.any(Task.class));
     }
 
     @Test
@@ -528,14 +532,16 @@ public class TaskServiceTest<T> {
 
         assertTrue(actualMessage.contains(expectedMessage));
 
-        verify(taskDAO, times(0)).delete(taskID);
+        verify(taskRepository, times(0)).findByID(ArgumentMatchers.any(UUID.class));
+        verify(taskRepository, times(0)).delete(ArgumentMatchers.any(Task.class));
     }
 
     @Test
-    void delete_NoTasksDeleted_ThrowsEntityNotFoundException() {
+    void delete_InvalidTaskID_ThrowsEntityNotFoundException() {
         UUID taskID = UUID.randomUUID();
 
-        when(taskDAO.delete(taskID)).thenReturn(0);
+        when(taskRepository.findByID(taskID))
+                .thenThrow(new EntityNotFoundException(ExceptionMessage.NOT_FOUND.toString()));
 
         EntityNotFoundException exception = assertThrows(EntityNotFoundException.class, () -> {
             taskService.delete(taskID);
@@ -546,6 +552,7 @@ public class TaskServiceTest<T> {
 
         assertTrue(actualMessage.contains(expectedMessage));
 
-        verify(taskDAO, times(1)).delete(taskID);
+        verify(taskRepository, times(1)).findByID(taskID);
+        verify(taskRepository, times(0)).delete(ArgumentMatchers.any(Task.class));
     }
 }
