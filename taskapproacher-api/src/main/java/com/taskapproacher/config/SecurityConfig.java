@@ -1,9 +1,9 @@
 package com.taskapproacher.config;
 
 import com.taskapproacher.config.password.CustomPasswordEncoder;
-import com.taskapproacher.exception.handler.CustomAccessDeniedHandler;
-import com.taskapproacher.exception.handler.CustomAuthenticationEntryPoint;
-import com.taskapproacher.filter.JwtAuthenticationFilter;
+import com.taskapproacher.common.exception.handler.CustomAccessDeniedHandler;
+import com.taskapproacher.common.exception.handler.CustomAuthenticationEntryPoint;
+import com.taskapproacher.config.security.JwtAuthenticationFilter;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;

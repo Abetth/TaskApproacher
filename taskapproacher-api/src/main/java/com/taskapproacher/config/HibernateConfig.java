@@ -46,7 +46,7 @@ public class HibernateConfig {
     public LocalSessionFactoryBean sessionFactory() {
         LocalSessionFactoryBean sessionFactory = new LocalSessionFactoryBean();
         sessionFactory.setDataSource(dataSource());
-        sessionFactory.setPackagesToScan("com.taskapproacher.entity");
+        sessionFactory.setPackagesToScan("com.taskapproacher");
         sessionFactory.setHibernateProperties(hibernateProperties());
 
         return sessionFactory;

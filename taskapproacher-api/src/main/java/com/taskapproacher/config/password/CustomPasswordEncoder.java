@@ -1,6 +1,6 @@
 package com.taskapproacher.config.password;
 
-import com.taskapproacher.constant.ExceptionMessage;
+import com.taskapproacher.common.constant.ExceptionMessage;
 
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
