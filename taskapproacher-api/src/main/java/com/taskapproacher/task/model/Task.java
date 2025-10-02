@@ -5,8 +5,10 @@ import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.taskapproacher.common.interfaces.matcher.TaskMatcher;
 import com.taskapproacher.task.constant.Priority;
 
+import com.taskapproacher.task.constant.TaskConstants;
 import jakarta.persistence.*;
 
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import lombok.Getter;
@@ -30,11 +32,13 @@ public class Task implements TaskMatcher {
     private UUID ID;
 
     @Setter
-    @Column(name = "title", nullable = false, length = 510)
+    @Column(name = "title", nullable = false)
+    @Size(max = TaskConstants.MAX_TASK_TITLE_LENGTH)
     private String title;
 
     @Setter
-    @Column(name = "description", length = 2040)
+    @Column(name = "description")
+    @Size(max = TaskConstants.MAX_TASK_DESCRIPTION_LENGTH)
     private String description;
 
     @Column(name = "priority", nullable = false)
@@ -102,7 +106,7 @@ public class Task implements TaskMatcher {
     @Override
     public int hashCode() {
         return 11 + title.hashCode() + description.hashCode() + priority.getPriority()
-                + deadline.hashCode();
+                + deadline.hashCode() + Boolean.hashCode(finished);
     }
 
     @Override

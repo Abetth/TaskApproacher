@@ -195,10 +195,7 @@ public class UserServiceTest {
         UUID userID = UUID.randomUUID();
         User user = createDefaultUser(userID);
 
-        List<TaskBoardResponse> mockBoards = createDefaultListOfTaskBoards(user)
-                .stream()
-                .map(TaskBoardResponse::new)
-                .toList();
+        List<TaskBoard> mockBoards = createDefaultListOfTaskBoards(user);
 
         when(userRepository.findByID(userID)).thenReturn(Optional.of(user));
         when(userRepository.findRelatedEntitiesByID(userID)).thenReturn(mockBoards);
@@ -266,7 +263,7 @@ public class UserServiceTest {
     }
 
     @Test
-    void create_ValidUser_ReturnsUserResponse() {
+    void createUser_ValidUser_ReturnsUserResponse() {
         User user = createDefaultUser(UUID.randomUUID());
 
         String encodedPassword = "encodedUserPass";
@@ -277,7 +274,7 @@ public class UserServiceTest {
         when(userRepository.isUserExists(ArgumentMatchers.any(User.class))).thenReturn(false);
         when(passwordEncoder.encode(user.getPassword())).thenReturn(encodedPassword);
 
-        UserResponse response = userService.create(user);
+        UserResponse response = userService.createUser(user);
 
         User capturedUser = captor.getValue();
 
@@ -296,12 +293,12 @@ public class UserServiceTest {
     }
 
     @Test
-    void create_EmptyUsername_ThrowsIllegalArgumentException() {
+    void createUser_EmptyUsername_ThrowsIllegalArgumentException() {
         User user = createDefaultUser(UUID.randomUUID());
         user.setUsername("");
 
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
-            userService.create(user);
+            userService.createUser(user);
         });
 
         String expectedMessage = ExceptionMessage.EMPTY.toString();
@@ -314,12 +311,12 @@ public class UserServiceTest {
     }
 
     @Test
-    void create_NullUsername_ThrowsIllegalArgumentException() {
+    void createUser_NullUsername_ThrowsIllegalArgumentException() {
         User user = createDefaultUser(UUID.randomUUID());
         user.setUsername(null);
 
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
-           userService.create(user);
+           userService.createUser(user);
         });
 
         String expectedMessage = ExceptionMessage.NULL.toString();
@@ -332,12 +329,12 @@ public class UserServiceTest {
     }
 
     @Test
-    void create_EmptyEmail_ThrowsIllegalArgumentException() {
+    void createUser_EmptyEmail_ThrowsIllegalArgumentException() {
         User user = createDefaultUser(UUID.randomUUID());
         user.setEmail("");
 
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
-            userService.create(user);
+            userService.createUser(user);
         });
 
         String expectedMessage = ExceptionMessage.EMPTY.toString();
@@ -350,12 +347,12 @@ public class UserServiceTest {
     }
 
     @Test
-    void create_NullEmail_ThrowsIllegalArgumentException() {
+    void createUser_NullEmail_ThrowsIllegalArgumentException() {
         User user = createDefaultUser(UUID.randomUUID());
         user.setEmail(null);
 
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
-            userService.create(user);
+            userService.createUser(user);
         });
 
         String expectedMessage = ExceptionMessage.NULL.toString();
@@ -368,12 +365,12 @@ public class UserServiceTest {
     }
 
     @Test
-    void create_EmptyPassword_ThrowsIllegalArgumentException() {
+    void createUser_EmptyPassword_ThrowsIllegalArgumentException() {
         User user = createDefaultUser(UUID.randomUUID());
         user.setPassword("");
 
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
-            userService.create(user);
+            userService.createUser(user);
         });
 
         String expectedMessage = ExceptionMessage.EMPTY.toString();
@@ -386,12 +383,12 @@ public class UserServiceTest {
     }
 
     @Test
-    void create_NullPassword_ThrowsIllegalArgumentException() {
+    void createUser_NullPassword_ThrowsIllegalArgumentException() {
         User user = createDefaultUser(UUID.randomUUID());
         user.setPassword(null);
 
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
-            userService.create(user);
+            userService.createUser(user);
         });
 
         String expectedMessage = ExceptionMessage.NULL.toString();
@@ -404,13 +401,13 @@ public class UserServiceTest {
     }
 
     @Test
-    void create_UserAlreadyExists_ThrowsEntityAlreadyExistsException() {
+    void createUser_UserAlreadyExists_ThrowsEntityAlreadyExistsException() {
         User user = createDefaultUser(UUID.randomUUID());
 
         when(userRepository.isUserExists(ArgumentMatchers.any(User.class))).thenReturn(true);
 
         EntityAlreadyExistsException exception = assertThrows(EntityAlreadyExistsException.class, () -> {
-            userService.create(user);
+            userService.createUser(user);
         });
 
         String expectedMessage = ExceptionMessage.ALREADY_EXISTS.toString();
@@ -423,7 +420,7 @@ public class UserServiceTest {
     }
 
     @Test
-    void update_ValidUser_ReturnsUserResponseUserDataChanged() {
+    void updateUser_ValidUser_ReturnsUserResponseUserDataChanged() {
         UUID userID = UUID.randomUUID();
         String newEncodedPassword = "newEncodedPass";
 
@@ -445,7 +442,7 @@ public class UserServiceTest {
         when(passwordEncoder.encode(updateData.getPassword())).thenReturn(newEncodedPassword);
         when(userRepository.update(captor.capture())).thenAnswer(invocation -> invocation.getArgument(0));
 
-        UserResponse response  = userService.update(userID, updateData);
+        UserResponse response  = userService.updateUser(userID, updateData);
         User capturedUser = captor.getValue();
 
         assertNotEquals(existingUser.getUsername(), capturedUser.getUsername());
@@ -467,7 +464,7 @@ public class UserServiceTest {
     }
 
     @Test
-    void update_UserFieldsAreNull_ReturnsUserResponseUserDataDidNotChanged() {
+    void updateUser_UserFieldsAreNull_ReturnsUserResponseUserDataDidNotChanged() {
         UUID userID = UUID.randomUUID();
 
         User existingUser = createDefaultUser(userID);
@@ -482,7 +479,7 @@ public class UserServiceTest {
         when(userRepository.findByID(userID)).thenReturn(Optional.of(copyOfExistingUser));
         when(userRepository.update(captor.capture())).thenAnswer(invocation -> invocation.getArgument(0));
 
-        UserResponse response = userService.update(userID, updateData);
+        UserResponse response = userService.updateUser(userID, updateData);
         User capturedUser = captor.getValue();
 
         assertEquals(existingUser.getID(), capturedUser.getID());
@@ -504,7 +501,7 @@ public class UserServiceTest {
     }
 
     @Test
-    void update_UserFieldsAreEmpty_ReturnsUserResponseUserDataDidNotChanged() {
+    void updateUser_UserFieldsAreEmpty_ReturnsUserResponseUserDataDidNotChanged() {
         UUID userID = UUID.randomUUID();
 
         User existingUser = createDefaultUser(userID);
@@ -522,7 +519,7 @@ public class UserServiceTest {
         when(userRepository.findByID(userID)).thenReturn(Optional.of(copyOfExistingUser));
         when(userRepository.update(captor.capture())).thenAnswer(invocation -> invocation.getArgument(0));
 
-        UserResponse response = userService.update(userID, updateData);
+        UserResponse response = userService.updateUser(userID, updateData);
         User capturedUser = captor.getValue();
 
         assertEquals(existingUser.getID(), capturedUser.getID());
@@ -544,7 +541,7 @@ public class UserServiceTest {
     }
 
     @Test
-    void update_UserFieldsAreTheSame_ReturnsUserResponseUserDataDidNotChanged() {
+    void updateUser_UserFieldsAreTheSame_ReturnsUserResponseUserDataDidNotChanged() {
         UUID userID = UUID.randomUUID();
 
         User existingUser = createDefaultUser(userID);
@@ -561,7 +558,7 @@ public class UserServiceTest {
         when(userRepository.findByID(userID)).thenReturn(Optional.of(copyOfExistingUser));
         when(userRepository.update(captor.capture())).thenAnswer(invocation -> invocation.getArgument(0));
 
-        UserResponse response = userService.update(userID, updateData);
+        UserResponse response = userService.updateUser(userID, updateData);
         User capturedUser = captor.getValue();
 
         assertEquals(existingUser.getID(), capturedUser.getID());
@@ -583,13 +580,13 @@ public class UserServiceTest {
     }
 
     @Test
-    void update_InvalidUserID_ThrowsEntityNotFoundException() {
+    void updateUser_InvalidUserID_ThrowsEntityNotFoundException() {
         UUID userID = UUID.randomUUID();
 
         when(userRepository.findByID(userID)).thenReturn(Optional.empty());
 
         EntityNotFoundException exception = assertThrows(EntityNotFoundException.class, () -> {
-            userService.update(userID, new User());
+            userService.updateUser(userID, new User());
         });
 
         String expectedMessage = ExceptionMessage.NOT_FOUND.toString();
@@ -605,7 +602,7 @@ public class UserServiceTest {
     }
 
     @Test
-    void update_AlreadyTakenUsername_ThrowsEntityAlreadyExistsException() {
+    void updateUser_AlreadyTakenUsername_ThrowsEntityAlreadyExistsException() {
         UUID userID = UUID.randomUUID();
         User user = createDefaultUser(userID);
 
@@ -616,7 +613,7 @@ public class UserServiceTest {
         when(userRepository.isUsernameAlreadyTaken(ArgumentMatchers.any(String.class))).thenReturn(true);
 
         EntityAlreadyExistsException exception = assertThrows(EntityAlreadyExistsException.class, () -> {
-            userService.update(userID, updateData);
+            userService.updateUser(userID, updateData);
         });
 
         String expectedMessage = "username " + ExceptionMessage.ALREADY_EXISTS;
@@ -632,7 +629,7 @@ public class UserServiceTest {
     }
 
     @Test
-    void update_AlreadyTakenEmail_ThrowsEntityAlreadyExistsException() {
+    void updateUser_AlreadyTakenEmail_ThrowsEntityAlreadyExistsException() {
         UUID userID = UUID.randomUUID();
         User user = createDefaultUser(userID);
 
@@ -643,7 +640,7 @@ public class UserServiceTest {
         when(userRepository.isEmailAlreadyTaken(ArgumentMatchers.any(String.class))).thenReturn(true);
 
         EntityAlreadyExistsException exception = assertThrows(EntityAlreadyExistsException.class, () -> {
-            userService.update(userID, updateData);
+            userService.updateUser(userID, updateData);
         });
 
         String expectedMessage = "email " + ExceptionMessage.ALREADY_EXISTS;
@@ -659,7 +656,7 @@ public class UserServiceTest {
     }
 
     @Test
-    void delete_ValidUserID_UserDeletedSuccessfully() {
+    void deleteUser_ValidUserID_UserDeletedSuccessfully() {
         UUID userID = UUID.randomUUID();
 
         User user = createDefaultUser(userID);
@@ -667,18 +664,18 @@ public class UserServiceTest {
         when(userRepository.findByID(userID)).thenReturn(Optional.of(user));
         doNothing().when(userRepository).delete(ArgumentMatchers.any(User.class));
 
-        userService.delete(userID);
+        userService.deleteUser(userID);
 
         verify(userRepository, times(1)).findByID(userID);
         verify(userRepository, times(1)).delete(ArgumentMatchers.any(User.class));
     }
 
     @Test
-    void delete_NulldUserID_ThrowsIllegalArgumentException() {
+    void deleteUser_NulldUserID_ThrowsIllegalArgumentException() {
         UUID userID = null;
 
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
-            userService.delete(userID);
+            userService.deleteUser(userID);
         });
 
         String expectedMessage = ExceptionMessage.NULL.toString();
@@ -691,14 +688,14 @@ public class UserServiceTest {
     }
 
     @Test
-    void delete_InvalidUserID_ThrowsEntityNotFoundException() {
+    void deleteUser_InvalidUserID_ThrowsEntityNotFoundException() {
         UUID userID = UUID.randomUUID();
 
         when(userRepository.findByID(userID))
                 .thenThrow(new EntityNotFoundException(ExceptionMessage.NOT_FOUND.toString()));
 
         EntityNotFoundException exception = assertThrows(EntityNotFoundException.class, () -> {
-            userService.delete(userID);
+            userService.deleteUser(userID);
         });
 
         String expectedMessage = ExceptionMessage.NOT_FOUND.toString();

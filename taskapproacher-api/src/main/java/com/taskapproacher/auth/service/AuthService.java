@@ -32,7 +32,7 @@ public class AuthService {
         user.setPassword(request.getPassword());
         user.setEmail(request.getEmail());
 
-        UserResponse userResponse = userService.create(user);
+        UserResponse userResponse = userService.createUser(user);
 
         User createdUser = new User(userResponse);
 

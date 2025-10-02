@@ -31,21 +31,21 @@ public class TaskBoardController {
 
     @PostMapping("/{userID}")
     @PreAuthorize("#userID == authentication.principal.ID")
-    public ResponseEntity<TaskBoardResponse> create(@PathVariable UUID userID, @RequestBody TaskBoard board) {
-        TaskBoardResponse createBoard = taskBoardService.create(userID, board);
+    public ResponseEntity<TaskBoardResponse> createTaskBoard(@PathVariable UUID userID, @RequestBody TaskBoard board) {
+        TaskBoardResponse createBoard = taskBoardService.createTaskBoard(userID, board);
         return ResponseEntity.status(201).body(createBoard);
     }
 
     @PatchMapping("/{boardID}")
     @PreAuthorize("@accessCheckService.hasAccessToBoard(#boardID, authentication.principal.ID)")
-    public ResponseEntity<TaskBoardResponse> update(@PathVariable UUID boardID, @RequestBody TaskBoard board) {
-        return ResponseEntity.ok(taskBoardService.update(boardID, board));
+    public ResponseEntity<TaskBoardResponse> updateTaskBoard(@PathVariable UUID boardID, @RequestBody TaskBoard board) {
+        return ResponseEntity.ok(taskBoardService.updateTaskBoard(boardID, board));
     }
 
     @DeleteMapping("/{boardID}")
     @PreAuthorize("@accessCheckService.hasAccessToBoard(#boardID, authentication.principal.ID)")
-    public ResponseEntity<TaskBoardResponse> delete(@PathVariable UUID boardID) {
-        taskBoardService.delete(boardID);
+    public ResponseEntity<TaskBoardResponse> deleteTaskBoard(@PathVariable UUID boardID) {
+        taskBoardService.deleteTaskBoard(boardID);
         return ResponseEntity.noContent().build();
     }
 }

@@ -4,9 +4,9 @@ import com.taskapproacher.common.constant.ExceptionMessage;
 import com.taskapproacher.task.constant.Priority;
 import com.taskapproacher.task.model.Task;
 import com.taskapproacher.task.model.TaskBoard;
-import com.taskapproacher.task.repository.TaskBoardRepository;
-import com.taskapproacher.task.repository.TaskRepository;
 import com.taskapproacher.user.model.User;
+import com.taskapproacher.task.service.TaskBoardService;
+import com.taskapproacher.task.service.TaskService;
 
 import jakarta.persistence.EntityNotFoundException;
 
@@ -18,7 +18,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDate;
-import java.util.Optional;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -27,9 +26,9 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 public class AccessCheckServiceTest {
     @Mock
-    private TaskRepository taskRepository;
+    private TaskService taskService;
     @Mock
-    private TaskBoardRepository taskBoardRepository;
+    private TaskBoardService taskBoardService;
     @InjectMocks
     private AccessCheckService accessCheckService;
 
@@ -72,13 +71,13 @@ public class AccessCheckServiceTest {
 
         TaskBoard taskBoard = createDefaultTaskBoard(boardID, userID);
 
-        when(taskBoardRepository.findByID(boardID)).thenReturn(Optional.of(taskBoard));
+        when(taskBoardService.findByID(boardID)).thenReturn(taskBoard);
 
         boolean hasAccess = accessCheckService.hasAccessToBoard(boardID, userID);
 
         assertTrue(hasAccess);
 
-        verify(taskBoardRepository, times(1)).findByID(boardID);
+        verify(taskBoardService, times(1)).findByID(boardID);
     }
 
     @Test
@@ -95,7 +94,7 @@ public class AccessCheckServiceTest {
 
         assertTrue(actualMessage.contains(expectedMessage));
 
-        verify(taskBoardRepository, times(0)).findByID(boardID);
+        verify(taskBoardService, times(0)).findByID(boardID);
     }
 
     @Test
@@ -112,7 +111,7 @@ public class AccessCheckServiceTest {
 
         assertTrue(actualMessage.contains(expectedMessage));
 
-        verify(taskBoardRepository, times(0)).findByID(boardID);
+        verify(taskBoardService, times(0)).findByID(boardID);
     }
 
     @Test
@@ -120,7 +119,8 @@ public class AccessCheckServiceTest {
         UUID boardID = UUID.randomUUID();
         UUID userID = UUID.randomUUID();
 
-        when(taskBoardRepository.findByID(boardID)).thenReturn(Optional.empty());
+        when(taskBoardService.findByID(boardID))
+                .thenThrow(new EntityNotFoundException(ExceptionMessage.NOT_FOUND.toString()));
 
         EntityNotFoundException exception = assertThrows(EntityNotFoundException.class, () -> {
             accessCheckService.hasAccessToBoard(boardID, userID);
@@ -131,7 +131,7 @@ public class AccessCheckServiceTest {
 
         assertTrue(actualMessage.contains(expectedMessage));
 
-        verify(taskBoardRepository, times(1)).findByID(boardID);
+        verify(taskBoardService, times(1)).findByID(boardID);
     }
 
     @Test
@@ -141,13 +141,13 @@ public class AccessCheckServiceTest {
 
         TaskBoard taskBoard = createDefaultTaskBoard(boardID, UUID.randomUUID());
 
-        when(taskBoardRepository.findByID(boardID)).thenReturn(Optional.of(taskBoard));
+        when(taskBoardService.findByID(boardID)).thenReturn(taskBoard);
 
         boolean hasAccess = accessCheckService.hasAccessToBoard(boardID, otherUserID);
 
         assertFalse(hasAccess);
 
-        verify(taskBoardRepository, times(1)).findByID(boardID);
+        verify(taskBoardService, times(1)).findByID(boardID);
     }
 
     @Test
@@ -158,13 +158,13 @@ public class AccessCheckServiceTest {
 
         Task task = createDefaultTask(taskID, boardID, userID);
 
-        when(taskRepository.findByID(taskID)).thenReturn(Optional.of(task));
+        when(taskService.findByID(taskID)).thenReturn(task);
 
         boolean hasAccess = accessCheckService.hasAccessToTask(taskID, userID);
 
         assertTrue(hasAccess);
 
-        verify(taskRepository, times(1)).findByID(taskID);
+        verify(taskService, times(1)).findByID(taskID);
     }
 
     @Test
@@ -181,7 +181,7 @@ public class AccessCheckServiceTest {
 
         assertTrue(actualMessage.contains(expectedMessage));
 
-        verify(taskRepository, times(0)).findByID(taskID);
+        verify(taskService, times(0)).findByID(taskID);
     }
 
     @Test
@@ -198,7 +198,7 @@ public class AccessCheckServiceTest {
 
         assertTrue(actualMessage.contains(expectedMessage));
 
-        verify(taskRepository, times(0)).findByID(taskID);
+        verify(taskService, times(0)).findByID(taskID);
     }
 
     @Test
@@ -206,7 +206,8 @@ public class AccessCheckServiceTest {
         UUID taskID = UUID.randomUUID();
         UUID userID = UUID.randomUUID();
 
-        when(taskRepository.findByID(taskID)).thenReturn(Optional.empty());
+        when(taskService.findByID(taskID))
+                .thenThrow(new EntityNotFoundException(ExceptionMessage.NOT_FOUND.toString()));
 
         EntityNotFoundException exception = assertThrows(EntityNotFoundException.class, () -> {
             accessCheckService.hasAccessToTask(taskID, userID);
@@ -217,7 +218,7 @@ public class AccessCheckServiceTest {
 
         assertTrue(actualMessage.contains(expectedMessage));
 
-        verify(taskRepository, times(1)).findByID(taskID);
+        verify(taskService, times(1)).findByID(taskID);
     }
 
     @Test
@@ -228,12 +229,12 @@ public class AccessCheckServiceTest {
 
         Task task = createDefaultTask(taskID, boardID, userID);
 
-        when(taskRepository.findByID(taskID)).thenReturn(Optional.of(task));
+        when(taskService.findByID(taskID)).thenReturn(task);
 
         boolean hasAccess = accessCheckService.hasAccessToTask(taskID, UUID.randomUUID());
 
         assertFalse(hasAccess);
 
-        verify(taskRepository, times(1)).findByID(taskID);
+        verify(taskService, times(1)).findByID(taskID);
     }
 }

@@ -219,7 +219,7 @@ public class UserControllerTest {
 
     @Test
     @Sql(scripts = {"/data/sql/clearData.sql", "/data/sql/insertUsers.sql"})
-    void update_ValidUserData_ReturnsStatusCodeOkAndUserResponse() throws Exception {
+    void updateUser_ValidUserData_ReturnsStatusCodeOkAndUserResponse() throws Exception {
         User preInsertedUser = TestApproacherDataUtils.createPreInsertedUser(EntityNumber.FIRST);
         UUID userID = preInsertedUser.getID();
 
@@ -240,7 +240,7 @@ public class UserControllerTest {
 
     @Test
     @Sql(scripts = {"/data/sql/clearData.sql", "/data/sql/insertUsers.sql"})
-    void update_EmptyUserData_ReturnsStatusCodeOkAndUserResponse() throws Exception {
+    void updateUser_EmptyUserData_ReturnsStatusCodeOkAndUserResponse() throws Exception {
         User preInsertedUser = TestApproacherDataUtils.createPreInsertedUser(EntityNumber.FIRST);
         UUID userID = preInsertedUser.getID();
 
@@ -261,7 +261,7 @@ public class UserControllerTest {
 
     @Test
     @Sql(scripts = {"/data/sql/clearData.sql", "/data/sql/insertUsers.sql"})
-    void update_InvalidUserID_ReturnsStatusCodeForbiddenAndErrorResponse() throws Exception {
+    void updateUser_InvalidUserID_ReturnsStatusCodeForbiddenAndErrorResponse() throws Exception {
         UUID userID = UUID.randomUUID();
 
         String path = PATH_TO_API + userID;
@@ -278,7 +278,7 @@ public class UserControllerTest {
 
     @Test
     @Sql(scripts = {"/data/sql/clearData.sql", "/data/sql/insertUsers.sql"})
-    void update_AlreadyTakenUsername_ReturnsStatusCodeBadRequestAndErrorResponse() throws Exception {
+    void updateUser_AlreadyTakenUsername_ReturnsStatusCodeBadRequestAndErrorResponse() throws Exception {
         User firstPreInsertedUser = TestApproacherDataUtils.createPreInsertedUser(EntityNumber.FIRST);
         UUID userID = firstPreInsertedUser.getID();
 
@@ -300,7 +300,7 @@ public class UserControllerTest {
 
     @Test
     @Sql(scripts = {"/data/sql/clearData.sql", "/data/sql/insertUsers.sql"})
-    void update_AlreadyTakenEmail_ReturnsStatusCodeBadRequestAndErrorResponse() throws Exception {
+    void updateUser_AlreadyTakenEmail_ReturnsStatusCodeBadRequestAndErrorResponse() throws Exception {
         User firstPreInsertedUser = TestApproacherDataUtils.createPreInsertedUser(EntityNumber.FIRST);
         UUID userID = firstPreInsertedUser.getID();
 
@@ -322,7 +322,7 @@ public class UserControllerTest {
 
     @Test
     @Sql(scripts = {"/data/sql/clearData.sql", "/data/sql/insertUsers.sql"})
-    void update_InvalidUsername_ReturnsStatusCodeBadRequestAndErrorResponse() throws Exception {
+    void updateUser_InvalidUsername_ReturnsStatusCodeBadRequestAndErrorResponse() throws Exception {
         User firstPreInsertedUser = TestApproacherDataUtils.createPreInsertedUser(EntityNumber.FIRST);
         UUID userID = firstPreInsertedUser.getID();
 
@@ -341,7 +341,7 @@ public class UserControllerTest {
 
     @Test
     @Sql(scripts = {"/data/sql/clearData.sql", "/data/sql/insertUsers.sql"})
-    void update_InvalidPassword_ReturnsStatusCodeBadRequestAndErrorResponse() throws Exception {
+    void updateUser_InvalidPassword_ReturnsStatusCodeBadRequestAndErrorResponse() throws Exception {
         User firstPreInsertedUser = TestApproacherDataUtils.createPreInsertedUser(EntityNumber.FIRST);
         UUID userID = firstPreInsertedUser.getID();
 
@@ -362,7 +362,7 @@ public class UserControllerTest {
 
     @Test
     @Sql(scripts = {"/data/sql/clearData.sql", "/data/sql/insertUsers.sql"})
-    void delete_ValidUserID_ReturnsStatusCodeNoContent() throws Exception {
+    void deleteUser_ValidUserID_ReturnsStatusCodeNoContent() throws Exception {
         User preInsertedUser = TestApproacherDataUtils.createPreInsertedUser(EntityNumber.FIRST);
         UUID userID = preInsertedUser.getID();
 
@@ -374,7 +374,7 @@ public class UserControllerTest {
 
     @Test
     @Sql(scripts = {"/data/sql/clearData.sql", "/data/sql/insertUsers.sql"})
-    void delete_InvalidUserID_ReturnsStatusCodeForbiddenAndErrorResponse() throws Exception {
+    void deleteUser_InvalidUserID_ReturnsStatusCodeForbiddenAndErrorResponse() throws Exception {
         UUID userID = UUID.randomUUID();
 
         String path = PATH_TO_API + userID;

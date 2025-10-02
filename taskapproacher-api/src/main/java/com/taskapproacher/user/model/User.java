@@ -2,9 +2,11 @@ package com.taskapproacher.user.model;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
+import com.taskapproacher.config.password.PasswordConstants;
 import com.taskapproacher.task.model.TaskBoard;
 import com.taskapproacher.user.constant.Role;
 
+import com.taskapproacher.user.constant.UserConstants;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Size;
 
@@ -36,10 +38,12 @@ public class User implements UserDetails {
     private UUID ID;
 
     @Column(nullable = false, name = "username")
-    @Size(min = 3, max = 32)
+    @Size(min = UserConstants.MIN_USERNAME_LENGTH, max = UserConstants.MAX_USERNAME_LENGTH)
     private String username;
 
+    // PasswordConstants is used to provide single constant per app. Can be duplicated in UserConstants if needed.
     @Column(nullable = false, name = "user_password")
+    @Size(min = PasswordConstants.MIN_LENGTH)
     private String password;
 
     @Column(nullable = false, name = "email_address")
@@ -71,7 +75,7 @@ public class User implements UserDetails {
 
     @Override
     public int hashCode() {
-        return 11 + ID.hashCode() + username.hashCode() + email.hashCode() + role.hashCode();
+        return 11 + username.hashCode() + email.hashCode() + role.hashCode();
     }
 
     @Override

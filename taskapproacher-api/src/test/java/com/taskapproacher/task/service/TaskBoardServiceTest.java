@@ -207,7 +207,7 @@ public class TaskBoardServiceTest {
     }
 
     @Test
-    void create_ValidTaskBoard_ReturnsTaskBoardResponse() {
+    void createTaskBoard_ValidTaskBoard_ReturnsTaskBoardResponse() {
         UUID userID = UUID.randomUUID();
 
         User user = createDefaultUser(userID);
@@ -217,7 +217,7 @@ public class TaskBoardServiceTest {
         when(taskBoardRepository.save(ArgumentMatchers.any(TaskBoard.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
 
-        TaskBoardResponse response = taskBoardService.create(userID, taskBoard);
+        TaskBoardResponse response = taskBoardService.createTaskBoard(userID, taskBoard);
 
         assertTaskBoardEquals(taskBoard, response);
         assertEquals(user, response.getUser());
@@ -227,14 +227,14 @@ public class TaskBoardServiceTest {
     }
 
     @Test
-    void create_EmptyTaskBoardTitle_ThrowsIllegalArgumentException() {
+    void createTaskBoard_EmptyTaskBoardTitle_ThrowsIllegalArgumentException() {
         UUID userID = UUID.randomUUID();
 
         TaskBoard taskBoard = createDefaultTaskBoard(null, null);
         taskBoard.setTitle("");
 
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
-            taskBoardService.create(userID, taskBoard);
+            taskBoardService.createTaskBoard(userID, taskBoard);
         });
 
         String expectedMessage = ExceptionMessage.EMPTY.toString();
@@ -246,14 +246,14 @@ public class TaskBoardServiceTest {
     }
 
     @Test
-    void create_NullTaskBoardTitle_ThrowsIllegalArgumentException() {
+    void createTaskBoard_NullTaskBoardTitle_ThrowsIllegalArgumentException() {
         UUID userID = UUID.randomUUID();
 
         TaskBoard taskBoard = createDefaultTaskBoard(null, null);
         taskBoard.setTitle(null);
 
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
-            taskBoardService.create(userID, taskBoard);
+            taskBoardService.createTaskBoard(userID, taskBoard);
         });
 
         String expectedMessage = ExceptionMessage.NULL.toString();
@@ -265,7 +265,7 @@ public class TaskBoardServiceTest {
     }
 
     @Test
-    void create_InvalidUserID_ThrowsEntityNotFoundException() {
+    void createTaskBoard_InvalidUserID_ThrowsEntityNotFoundException() {
         UUID userID = UUID.randomUUID();
 
         TaskBoard taskBoard = createDefaultTaskBoard(null, null);
@@ -273,7 +273,7 @@ public class TaskBoardServiceTest {
         when(userService.findByID(userID)).thenThrow(EntityNotFoundException.class);
 
         assertThrows(EntityNotFoundException.class, () -> {
-            taskBoardService.create(userID, taskBoard);
+            taskBoardService.createTaskBoard(userID, taskBoard);
         });
 
         verify(userService, times(1)).findByID(userID);
@@ -281,7 +281,7 @@ public class TaskBoardServiceTest {
     }
 
     @Test
-    void create_NullUserID_ThrowsIllegalArgumentException() {
+    void createTaskBoard_NullUserID_ThrowsIllegalArgumentException() {
         UUID userID = null;
 
         TaskBoard taskBoard = createDefaultTaskBoard(null, null);
@@ -289,7 +289,7 @@ public class TaskBoardServiceTest {
         when(userService.findByID(userID)).thenThrow(IllegalArgumentException.class);
 
         assertThrows(IllegalArgumentException.class, () -> {
-            taskBoardService.create(userID, taskBoard);
+            taskBoardService.createTaskBoard(userID, taskBoard);
         });
 
         verify(userService, times(1)).findByID(userID);
@@ -297,7 +297,7 @@ public class TaskBoardServiceTest {
     }
 
     @Test
-    void update_ValidTaskBoard_ReturnsTaskBoardResponse() {
+    void updateTaskBoard_ValidTaskBoard_ReturnsTaskBoardResponse() {
         UUID boardID = UUID.randomUUID();
         UUID userID = UUID.randomUUID();
 
@@ -319,7 +319,7 @@ public class TaskBoardServiceTest {
         when(taskBoardRepository.findByID(boardID)).thenReturn(Optional.of(copyOfExistingTaskBoard));
         when(taskBoardRepository.update(captor.capture())).thenAnswer(invocation -> invocation.getArgument(0));
 
-        TaskBoardResponse response = taskBoardService.update(boardID, updateData);
+        TaskBoardResponse response = taskBoardService.updateTaskBoard(boardID, updateData);
         TaskBoard capturedBoard = captor.getValue();
 
         assertEquals(existingTaskBoard.getID(), capturedBoard.getID());
@@ -337,11 +337,11 @@ public class TaskBoardServiceTest {
     }
 
     @Test
-    void update_NullTaskBoardID_ThrowsIllegalArgumentException() {
+    void updateTaskBoard_NullTaskBoardID_ThrowsIllegalArgumentException() {
         UUID boardID = null;
 
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
-            taskBoardService.update(boardID, new TaskBoard());
+            taskBoardService.updateTaskBoard(boardID, new TaskBoard());
         });
 
         String expectedMessage = ExceptionMessage.NULL.toString();
@@ -353,13 +353,13 @@ public class TaskBoardServiceTest {
     }
 
     @Test
-    void update_InvalidTaskBoardID_ThrowsEntityNotFoundException() {
+    void updateTaskBoard_InvalidTaskBoardID_ThrowsEntityNotFoundException() {
         UUID boardID = UUID.randomUUID();
 
         when(taskBoardRepository.findByID(boardID)).thenReturn(Optional.empty());
 
         EntityNotFoundException exception = assertThrows(EntityNotFoundException.class, () -> {
-            taskBoardService.update(boardID, new TaskBoard());
+            taskBoardService.updateTaskBoard(boardID, new TaskBoard());
         });
 
         String expectedMessage = ExceptionMessage.NOT_FOUND.toString();
@@ -372,7 +372,7 @@ public class TaskBoardServiceTest {
     }
 
     @Test
-    void update_EmptyTaskBoardTitle_ReturnsTaskBoardResponseWithSameTitle() {
+    void updateTaskBoard_EmptyTaskBoardTitle_ReturnsTaskBoardResponseWithSameTitle() {
         UUID boardID = UUID.randomUUID();
         UUID userID = UUID.randomUUID();
 
@@ -393,7 +393,7 @@ public class TaskBoardServiceTest {
         when(taskBoardRepository.findByID(boardID)).thenReturn(Optional.of(copyOfExistingTaskBoard));
         when(taskBoardRepository.update(captor.capture())).thenAnswer(invocation -> invocation.getArgument(0));
 
-        TaskBoardResponse response = taskBoardService.update(boardID, updateData);
+        TaskBoardResponse response = taskBoardService.updateTaskBoard(boardID, updateData);
         TaskBoard capturedTaskBoard = captor.getValue();
 
         assertTaskBoardEquals(existingTaskBoard, capturedTaskBoard);
@@ -406,7 +406,7 @@ public class TaskBoardServiceTest {
     }
 
     @Test
-    void update_NullTaskBoardTitle_ReturnsTaskBoardResponseWithSameTitle() {
+    void updateTaskBoard_NullTaskBoardTitle_ReturnsTaskBoardResponseWithSameTitle() {
         UUID boardID = UUID.randomUUID();
         UUID userID = UUID.randomUUID();
 
@@ -428,7 +428,7 @@ public class TaskBoardServiceTest {
         when(taskBoardRepository.findByID(boardID)).thenReturn(Optional.of(copyOfExistingTaskBoard));
         when(taskBoardRepository.update(captor.capture())).thenAnswer(invocation -> invocation.getArgument(0));
 
-        TaskBoardResponse response = taskBoardService.update(boardID, updateData);
+        TaskBoardResponse response = taskBoardService.updateTaskBoard(boardID, updateData);
         TaskBoard capturedTaskBoard = captor.getValue();
 
         assertTaskBoardEquals(existingTaskBoard, capturedTaskBoard);
@@ -441,7 +441,7 @@ public class TaskBoardServiceTest {
     }
 
     @Test
-    void delete_ValidTaskBoardID_TaskBoardDeletedSuccessfully() {
+    void deleteTaskBoard_ValidTaskBoardID_TaskBoardDeletedSuccessfully() {
         UUID boardID = UUID.randomUUID();
 
         TaskBoard taskBoard = createDefaultTaskBoard(boardID, new User());
@@ -449,18 +449,18 @@ public class TaskBoardServiceTest {
         when(taskBoardRepository.findByID(boardID)).thenReturn(Optional.of(taskBoard));
         doNothing().when(taskBoardRepository).delete(ArgumentMatchers.any(TaskBoard.class));
 
-        taskBoardService.delete(boardID);
+        taskBoardService.deleteTaskBoard(boardID);
 
         verify(taskBoardRepository, times(1)).findByID(boardID);
         verify(taskBoardRepository, times(1)).delete(ArgumentMatchers.any(TaskBoard.class));
     }
 
     @Test
-    void delete_NullTaskBoardID_ThrowsIllegalArgumentException() {
+    void deleteTaskBoard_NullTaskBoardID_ThrowsIllegalArgumentException() {
         UUID boardID = null;
 
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
-            taskBoardService.delete(boardID);
+            taskBoardService.deleteTaskBoard(boardID);
         });
 
         String expectedMessage = ExceptionMessage.NULL.toString();
@@ -473,14 +473,14 @@ public class TaskBoardServiceTest {
     }
 
     @Test
-    void delete_InvalidTaskBoardID_ThrowsEntityNotFoundException() {
+    void deleteTaskBoard_InvalidTaskBoardID_ThrowsEntityNotFoundException() {
         UUID boardID = UUID.randomUUID();
 
         when(taskBoardRepository.findByID(boardID))
                 .thenThrow(new EntityNotFoundException(ExceptionMessage.NOT_FOUND.toString()));
 
         EntityNotFoundException exception = assertThrows(EntityNotFoundException.class, () -> {
-            taskBoardService.delete(boardID);
+            taskBoardService.deleteTaskBoard(boardID);
         });
 
         String expectedMessage = ExceptionMessage.NOT_FOUND.toString();

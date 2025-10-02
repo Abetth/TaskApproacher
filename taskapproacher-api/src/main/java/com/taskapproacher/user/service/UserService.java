@@ -2,6 +2,7 @@ package com.taskapproacher.user.service;
 
 import com.taskapproacher.common.constant.ExceptionMessage;
 import com.taskapproacher.common.exception.custom.EntityAlreadyExistsException;
+import com.taskapproacher.task.model.TaskBoard;
 import com.taskapproacher.task.model.TaskBoardResponse;
 import com.taskapproacher.user.constant.Role;
 import com.taskapproacher.user.model.User;
@@ -17,6 +18,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 public class UserService {
@@ -56,10 +58,12 @@ public class UserService {
             throws IllegalArgumentException, EntityNotFoundException {
         findByID(userID);
 
-        return userRepository.findRelatedEntitiesByID(userID);
+        List<TaskBoard> taskBoards = userRepository.findRelatedEntitiesByID(userID);
+
+        return taskBoards.stream().map(TaskBoardResponse::new).collect(Collectors.toList());
     }
 
-    public UserResponse create(User user) throws IllegalArgumentException, EntityAlreadyExistsException {
+    public UserResponse createUser(User user) throws IllegalArgumentException, EntityAlreadyExistsException {
         if (user.getUsername() == null || user.getUsername().isEmpty()) {
             ExceptionMessage error = (user.getUsername() == null) ? ExceptionMessage.NULL : ExceptionMessage.EMPTY;
             throw new IllegalArgumentException("Username " + error);
@@ -86,7 +90,7 @@ public class UserService {
         }
     }
 
-    public UserResponse update(UUID userID, User user) throws IllegalArgumentException, EntityNotFoundException {
+    public UserResponse updateUser(UUID userID, User user) throws IllegalArgumentException, EntityNotFoundException {
         User updatedUser = findByID(userID);
 
         String newUsername = user.getUsername();
@@ -115,7 +119,7 @@ public class UserService {
         return new UserResponse(userRepository.update(updatedUser));
     }
 
-    public void delete(UUID userID) throws IllegalArgumentException, EntityNotFoundException {
+    public void deleteUser(UUID userID) throws IllegalArgumentException, EntityNotFoundException {
         if (userID == null) {
             throw new IllegalArgumentException("User id " + ExceptionMessage.NULL);
         }

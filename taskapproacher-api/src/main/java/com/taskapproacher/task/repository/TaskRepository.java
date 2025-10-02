@@ -1,8 +1,10 @@
 package com.taskapproacher.task.repository;
 
+import com.taskapproacher.common.constant.ExceptionMessage;
 import com.taskapproacher.common.interfaces.repository.GenericRepository;
 import com.taskapproacher.task.model.Task;
 
+import jakarta.validation.ConstraintViolationException;
 import org.hibernate.HibernateException;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
@@ -26,19 +28,21 @@ public class TaskRepository implements GenericRepository<Task> {
     @Override
     public Optional<Task> findByID(UUID taskID) {
         Transaction transaction = null;
-        Task task;
 
         try (Session session = sessionFactory.openSession()) {
             transaction = session.beginTransaction();
-            task = session.find(Task.class, taskID);
+
+            Task task = session.find(Task.class, taskID);
+
             transaction.commit();
+
+            return Optional.ofNullable(task);
         } catch (Exception exception) {
             if (transaction != null && transaction.isActive()) {
                 transaction.rollback();
             }
             throw new HibernateException("[DB] Failed to find task by id: " + taskID, exception);
         }
-        return Optional.ofNullable(task);
     }
 
     @Override
@@ -49,7 +53,9 @@ public class TaskRepository implements GenericRepository<Task> {
             transaction = session.beginTransaction();
             try {
                 session.persist(task);
+
                 transaction.commit();
+
                 return task;
             } catch (Exception exception) {
                 if (transaction != null && transaction.isActive()) {
@@ -59,6 +65,12 @@ public class TaskRepository implements GenericRepository<Task> {
                 throw exception;
             }
         } catch (Exception exception) {
+            if (exception instanceof ConstraintViolationException CVexception) {
+                throw new ConstraintViolationException(
+                        ExceptionMessage.INVALID_TASK_FIELDS_LENGTH.toString(),
+                        CVexception.getConstraintViolations()
+                );
+            }
             throw new HibernateException("[DB] Failed to save task: " + task, exception);
         }
     }
@@ -71,7 +83,9 @@ public class TaskRepository implements GenericRepository<Task> {
             transaction = session.beginTransaction();
             try {
                 Task merged = session.merge(task);
+
                 transaction.commit();
+
                 return merged;
             } catch (Exception exception) {
                 if (transaction != null && transaction.isActive()) {
@@ -81,6 +95,12 @@ public class TaskRepository implements GenericRepository<Task> {
                 throw exception;
             }
         } catch (Exception exception) {
+            if (exception instanceof ConstraintViolationException CVexception) {
+                throw new ConstraintViolationException(
+                        ExceptionMessage.INVALID_TASK_FIELDS_LENGTH.toString(),
+                        CVexception.getConstraintViolations()
+                );
+            }
             throw new HibernateException("[DB] Failed to update task: " + task, exception);
         }
     }
@@ -91,13 +111,14 @@ public class TaskRepository implements GenericRepository<Task> {
 
         try (Session session = sessionFactory.openSession()) {
             transaction = session.beginTransaction();
+
             session.remove(task);
+
             transaction.commit();
         } catch (Exception exception) {
             if (transaction != null && transaction.isActive()) {
                 transaction.rollback();
             }
-
             throw new HibernateException("[DB] Failed to delete task: " + task.getID(), exception);
         }
     }

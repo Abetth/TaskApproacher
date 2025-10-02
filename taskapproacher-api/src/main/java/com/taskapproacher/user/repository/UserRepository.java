@@ -4,7 +4,6 @@ import com.taskapproacher.common.constant.ExceptionMessage;
 import com.taskapproacher.common.interfaces.repository.GenericRepository;
 import com.taskapproacher.common.interfaces.repository.RelatedEntityRepository;
 import com.taskapproacher.task.model.TaskBoard;
-import com.taskapproacher.task.model.TaskBoardResponse;
 import com.taskapproacher.user.model.User;
 
 import jakarta.validation.ConstraintViolationException;
@@ -21,10 +20,9 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Repository
-public class UserRepository implements GenericRepository<User>, RelatedEntityRepository<TaskBoardResponse, UUID> {
+public class UserRepository implements GenericRepository<User>, RelatedEntityRepository<TaskBoard, UUID> {
     SessionFactory sessionFactory;
 
     @Autowired
@@ -37,17 +35,20 @@ public class UserRepository implements GenericRepository<User>, RelatedEntityRep
 
         try (Session session = sessionFactory.openSession()) {
             transaction = session.beginTransaction();
-            Query<User> query = session.createQuery(
-                                               """
 
-                                                       FROM User\s
-                                                       WHERE username = :username
-                                                       """,
-                                               User.class)
-                                       .setParameter("username", username);
+            Query<User> query = session.createQuery(
+                    """
+
+                            FROM User
+                            WHERE username = :username
+                            """,
+                    User.class);
+            query.setParameter("username", username);
+            User user = query.uniqueResult();
+
             transaction.commit();
 
-            return Optional.ofNullable(query.uniqueResult());
+            return Optional.ofNullable(user);
         } catch (Exception exception) {
             if (transaction != null && transaction.isActive()) {
                 transaction.rollback();
@@ -60,18 +61,19 @@ public class UserRepository implements GenericRepository<User>, RelatedEntityRep
         Transaction transaction = null;
 
         try (Session session = sessionFactory.openSession()) {
-            Boolean isExists;
             transaction = session.beginTransaction();
+
             Query<Boolean> query = session.createQuery(
                     """
-                            SELECT CASE WHEN EXISTS\s
-                            (FROM User WHERE username = :username OR email = :email)\s
+                            SELECT CASE WHEN EXISTS
+                            (FROM User WHERE username = :username OR email = :email)
                             THEN TRUE ELSE FALSE END
                             """,
                     Boolean.class);
             query.setParameter("username", user.getUsername());
             query.setParameter("email", user.getEmail());
-            isExists = query.getSingleResult();
+            Boolean isExists = query.getSingleResult();
+
             transaction.commit();
 
             return isExists;
@@ -87,17 +89,18 @@ public class UserRepository implements GenericRepository<User>, RelatedEntityRep
         Transaction transaction = null;
 
         try (Session session = sessionFactory.openSession()) {
-            Boolean isTaken;
             transaction = session.beginTransaction();
+
             Query<Boolean> query = session.createQuery(
                     """
-                            SELECT CASE WHEN EXISTS\s
-                            (FROM User WHERE username = :username)\s
+                            SELECT CASE WHEN EXISTS
+                            (FROM User WHERE username = :username)
                             THEN TRUE ELSE FALSE END
                             """,
                     Boolean.class);
             query.setParameter("username", username);
-            isTaken = query.getSingleResult();
+            Boolean isTaken = query.getSingleResult();
+
             transaction.commit();
 
             return isTaken;
@@ -113,18 +116,19 @@ public class UserRepository implements GenericRepository<User>, RelatedEntityRep
         Transaction transaction = null;
 
         try (Session session = sessionFactory.openSession()) {
-            Boolean isTaken;
             transaction = session.beginTransaction();
+
             Query<Boolean> query = session.createQuery(
                     """
 
-                            SELECT CASE WHEN EXISTS\s
-                            (FROM User WHERE email = :email)\s
+                            SELECT CASE WHEN EXISTS
+                            (FROM User WHERE email = :email)
                             THEN TRUE ELSE FALSE END
                             """,
                     Boolean.class);
             query.setParameter("email", email);
-            isTaken = query.getSingleResult();
+            Boolean isTaken = query.getSingleResult();
+
             transaction.commit();
 
             return isTaken;
@@ -139,46 +143,48 @@ public class UserRepository implements GenericRepository<User>, RelatedEntityRep
     @Override
     public Optional<User> findByID(UUID userID) {
         Transaction transaction = null;
-        User user;
 
         try (Session session = sessionFactory.openSession()) {
             transaction = session.beginTransaction();
-            user = session.find(User.class, userID);
+
+            User user = session.find(User.class, userID);
+
             transaction.commit();
+
+            return Optional.ofNullable(user);
         } catch (Exception exception) {
             if (transaction != null && transaction.isActive()) {
                 transaction.rollback();
             }
             throw new HibernateException("[DB] Failed to find user by id: " + userID, exception);
         }
-
-        return Optional.ofNullable(user);
     }
 
     @Override
-    public List<TaskBoardResponse> findRelatedEntitiesByID(UUID userID) {
+    public List<TaskBoard> findRelatedEntitiesByID(UUID userID) {
         Transaction transaction = null;
-        List<TaskBoard> taskBoards;
 
         try (Session session = sessionFactory.openSession()) {
             transaction = session.beginTransaction();
-            taskBoards = session.createQuery(
+
+            Query<TaskBoard> query = session.createQuery(
                                         """
-                                                FROM TaskBoard\s
+                                                FROM TaskBoard
                                                 WHERE user.ID = :id
                                                 """,
                                         TaskBoard.class)
-                                .setParameter("id", userID)
-                                .getResultList();
+                                .setParameter("id", userID);
+            List<TaskBoard> taskBoards = query.getResultList();
+
             transaction.commit();
+
+            return taskBoards;
         } catch (Exception exception) {
             if (transaction != null && transaction.isActive()) {
                 transaction.rollback();
             }
             throw new HibernateException("[DB] Failed to get task boards for user: " + userID, exception);
         }
-
-        return taskBoards.stream().map(TaskBoardResponse::new).collect(Collectors.toList());
     }
 
     @Override
@@ -189,7 +195,10 @@ public class UserRepository implements GenericRepository<User>, RelatedEntityRep
             transaction = session.beginTransaction();
             try {
                 session.persist(user);
+
                 transaction.commit();
+
+                return user;
             } catch (Exception exception) {
                 if (transaction != null && transaction.isActive()) {
                     transaction.rollback();
@@ -198,16 +207,14 @@ public class UserRepository implements GenericRepository<User>, RelatedEntityRep
                 throw exception;
             }
         } catch (Exception exception) {
-            if (exception instanceof ConstraintViolationException) {
+            if (exception instanceof ConstraintViolationException CVexception) {
                 throw new ConstraintViolationException(
                         ExceptionMessage.INVALID_USERNAME_LENGTH.toString(),
-                        ((ConstraintViolationException) exception).getConstraintViolations()
+                        CVexception.getConstraintViolations()
                 );
             }
-
             throw new HibernateException("[DB] Failed to save user: " + user.getUsername(), exception);
         }
-        return user;
     }
 
     @Override
@@ -218,7 +225,9 @@ public class UserRepository implements GenericRepository<User>, RelatedEntityRep
             transaction = session.beginTransaction();
             try {
                 User merged = session.merge(user);
+
                 transaction.commit();
+
                 return merged;
             } catch (Exception exception) {
                 if (transaction != null && transaction.isActive()) {
@@ -228,13 +237,12 @@ public class UserRepository implements GenericRepository<User>, RelatedEntityRep
                 throw exception;
             }
         } catch (Exception exception) {
-            if (exception instanceof ConstraintViolationException) {
+            if (exception instanceof ConstraintViolationException CVexception) {
                 throw new ConstraintViolationException(
                         ExceptionMessage.INVALID_USERNAME_LENGTH.toString(),
-                        ((ConstraintViolationException) exception).getConstraintViolations()
+                        CVexception.getConstraintViolations()
                 );
             }
-
             throw new HibernateException("[DB] Failed to update user: " + user.getUsername(), exception);
         }
     }
@@ -245,7 +253,9 @@ public class UserRepository implements GenericRepository<User>, RelatedEntityRep
 
         try (Session session = sessionFactory.openSession()) {
             transaction = session.beginTransaction();
+
             session.remove(user);
+
             transaction.commit();
         } catch (Exception exception) {
             if (transaction != null && transaction.isActive()) {

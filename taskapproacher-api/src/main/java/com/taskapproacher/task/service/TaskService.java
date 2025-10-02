@@ -39,7 +39,7 @@ public class TaskService {
     }
 
 
-    public TaskResponse create(UUID boardId, TaskRequest request, String timeZone)
+    public TaskResponse createTask(UUID boardId, TaskRequest request, String timeZone)
             throws IllegalArgumentException, EntityNotFoundException {
         TaskBoard boardForTask = taskBoardService.findByID(boardId);
 
@@ -55,13 +55,12 @@ public class TaskService {
             request.setPriority(Priority.STANDARD.toString());
         }
 
-        if ((request.getDeadline() == null)
-            || request.getDeadline().isBefore(ZonedDateTime.now(ZoneId.of(timeZone)).toLocalDate())) {
+        if (request.getDeadline() == null) {
+            throw new IllegalArgumentException("Task deadline " + ExceptionMessage.NULL);
+        }
 
-            ExceptionMessage error = (request.getDeadline() == null) ? ExceptionMessage.NULL
-                    : ExceptionMessage.BEFORE_CURRENT_DATE;
-
-            throw new IllegalArgumentException("Task deadline " + error);
+        if (request.getDeadline().isBefore(ZonedDateTime.now(ZoneId.of(timeZone)).toLocalDate())) {
+            throw new IllegalArgumentException("Task deadline " + ExceptionMessage.BEFORE_CURRENT_DATE);
         }
 
         Task taskFromRequest = new Task(request);
@@ -70,7 +69,7 @@ public class TaskService {
         return new TaskResponse(taskRepository.save(taskFromRequest));
     }
 
-    public TaskResponse update(UUID taskID, TaskRequest request, String timeZone)
+    public TaskResponse updateTask(UUID taskID, TaskRequest request, String timeZone)
             throws IllegalArgumentException, EntityNotFoundException {
         Task updatedTask = findByID(taskID);
 
@@ -103,7 +102,7 @@ public class TaskService {
         return new TaskResponse(taskRepository.update(updatedTask));
     }
 
-    public void delete(UUID taskID) throws IllegalArgumentException {
+    public void deleteTask(UUID taskID) throws IllegalArgumentException {
         if (taskID == null) {
             throw new IllegalArgumentException("Task id " + ExceptionMessage.NULL);
         }

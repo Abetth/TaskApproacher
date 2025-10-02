@@ -24,25 +24,25 @@ public class TaskController {
 
     @PostMapping("/board/{boardID}")
     @PreAuthorize("@taskBoardService.findByID(#boardID).user.ID == authentication.principal.ID")
-    public ResponseEntity<TaskResponse> create(@PathVariable UUID boardID,
-                                               @RequestBody TaskRequest task,
-                                               @RequestHeader String timeZone) {
-        TaskResponse createTask = taskService.create(boardID, task, timeZone);
+    public ResponseEntity<TaskResponse> createTask(@PathVariable UUID boardID,
+                                                   @RequestBody TaskRequest task,
+                                                   @RequestHeader String timeZone) {
+        TaskResponse createTask = taskService.createTask(boardID, task, timeZone);
         return ResponseEntity.status(201).body(createTask);
     }
 
     @PatchMapping("/{taskID}")
     @PreAuthorize("@accessCheckService.hasAccessToTask(#taskID, authentication.principal.ID)")
-    public ResponseEntity<TaskResponse> update(@PathVariable UUID taskID,
-                                               @RequestBody TaskRequest task,
-                                               @RequestHeader String timeZone) {
-        return ResponseEntity.ok(taskService.update(taskID, task, timeZone));
+    public ResponseEntity<TaskResponse> updateTask(@PathVariable UUID taskID,
+                                                   @RequestBody TaskRequest task,
+                                                   @RequestHeader String timeZone) {
+        return ResponseEntity.ok(taskService.updateTask(taskID, task, timeZone));
     }
 
     @DeleteMapping("/{taskID}")
     @PreAuthorize("@accessCheckService.hasAccessToTask(#taskID, authentication.principal.ID)")
-    public ResponseEntity<Task> delete(@PathVariable UUID taskID) {
-        taskService.delete(taskID);
+    public ResponseEntity<Task> deleteTask(@PathVariable UUID taskID) {
+        taskService.deleteTask(taskID);
         return ResponseEntity.noContent().build();
     }
 

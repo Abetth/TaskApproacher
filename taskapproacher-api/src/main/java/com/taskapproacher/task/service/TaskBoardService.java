@@ -47,7 +47,7 @@ public class TaskBoardService {
         return tasks.stream().map(TaskResponse::new).collect(Collectors.toList());
     }
 
-    public TaskBoardResponse create(UUID userID, TaskBoard taskBoard)
+    public TaskBoardResponse createTaskBoard(UUID userID, TaskBoard taskBoard)
             throws IllegalArgumentException, EntityNotFoundException {
         if (taskBoard.getTitle() == null || taskBoard.getTitle().isEmpty()) {
             ExceptionMessage error = (taskBoard.getTitle() == null) ? ExceptionMessage.NULL : ExceptionMessage.EMPTY;
@@ -60,7 +60,7 @@ public class TaskBoardService {
         return new TaskBoardResponse(taskBoardRepository.save(taskBoard));
     }
 
-    public TaskBoardResponse update(UUID taskBoardID, TaskBoard taskBoard)
+    public TaskBoardResponse updateTaskBoard(UUID taskBoardID, TaskBoard taskBoard)
             throws IllegalArgumentException, EntityNotFoundException {
         TaskBoard updatedBoard = findByID(taskBoardID);
 
@@ -72,7 +72,7 @@ public class TaskBoardService {
         return new TaskBoardResponse(taskBoardRepository.update(updatedBoard));
     }
 
-    public void delete(UUID taskBoardID) throws IllegalArgumentException {
+    public void deleteTaskBoard(UUID taskBoardID) throws IllegalArgumentException {
         if (taskBoardID == null) {
             throw new IllegalArgumentException("Board id " + ExceptionMessage.NULL);
         }

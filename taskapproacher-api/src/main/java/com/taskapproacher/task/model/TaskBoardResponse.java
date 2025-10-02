@@ -23,7 +23,6 @@ public class TaskBoardResponse implements TaskBoardMatcher {
     private List<Task> tasks;
     private UserResponse user;
 
-
     public TaskBoardResponse(TaskBoard taskBoard) {
         this.ID = taskBoard.getID();
         this.title = taskBoard.getTitle();

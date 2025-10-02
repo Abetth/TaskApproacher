@@ -41,14 +41,14 @@ public class UserController {
 
     @PatchMapping("/{userID}")
     @PreAuthorize("#userID == authentication.principal.ID")
-    public ResponseEntity<UserResponse> update(@PathVariable UUID userID, @RequestBody User user) {
-        return ResponseEntity.ok(userService.update(userID, user));
+    public ResponseEntity<UserResponse> updateUser(@PathVariable UUID userID, @RequestBody User user) {
+        return ResponseEntity.ok(userService.updateUser(userID, user));
     }
 
     @DeleteMapping("/{userID}")
     @PreAuthorize("#userID == authentication.principal.ID")
-    public ResponseEntity<UserResponse> delete(@PathVariable UUID userID) {
-        userService.delete(userID);
+    public ResponseEntity<UserResponse> deleteUser(@PathVariable UUID userID) {
+        userService.deleteUser(userID);
         return ResponseEntity.noContent().build();
     }
 }

@@ -1,8 +1,7 @@
 package com.taskapproacher.common.exception.handler;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import com.taskapproacher.common.constant.ExceptionMessage;
+import com.taskapproacher.common.exception.util.ErrorResponseUtil;
 
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.MalformedJwtException;
@@ -11,19 +10,22 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
-import java.util.LinkedHashMap;
-import java.util.Map;
 
 @Component
 public class CustomAccessDeniedHandler implements AccessDeniedHandler {
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    private final ErrorResponseUtil errorResponseUtil;
+
+    @Autowired
+    public CustomAccessDeniedHandler(ErrorResponseUtil errorResponseUtil) {
+        this.errorResponseUtil = errorResponseUtil;
+    }
 
     @Override
     public void handle(HttpServletRequest request, HttpServletResponse response,
@@ -40,16 +42,6 @@ public class CustomAccessDeniedHandler implements AccessDeniedHandler {
             message = ExceptionMessage.INVALID_AUTH_TOKEN.toString();
         }
 
-        response.setStatus(status);
-        response.setContentType(MediaType.APPLICATION_PROBLEM_JSON_VALUE);
-
-        Map<String, Object> errorBody = new LinkedHashMap<>();
-        errorBody.put("type", "about:blank");
-        errorBody.put("title", HttpStatus.valueOf(status).getReasonPhrase());
-        errorBody.put("status", status);
-        errorBody.put("detail", message);
-        errorBody.put("instance", request.getRequestURI());
-
-        objectMapper.writeValue(response.getWriter(), errorBody);
+        errorResponseUtil.sendErrorResponse(request, response, status, message);
     }
 }

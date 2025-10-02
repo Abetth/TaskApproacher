@@ -240,7 +240,7 @@ public class TaskBoardControllerTest {
 
     @Test
     @Sql(scripts = {"/data/sql/clearData.sql", "/data/sql/insertUsers.sql"})
-    void create_ValidTaskBoardData_ReturnsStatusCodeCreatedAndTaskBoardResponse() throws Exception {
+    void createTaskBoard_ValidTaskBoardData_ReturnsStatusCodeCreatedAndTaskBoardResponse() throws Exception {
         User preInsertedUser = TestApproacherDataUtils.createPreInsertedUser(EntityNumber.FIRST);
         UUID userID = preInsertedUser.getID();
 
@@ -256,7 +256,7 @@ public class TaskBoardControllerTest {
 
     @Test
     @Sql(scripts = {"/data/sql/clearData.sql", "/data/sql/insertUsers.sql"})
-    void create_InvalidUserID_ReturnsStatusCodeForbiddenAndErrorResponse() throws Exception {
+    void createTaskBoard_InvalidUserID_ReturnsStatusCodeForbiddenAndErrorResponse() throws Exception {
         UUID userID = UUID.randomUUID();
 
         TaskBoard requestBoard = createDefaultTaskBoard();
@@ -271,7 +271,7 @@ public class TaskBoardControllerTest {
 
     @Test
     @Sql(scripts = {"/data/sql/clearData.sql", "/data/sql/insertUsers.sql"})
-    void create_IllegalTaskBoardData_ReturnsStatusCodeBadRequestAndErrorResponse() throws Exception {
+    void createTaskBoard_IllegalTaskBoardData_ReturnsStatusCodeBadRequestAndErrorResponse() throws Exception {
         User preInsertedUser = TestApproacherDataUtils.createPreInsertedUser(EntityNumber.FIRST);
         UUID userID = preInsertedUser.getID();
 
@@ -288,7 +288,7 @@ public class TaskBoardControllerTest {
 
     @Test
     @Sql(scripts = {"/data/sql/clearData.sql", "/data/sql/insertUsers.sql", "/data/sql/insertBoards.sql"})
-    void update_ValidTaskBoardData_ReturnsStatusCodeOkAndTaskBoardResponse() throws Exception {
+    void updateTaskBoard_ValidTaskBoardData_ReturnsStatusCodeOkAndTaskBoardResponse() throws Exception {
         TaskBoard preInsertedTaskBoard = TestApproacherDataUtils.createPreInsertedTaskBoard(EntityNumber.FIRST);
         UUID taskBoardID = preInsertedTaskBoard.getID();
 
@@ -306,7 +306,7 @@ public class TaskBoardControllerTest {
 
     @Test
     @Sql(scripts = {"/data/sql/clearData.sql", "/data/sql/insertUsers.sql", "/data/sql/insertBoards.sql"})
-    void update_NonExistentTaskBoardID_ReturnsStatusCodeBadRequestAndErrorResponse() throws Exception {
+    void updateTaskBoard_NonExistentTaskBoardID_ReturnsStatusCodeBadRequestAndErrorResponse() throws Exception {
         UUID taskBoardID = UUID.randomUUID();
 
         TaskBoard updatedTaskBoardData = TestApproacherDataUtils.createPreInsertedTaskBoard(EntityNumber.FIRST);
@@ -321,7 +321,7 @@ public class TaskBoardControllerTest {
 
     @Test
     @Sql(scripts = {"/data/sql/clearData.sql", "/data/sql/insertUsers.sql", "/data/sql/insertBoards.sql"})
-    void update_InvalidTaskBoardID_ReturnsStatusCodeForbiddenAndErrorResponse() throws Exception {
+    void updateTaskBoard_InvalidTaskBoardID_ReturnsStatusCodeForbiddenAndErrorResponse() throws Exception {
         TaskBoard preInsertedTaskBoard = TestApproacherDataUtils.createPreInsertedTaskBoard(EntityNumber.THIRD);
         UUID taskBoardID = preInsertedTaskBoard.getID();
 
@@ -337,7 +337,7 @@ public class TaskBoardControllerTest {
 
     @Test
     @Sql(scripts = {"/data/sql/clearData.sql", "/data/sql/insertUsers.sql", "/data/sql/insertBoards.sql"})
-    void delete_ValidTaskBoardID_ReturnsStatusCodeNoContent() throws Exception {
+    void deleteTaskBoard_ValidTaskBoardID_ReturnsStatusCodeNoContent() throws Exception {
         TaskBoard preInsertedTaskBoard = TestApproacherDataUtils.createPreInsertedTaskBoard(EntityNumber.FIRST);
         UUID taskBoardID = preInsertedTaskBoard.getID();
 
@@ -349,7 +349,7 @@ public class TaskBoardControllerTest {
 
     @Test
     @Sql(scripts = {"/data/sql/clearData.sql", "/data/sql/insertUsers.sql", "/data/sql/insertBoards.sql"})
-    void delete_NonExistentTaskBoardID_ReturnsStatusCodeBadRequestAndErrorResponse() throws Exception {
+    void deleteTaskBoard_NonExistentTaskBoardID_ReturnsStatusCodeBadRequestAndErrorResponse() throws Exception {
         UUID taskBoardID = UUID.randomUUID();
 
         String path = PATH_TO_API + taskBoardID;
@@ -360,7 +360,7 @@ public class TaskBoardControllerTest {
 
     @Test
     @Sql(scripts = {"/data/sql/clearData.sql", "/data/sql/insertUsers.sql", "/data/sql/insertBoards.sql"})
-    void delete_InvalidTaskBoardID_ReturnsStatusCodeForbiddenAndErrorResponse() throws Exception {
+    void deleteTaskBoard_InvalidTaskBoardID_ReturnsStatusCodeForbiddenAndErrorResponse() throws Exception {
         TaskBoard preInsertedTaskBoard = TestApproacherDataUtils.createPreInsertedTaskBoard(EntityNumber.THIRD);
         UUID taskBoardID = preInsertedTaskBoard.getID();
 
