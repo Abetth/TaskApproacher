@@ -7,7 +7,8 @@ import com.taskapproacher.auth.model.AuthResponse;
 import com.taskapproacher.common.constant.EntityNumber;
 import com.taskapproacher.common.constant.ExceptionMessage;
 import com.taskapproacher.common.utils.TestApproacherDataUtils;
-import com.taskapproacher.task.model.TaskBoard;
+import com.taskapproacher.task.mapper.TaskBoardMapper;
+import com.taskapproacher.task.model.TaskBoardDTO;
 import com.taskapproacher.user.model.User;
 
 import org.hamcrest.core.StringContains;
@@ -45,16 +46,15 @@ public class UserControllerTest {
     @Autowired
     private ObjectMapper objectMapper;
     private final String PATH_TO_API = "/api/user/";
+    private final TaskBoardMapper taskBoardMapper = new TaskBoardMapper();
     private String token;
 
     private Map<String, Object> buildUpdatePayload(User user) {
-        Map<String, Object> userMap = Map.of(
+        return Map.of(
                 "username", user.getUsername(),
                 "email", user.getEmail(),
                 "password", user.getPassword()
         );
-
-        return userMap;
     }
 
     @BeforeEach
@@ -139,18 +139,22 @@ public class UserControllerTest {
         String tokenJson = mockMvc.perform(request(HttpMethod.POST, path)
                                                    .contentType(MediaType.APPLICATION_JSON)
                                                    .content(requestJson))
-                .andReturn()
-                .getResponse()
-                .getContentAsString();
+                                  .andReturn()
+                                  .getResponse()
+                                  .getContentAsString();
 
         AuthResponse response = objectMapper.readValue(tokenJson, AuthResponse.class);
 
         return response.getToken();
     }
 
-    private List<TaskBoard> createListOfPreInsertedTaskBoards() {
-        TaskBoard firstBoard = TestApproacherDataUtils.createPreInsertedTaskBoard(EntityNumber.FIRST);
-        TaskBoard secondBoard = TestApproacherDataUtils.createPreInsertedTaskBoard(EntityNumber.SECOND);
+    private List<TaskBoardDTO> createDTOListOfPreInsertedTaskBoards() {
+        TaskBoardDTO firstBoard = taskBoardMapper.mapToTaskBoardDTO(
+                TestApproacherDataUtils.createPreInsertedTaskBoard(EntityNumber.FIRST)
+        );
+        TaskBoardDTO secondBoard = taskBoardMapper.mapToTaskBoardDTO(
+                TestApproacherDataUtils.createPreInsertedTaskBoard(EntityNumber.SECOND)
+        );
 
         return List.of(firstBoard, secondBoard);
     }
@@ -193,17 +197,17 @@ public class UserControllerTest {
         User preInsertedUser = TestApproacherDataUtils.createPreInsertedUser(EntityNumber.FIRST);
         UUID userID = preInsertedUser.getID();
 
-        List<TaskBoard> preInsertedTaskBoards = createListOfPreInsertedTaskBoards();
+        List<TaskBoardDTO> preInsertedTaskBoards = createDTOListOfPreInsertedTaskBoards();
 
         String path = PATH_TO_API + userID + "/boards";
 
         mockMvc.perform(request(HttpMethod.GET, path)
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .header("Authorization", "Bearer " + token))
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().is(HttpStatus.OK.value()))
-                .andExpect(jsonPath("$.[0].id").value(preInsertedTaskBoards.get(0).getID().toString()))
-                .andExpect(jsonPath("$.[1].id").value(preInsertedTaskBoards.get(1).getID().toString()));
+               .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+               .andExpect(status().is(HttpStatus.OK.value()))
+               .andExpect(jsonPath("$.[0].id").value(preInsertedTaskBoards.get(0).getID().toString()))
+               .andExpect(jsonPath("$.[1].id").value(preInsertedTaskBoards.get(1).getID().toString()));
     }
 
     @Test
@@ -244,7 +248,7 @@ public class UserControllerTest {
         User preInsertedUser = TestApproacherDataUtils.createPreInsertedUser(EntityNumber.FIRST);
         UUID userID = preInsertedUser.getID();
 
-        User updatedUserData = new User();
+        User updatedUserData = TestApproacherDataUtils.createPreInsertedUser(EntityNumber.FIRST);
         updatedUserData.setUsername("");
         updatedUserData.setEmail("");
         updatedUserData.setPassword("");

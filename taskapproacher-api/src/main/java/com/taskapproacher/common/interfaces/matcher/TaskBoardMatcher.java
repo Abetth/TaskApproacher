@@ -11,5 +11,5 @@ public interface TaskBoardMatcher {
     String getTitle();
     boolean isSorted();
     List<Task> getTasks();
-    User getUser();
+    UUID getUserID();
 }

@@ -4,8 +4,9 @@ import com.taskapproacher.auth.model.AuthRequest;
 import com.taskapproacher.auth.model.RegisterRequest;
 import com.taskapproacher.auth.model.AuthResponse;
 import com.taskapproacher.user.model.User;
-import com.taskapproacher.user.model.UserResponse;
+import com.taskapproacher.user.model.UserDTO;
 import com.taskapproacher.user.service.UserService;
+import com.taskapproacher.user.mapper.UserMapper;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -14,12 +15,14 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class AuthService {
+    private final UserMapper userMapper;
     private final UserService userService;
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
 
     @Autowired
     public AuthService(UserService userService, JwtService jwtService, AuthenticationManager authenticationManager) {
+        this.userMapper = new UserMapper();
         this.userService = userService;
         this.jwtService = jwtService;
         this.authenticationManager = authenticationManager;
@@ -32,9 +35,9 @@ public class AuthService {
         user.setPassword(request.getPassword());
         user.setEmail(request.getEmail());
 
-        UserResponse userResponse = userService.createUser(user);
+        UserDTO userDTO = userService.createUser(user);
 
-        User createdUser = new User(userResponse);
+        User createdUser = userMapper.mapToUserEntity(userDTO);
 
         String jwtToken = jwtService.generateToken(createdUser);
         return new AuthResponse(jwtToken);

@@ -2,12 +2,14 @@ package com.taskapproacher.user.service;
 
 import com.taskapproacher.common.constant.ExceptionMessage;
 import com.taskapproacher.common.exception.custom.EntityAlreadyExistsException;
+import com.taskapproacher.task.mapper.TaskBoardMapper;
 import com.taskapproacher.task.model.TaskBoard;
-import com.taskapproacher.task.model.TaskBoardResponse;
+import com.taskapproacher.task.model.TaskBoardDTO;
 import com.taskapproacher.user.constant.Role;
 import com.taskapproacher.user.model.User;
-import com.taskapproacher.user.model.UserResponse;
+import com.taskapproacher.user.model.UserDTO;
 import com.taskapproacher.user.repository.UserRepository;
+import com.taskapproacher.user.mapper.UserMapper;
 
 import jakarta.persistence.EntityNotFoundException;
 
@@ -22,11 +24,15 @@ import java.util.stream.Collectors;
 
 @Service
 public class UserService {
+    private final TaskBoardMapper taskBoardMapper;
+    private final UserMapper userMapper;
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
     @Autowired
     public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+        this.taskBoardMapper  = new TaskBoardMapper();
+        this.userMapper = new UserMapper();
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
     }
@@ -54,16 +60,16 @@ public class UserService {
         );
     }
 
-    public List<TaskBoardResponse> findBoardsByUser(UUID userID)
+    public List<TaskBoardDTO> findBoardsByUser(UUID userID)
             throws IllegalArgumentException, EntityNotFoundException {
         findByID(userID);
 
         List<TaskBoard> taskBoards = userRepository.findRelatedEntitiesByID(userID);
 
-        return taskBoards.stream().map(TaskBoardResponse::new).collect(Collectors.toList());
+        return taskBoards.stream().map(taskBoardMapper::mapToTaskBoardDTO).collect(Collectors.toList());
     }
 
-    public UserResponse createUser(User user) throws IllegalArgumentException, EntityAlreadyExistsException {
+    public UserDTO createUser(User user) throws IllegalArgumentException, EntityAlreadyExistsException {
         if (user.getUsername() == null || user.getUsername().isEmpty()) {
             ExceptionMessage error = (user.getUsername() == null) ? ExceptionMessage.NULL : ExceptionMessage.EMPTY;
             throw new IllegalArgumentException("Username " + error);
@@ -86,11 +92,11 @@ public class UserService {
         if (userRepository.isUserExists(createdUser)) {
             throw new EntityAlreadyExistsException("User " + ExceptionMessage.ALREADY_EXISTS);
         } else {
-            return new UserResponse(userRepository.save(createdUser));
+            return userMapper.mapToUserResponse(userRepository.save(createdUser));
         }
     }
 
-    public UserResponse updateUser(UUID userID, User user) throws IllegalArgumentException, EntityNotFoundException {
+    public UserDTO updateUser(UUID userID, User user) throws IllegalArgumentException, EntityNotFoundException {
         User updatedUser = findByID(userID);
 
         String newUsername = user.getUsername();
@@ -116,7 +122,7 @@ public class UserService {
             updatedUser.setPassword(passwordEncoder.encode(user.getPassword()));
         }
 
-        return new UserResponse(userRepository.update(updatedUser));
+        return userMapper.mapToUserResponse(userRepository.update(updatedUser));
     }
 
     public void deleteUser(UUID userID) throws IllegalArgumentException, EntityNotFoundException {

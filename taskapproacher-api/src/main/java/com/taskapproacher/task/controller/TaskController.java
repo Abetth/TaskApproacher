@@ -1,8 +1,7 @@
 package com.taskapproacher.task.controller;
 
 import com.taskapproacher.task.model.Task;
-import com.taskapproacher.task.model.TaskRequest;
-import com.taskapproacher.task.model.TaskResponse;
+import com.taskapproacher.task.model.TaskDTO;
 import com.taskapproacher.task.service.TaskService;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,17 +23,16 @@ public class TaskController {
 
     @PostMapping("/board/{boardID}")
     @PreAuthorize("@taskBoardService.findByID(#boardID).user.ID == authentication.principal.ID")
-    public ResponseEntity<TaskResponse> createTask(@PathVariable UUID boardID,
-                                                   @RequestBody TaskRequest task,
+    public ResponseEntity<TaskDTO> createTask(@PathVariable UUID boardID,
+                                                   @RequestBody TaskDTO task,
                                                    @RequestHeader String timeZone) {
-        TaskResponse createTask = taskService.createTask(boardID, task, timeZone);
-        return ResponseEntity.status(201).body(createTask);
+        return ResponseEntity.status(201).body(taskService.createTask(boardID, task, timeZone));
     }
 
     @PatchMapping("/{taskID}")
     @PreAuthorize("@accessCheckService.hasAccessToTask(#taskID, authentication.principal.ID)")
-    public ResponseEntity<TaskResponse> updateTask(@PathVariable UUID taskID,
-                                                   @RequestBody TaskRequest task,
+    public ResponseEntity<TaskDTO> updateTask(@PathVariable UUID taskID,
+                                                   @RequestBody TaskDTO task,
                                                    @RequestHeader String timeZone) {
         return ResponseEntity.ok(taskService.updateTask(taskID, task, timeZone));
     }

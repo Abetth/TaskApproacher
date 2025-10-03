@@ -2,10 +2,8 @@ package com.taskapproacher.task.service;
 
 import com.taskapproacher.common.constant.ExceptionMessage;
 import com.taskapproacher.task.constant.Priority;
-import com.taskapproacher.task.model.Task;
-import com.taskapproacher.task.model.TaskBoard;
-import com.taskapproacher.task.model.TaskRequest;
-import com.taskapproacher.task.model.TaskResponse;
+import com.taskapproacher.task.mapper.TaskMapper;
+import com.taskapproacher.task.model.*;
 
 import com.taskapproacher.task.repository.TaskRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -19,11 +17,13 @@ import java.util.UUID;
 
 @Service
 public class TaskService {
+    private final TaskMapper taskMapper;
     private final TaskRepository taskRepository;
     private final TaskBoardService taskBoardService;
 
     @Autowired
     public TaskService(TaskRepository taskRepository, TaskBoardService taskBoardService) {
+        this.taskMapper = new TaskMapper();
         this.taskRepository = taskRepository;
         this.taskBoardService = taskBoardService;
     }
@@ -39,7 +39,7 @@ public class TaskService {
     }
 
 
-    public TaskResponse createTask(UUID boardId, TaskRequest request, String timeZone)
+    public TaskDTO createTask(UUID boardId, TaskDTO request, String timeZone)
             throws IllegalArgumentException, EntityNotFoundException {
         TaskBoard boardForTask = taskBoardService.findByID(boardId);
 
@@ -51,7 +51,7 @@ public class TaskService {
             throw new IllegalArgumentException("Title " + error);
         }
 
-        if (request.getPriority() == null || request.getPriority().isEmpty()) {
+        if (request.getPriorityAsString() == null || request.getPriorityAsString().isEmpty()) {
             request.setPriority(Priority.STANDARD.toString());
         }
 
@@ -63,13 +63,13 @@ public class TaskService {
             throw new IllegalArgumentException("Task deadline " + ExceptionMessage.BEFORE_CURRENT_DATE);
         }
 
-        Task taskFromRequest = new Task(request);
+        Task taskFromRequest = taskMapper.mapToTaskEntity(request);
         taskFromRequest.setTaskBoard(boardForTask);
 
-        return new TaskResponse(taskRepository.save(taskFromRequest));
+        return taskMapper.mapToTaskDTO(taskRepository.save(taskFromRequest));
     }
 
-    public TaskResponse updateTask(UUID taskID, TaskRequest request, String timeZone)
+    public TaskDTO updateTask(UUID taskID, TaskDTO request, String timeZone)
             throws IllegalArgumentException, EntityNotFoundException {
         Task updatedTask = findByID(taskID);
 
@@ -81,8 +81,8 @@ public class TaskService {
             updatedTask.setDescription(request.getDescription());
         }
 
-        if (request.getPriority() != null && !request.getPriority().isEmpty()) {
-            updatedTask.setPriority(request.getPriority());
+        if (request.getPriorityAsString() != null && !request.getPriorityAsString().isEmpty()) {
+            updatedTask.setPriority(request.getPriorityAsString());
         }
 
         if (request.getDeadline() != null) {
@@ -95,11 +95,11 @@ public class TaskService {
 
         updatedTask.setFinished(request.isFinished());
 
-        if (request.getTaskBoard() != null) {
-            updatedTask.setTaskBoard(request.getTaskBoard());
+        if (request.getTaskBoardID() != null) {
+            updatedTask.setTaskBoard(taskBoardService.findByID(request.getTaskBoardID()));
         }
 
-        return new TaskResponse(taskRepository.update(updatedTask));
+        return taskMapper.mapToTaskDTO(taskRepository.update(updatedTask));
     }
 
     public void deleteTask(UUID taskID) throws IllegalArgumentException {

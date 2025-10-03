@@ -9,8 +9,8 @@ public interface TaskMatcher {
     UUID getID();
     String getTitle();
     String getDescription();
-    String getPriority();
+    String getPriorityAsString();
     LocalDate getDeadline();
     boolean isFinished();
-    TaskBoard getTaskBoard();
+    UUID getTaskBoardID();
 }

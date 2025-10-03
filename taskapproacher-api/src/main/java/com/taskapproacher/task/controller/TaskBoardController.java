@@ -1,8 +1,7 @@
 package com.taskapproacher.task.controller;
 
-import com.taskapproacher.task.model.TaskBoard;
-import com.taskapproacher.task.model.TaskBoardResponse;
-import com.taskapproacher.task.model.TaskResponse;
+import com.taskapproacher.task.model.TaskBoardDTO;
+import com.taskapproacher.task.model.TaskDTO;
 import com.taskapproacher.task.service.TaskBoardService;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,26 +24,26 @@ public class TaskBoardController {
 
     @GetMapping("/{boardID}/tasks")
     @PreAuthorize("@accessCheckService.hasAccessToBoard(#boardID, authentication.principal.ID)")
-    public ResponseEntity<List<TaskResponse>> getTasksByBoard(@PathVariable UUID boardID) {
+    public ResponseEntity<List<TaskDTO>> getTasksByBoard(@PathVariable UUID boardID) {
         return ResponseEntity.ok(taskBoardService.findByTaskBoard(boardID));
     }
 
     @PostMapping("/{userID}")
     @PreAuthorize("#userID == authentication.principal.ID")
-    public ResponseEntity<TaskBoardResponse> createTaskBoard(@PathVariable UUID userID, @RequestBody TaskBoard board) {
-        TaskBoardResponse createBoard = taskBoardService.createTaskBoard(userID, board);
+    public ResponseEntity<TaskBoardDTO> createTaskBoard(@PathVariable UUID userID, @RequestBody TaskBoardDTO board) {
+        TaskBoardDTO createBoard = taskBoardService.createTaskBoard(userID, board);
         return ResponseEntity.status(201).body(createBoard);
     }
 
     @PatchMapping("/{boardID}")
     @PreAuthorize("@accessCheckService.hasAccessToBoard(#boardID, authentication.principal.ID)")
-    public ResponseEntity<TaskBoardResponse> updateTaskBoard(@PathVariable UUID boardID, @RequestBody TaskBoard board) {
+    public ResponseEntity<TaskBoardDTO> updateTaskBoard(@PathVariable UUID boardID, @RequestBody TaskBoardDTO board) {
         return ResponseEntity.ok(taskBoardService.updateTaskBoard(boardID, board));
     }
 
     @DeleteMapping("/{boardID}")
     @PreAuthorize("@accessCheckService.hasAccessToBoard(#boardID, authentication.principal.ID)")
-    public ResponseEntity<TaskBoardResponse> deleteTaskBoard(@PathVariable UUID boardID) {
+    public ResponseEntity<TaskBoardDTO> deleteTaskBoard(@PathVariable UUID boardID) {
         taskBoardService.deleteTaskBoard(boardID);
         return ResponseEntity.noContent().build();
     }

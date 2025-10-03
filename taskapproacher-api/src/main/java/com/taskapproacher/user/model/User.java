@@ -56,13 +56,6 @@ public class User implements UserDetails {
     @JsonManagedReference
     private List<TaskBoard> taskBoards;
 
-    public User(UserResponse user) {
-        this.ID = user.getID();
-        this.username = user.getUsername();
-        this.email = user.getEmail();
-        this.role = user.getRole();
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

@@ -98,7 +98,7 @@ public class TestApproacherDataUtils {
                 task.setDescription("Task 1 description");
                 task.setFinished(true);
                 task.setDeadline(LocalDate.of(2050, 9, 17));
-                task.setPriority(Priority.fromInt(4));
+                task.setPriority(Priority.valueOf("STANDARD"));
                 task.setTaskBoard(DEFINED_FIRST_TASK_BOARD);
                 break;
 
@@ -108,7 +108,7 @@ public class TestApproacherDataUtils {
                 task.setDescription("Task 2 description");
                 task.setFinished(false);
                 task.setDeadline(LocalDate.of(2080, 10, 17));
-                task.setPriority(Priority.fromInt(2));
+                task.setPriority(Priority.valueOf("HIGHEST"));
                 task.setTaskBoard(DEFINED_FIRST_TASK_BOARD);
                 break;
 
@@ -118,7 +118,7 @@ public class TestApproacherDataUtils {
                 task.setDescription("Task 3 description");
                 task.setFinished(true);
                 task.setDeadline(LocalDate.of(2060, 6, 17));
-                task.setPriority(Priority.fromInt(2));
+                task.setPriority(Priority.valueOf("HIGHEST"));
                 task.setTaskBoard(DEFINED_THIRD_TASK_BOARD);
                 break;
 

@@ -24,7 +24,8 @@ public enum ExceptionMessage {
                                + " and " + TaskConstants.MAX_TASK_DESCRIPTION_LENGTH
                                + " characters, respectively"),
     INVALID_TASK_BOARD_TITLE_LENGTH("Task board title is too long, maximum length is "
-                                    + TaskConstants.MAX_TASK_BOARD_TITLE_LENGTH);
+                                    + TaskConstants.MAX_TASK_BOARD_TITLE_LENGTH),
+    NO_PRIORITY("There is no such priority");
 
     private final String message;
 

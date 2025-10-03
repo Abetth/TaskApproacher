@@ -33,7 +33,6 @@ public class AccessCheckService {
         TaskBoard foundBoard = taskBoardService.findByID(boardID);
 
         return foundBoard.getUser().getID().equals(principalID);
-
     }
 
     public boolean hasAccessToTask(UUID taskID, UUID principalID) {

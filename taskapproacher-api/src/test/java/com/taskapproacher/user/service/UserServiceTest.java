@@ -3,10 +3,10 @@ package com.taskapproacher.user.service;
 import com.taskapproacher.common.constant.ExceptionMessage;
 import com.taskapproacher.common.exception.custom.EntityAlreadyExistsException;
 import com.taskapproacher.task.model.TaskBoard;
-import com.taskapproacher.task.model.TaskBoardResponse;
+import com.taskapproacher.task.model.TaskBoardDTO;
 import com.taskapproacher.user.constant.Role;
 import com.taskapproacher.user.model.User;
-import com.taskapproacher.user.model.UserResponse;
+import com.taskapproacher.user.model.UserDTO;
 import com.taskapproacher.user.repository.UserRepository;
 
 import jakarta.persistence.EntityNotFoundException;
@@ -99,7 +99,6 @@ public class UserServiceTest {
         EntityNotFoundException exception = assertThrows(EntityNotFoundException.class, () -> {
             userService.findByID(userID);
         });
-
 
         String expectedMessage = ExceptionMessage.NOT_FOUND.toString();
         String actualMessage = exception.getMessage();
@@ -200,7 +199,7 @@ public class UserServiceTest {
         when(userRepository.findByID(userID)).thenReturn(Optional.of(user));
         when(userRepository.findRelatedEntitiesByID(userID)).thenReturn(mockBoards);
 
-        List<TaskBoardResponse> responseBoards = userService.findBoardsByUser(userID);
+        List<TaskBoardDTO> responseBoards = userService.findBoardsByUser(userID);
 
         assertEquals(responseBoards.size(), 2);
         assertEquals(responseBoards.get(0).getID(), mockBoards.get(0).getID());
@@ -218,7 +217,7 @@ public class UserServiceTest {
         when(userRepository.findByID(userID)).thenReturn(Optional.of(user));
         when(userRepository.findRelatedEntitiesByID(userID)).thenReturn(List.of());
 
-        List<TaskBoardResponse> responseBoards = userService.findBoardsByUser(userID);
+        List<TaskBoardDTO> responseBoards = userService.findBoardsByUser(userID);
 
         assertEquals(responseBoards.size(), 0);
 
@@ -274,7 +273,7 @@ public class UserServiceTest {
         when(userRepository.isUserExists(ArgumentMatchers.any(User.class))).thenReturn(false);
         when(passwordEncoder.encode(user.getPassword())).thenReturn(encodedPassword);
 
-        UserResponse response = userService.createUser(user);
+        UserDTO response = userService.createUser(user);
 
         User capturedUser = captor.getValue();
 
@@ -442,7 +441,7 @@ public class UserServiceTest {
         when(passwordEncoder.encode(updateData.getPassword())).thenReturn(newEncodedPassword);
         when(userRepository.update(captor.capture())).thenAnswer(invocation -> invocation.getArgument(0));
 
-        UserResponse response  = userService.updateUser(userID, updateData);
+        UserDTO response  = userService.updateUser(userID, updateData);
         User capturedUser = captor.getValue();
 
         assertNotEquals(existingUser.getUsername(), capturedUser.getUsername());
@@ -479,7 +478,7 @@ public class UserServiceTest {
         when(userRepository.findByID(userID)).thenReturn(Optional.of(copyOfExistingUser));
         when(userRepository.update(captor.capture())).thenAnswer(invocation -> invocation.getArgument(0));
 
-        UserResponse response = userService.updateUser(userID, updateData);
+        UserDTO response = userService.updateUser(userID, updateData);
         User capturedUser = captor.getValue();
 
         assertEquals(existingUser.getID(), capturedUser.getID());
@@ -519,7 +518,7 @@ public class UserServiceTest {
         when(userRepository.findByID(userID)).thenReturn(Optional.of(copyOfExistingUser));
         when(userRepository.update(captor.capture())).thenAnswer(invocation -> invocation.getArgument(0));
 
-        UserResponse response = userService.updateUser(userID, updateData);
+        UserDTO response = userService.updateUser(userID, updateData);
         User capturedUser = captor.getValue();
 
         assertEquals(existingUser.getID(), capturedUser.getID());
@@ -558,7 +557,7 @@ public class UserServiceTest {
         when(userRepository.findByID(userID)).thenReturn(Optional.of(copyOfExistingUser));
         when(userRepository.update(captor.capture())).thenAnswer(invocation -> invocation.getArgument(0));
 
-        UserResponse response = userService.updateUser(userID, updateData);
+        UserDTO response = userService.updateUser(userID, updateData);
         User capturedUser = captor.getValue();
 
         assertEquals(existingUser.getID(), capturedUser.getID());

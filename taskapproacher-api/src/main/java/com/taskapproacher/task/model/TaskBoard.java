@@ -48,12 +48,8 @@ public class TaskBoard implements TaskBoardMatcher {
     @JsonBackReference
     private User user;
 
-    public TaskBoard(TaskBoardResponse response) {
-        this.ID = response.getID();
-        this.title = response.getTitle();
-        this.sorted = response.isSorted();
-        this.tasks = response.getTasks();
-        this.user = response.getUser();
+    public UUID getUserID() {
+        return this.user.getID();
     }
 
     @Override

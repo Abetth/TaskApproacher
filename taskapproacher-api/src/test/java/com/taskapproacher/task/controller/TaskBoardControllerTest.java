@@ -8,8 +8,11 @@ import com.taskapproacher.common.constant.EntityNumber;
 import com.taskapproacher.common.constant.ExceptionMessage;
 import com.taskapproacher.common.interfaces.matcher.TaskBoardMatcher;
 import com.taskapproacher.common.utils.TestApproacherDataUtils;
-import com.taskapproacher.task.model.Task;
+import com.taskapproacher.task.mapper.TaskBoardMapper;
+import com.taskapproacher.task.mapper.TaskMapper;
 import com.taskapproacher.task.model.TaskBoard;
+import com.taskapproacher.task.model.TaskBoardDTO;
+import com.taskapproacher.task.model.TaskDTO;
 import com.taskapproacher.user.model.User;
 
 import org.hamcrest.core.StringContains;
@@ -46,19 +49,22 @@ public class TaskBoardControllerTest {
     @Autowired
     private ObjectMapper objectMapper;
     private final String PATH_TO_API = "/api/board/";
+    private final TaskBoardMapper taskBoardMapper = new TaskBoardMapper();
+    private final TaskMapper taskMapper = new TaskMapper();
     private String token;
 
-    private TaskBoard createDefaultTaskBoard() {
-        TaskBoard taskBoard = new TaskBoard();
+    private TaskBoardDTO createDefaultTaskBoardDTO(UUID userID) {
+        TaskBoardDTO taskBoard = new TaskBoardDTO();
         taskBoard.setTitle("Test Board Creation");
         taskBoard.setSorted(false);
+        taskBoard.setUserID(userID);
 
         return taskBoard;
     }
 
-    private List<Task> createListOfPreInsertedTasks() {
-        Task firstTask = TestApproacherDataUtils.createPreInsertedTask(EntityNumber.FIRST);
-        Task secondTask = TestApproacherDataUtils.createPreInsertedTask(EntityNumber.SECOND);
+    private List<TaskDTO> createDTOListOfPreInsertedTasks() {
+        TaskDTO firstTask = taskMapper.mapToTaskDTO(TestApproacherDataUtils.createPreInsertedTask(EntityNumber.FIRST));
+        TaskDTO secondTask = taskMapper.mapToTaskDTO(TestApproacherDataUtils.createPreInsertedTask(EntityNumber.SECOND));
 
         return List.of(firstTask, secondTask);
     }
@@ -90,10 +96,10 @@ public class TaskBoardControllerTest {
 
         if (method != HttpMethod.POST) {
             matchers.add(jsonPath("$.id").value(taskBoardMatcher.getID().toString()));
-            matchers.add(jsonPath("$.user.id").value(taskBoardMatcher.getUser().getID().toString()));
+            matchers.add(jsonPath("$.userID").value(taskBoardMatcher.getUserID().toString()));
         } else {
             matchers.add(jsonPath("$.id").isNotEmpty());
-            matchers.add(jsonPath("$.user").isNotEmpty());
+            matchers.add(jsonPath("$.userID").isNotEmpty());
         }
 
         matchers.add(content().contentType(MediaType.APPLICATION_JSON));
@@ -163,7 +169,7 @@ public class TaskBoardControllerTest {
     @Test
     @Sql(scripts = {"/data/sql/clearData.sql", "/data/sql/insertUsers.sql"})
     void anyRequest_NullInPath_ReturnsStatusCodeBadRequestAndErrorResponse() throws Exception {
-        TaskBoard request = createDefaultTaskBoard();
+        TaskBoardDTO request = createDefaultTaskBoardDTO(UUID.randomUUID());
 
         String path = PATH_TO_API + null + "/tasks";
 
@@ -179,7 +185,7 @@ public class TaskBoardControllerTest {
         User preInsertedUser = TestApproacherDataUtils.createPreInsertedUser(EntityNumber.FIRST);
         UUID userID = preInsertedUser.getID();
 
-        TaskBoard request = createDefaultTaskBoard();
+        TaskBoardDTO request = createDefaultTaskBoardDTO(userID);
 
         String path = PATH_TO_API + userID;
 
@@ -198,7 +204,7 @@ public class TaskBoardControllerTest {
         TaskBoard preInsertedTaskBoard = TestApproacherDataUtils.createPreInsertedTaskBoard(EntityNumber.FIRST);
         UUID taskBoardID = preInsertedTaskBoard.getID();
 
-        List<Task> preInsertedTasks = createListOfPreInsertedTasks();
+        List<TaskDTO> preInsertedTasks = createDTOListOfPreInsertedTasks();
 
         String path = PATH_TO_API + taskBoardID + "/tasks";
 
@@ -244,7 +250,7 @@ public class TaskBoardControllerTest {
         User preInsertedUser = TestApproacherDataUtils.createPreInsertedUser(EntityNumber.FIRST);
         UUID userID = preInsertedUser.getID();
 
-        TaskBoard request = createDefaultTaskBoard();
+        TaskBoardDTO request = createDefaultTaskBoardDTO(userID);
 
         String path = PATH_TO_API + userID;
 
@@ -259,7 +265,7 @@ public class TaskBoardControllerTest {
     void createTaskBoard_InvalidUserID_ReturnsStatusCodeForbiddenAndErrorResponse() throws Exception {
         UUID userID = UUID.randomUUID();
 
-        TaskBoard requestBoard = createDefaultTaskBoard();
+        TaskBoardDTO requestBoard = createDefaultTaskBoardDTO(userID);
 
         String path = PATH_TO_API + userID;
 
@@ -275,7 +281,7 @@ public class TaskBoardControllerTest {
         User preInsertedUser = TestApproacherDataUtils.createPreInsertedUser(EntityNumber.FIRST);
         UUID userID = preInsertedUser.getID();
 
-        TaskBoard request = createDefaultTaskBoard();
+        TaskBoardDTO request = createDefaultTaskBoardDTO(userID);
         request.setTitle("");
 
         String path = PATH_TO_API + userID;
@@ -292,7 +298,7 @@ public class TaskBoardControllerTest {
         TaskBoard preInsertedTaskBoard = TestApproacherDataUtils.createPreInsertedTaskBoard(EntityNumber.FIRST);
         UUID taskBoardID = preInsertedTaskBoard.getID();
 
-        TaskBoard updatedTaskBoardData = TestApproacherDataUtils.createPreInsertedTaskBoard(EntityNumber.FIRST);
+        TaskBoardDTO updatedTaskBoardData = taskBoardMapper.mapToTaskBoardDTO(preInsertedTaskBoard);
         updatedTaskBoardData.setTitle("Updated title");
         updatedTaskBoardData.setSorted(true);
 
@@ -309,7 +315,7 @@ public class TaskBoardControllerTest {
     void updateTaskBoard_NonExistentTaskBoardID_ReturnsStatusCodeBadRequestAndErrorResponse() throws Exception {
         UUID taskBoardID = UUID.randomUUID();
 
-        TaskBoard updatedTaskBoardData = TestApproacherDataUtils.createPreInsertedTaskBoard(EntityNumber.FIRST);
+        TaskBoardDTO updatedTaskBoardData = new TaskBoardDTO();
 
         String path = PATH_TO_API + taskBoardID;
 
@@ -325,7 +331,9 @@ public class TaskBoardControllerTest {
         TaskBoard preInsertedTaskBoard = TestApproacherDataUtils.createPreInsertedTaskBoard(EntityNumber.THIRD);
         UUID taskBoardID = preInsertedTaskBoard.getID();
 
-        TaskBoard updatedTaskBoardData = TestApproacherDataUtils.createPreInsertedTaskBoard(EntityNumber.FIRST);
+        TaskBoardDTO updatedTaskBoardData = taskBoardMapper.mapToTaskBoardDTO(
+                TestApproacherDataUtils.createPreInsertedTaskBoard(EntityNumber.FIRST)
+        );
 
         String path = PATH_TO_API + taskBoardID;
 

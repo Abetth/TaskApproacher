@@ -2,6 +2,7 @@ package com.taskapproacher.task.model;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 
+import com.taskapproacher.common.constant.ExceptionMessage;
 import com.taskapproacher.common.interfaces.matcher.TaskMatcher;
 import com.taskapproacher.task.constant.Priority;
 
@@ -58,38 +59,24 @@ public class Task implements TaskMatcher {
     @JsonBackReference
     private TaskBoard taskBoard;
 
-    public Task(TaskRequest request) {
-        this.title = request.getTitle();
-        this.description = request.getDescription();
-        this.priority = Priority.valueOf(request.getPriority());
-        this.deadline = request.getDeadline();
-        this.finished = request.isFinished();
-        this.taskBoard = request.getTaskBoard();
-    }
-
-    public Task(TaskResponse response) {
-        this.title = response.getTitle();
-        this.description = response.getDescription();
-        this.priority = Priority.valueOf(response.getPriority());
-        this.deadline = response.getDeadline();
-        this.finished = response.isFinished();
-        this.taskBoard = response.getTaskBoard();
-    }
-
     public void setPriority(String priority) {
-        this.priority = Priority.valueOf(priority);
+        try {
+            this.priority = Priority.valueOf(priority);
+        } catch (IllegalArgumentException exception) {
+            throw new IllegalArgumentException(ExceptionMessage.NO_PRIORITY + ": " + priority);
+        }
     }
 
     public void setPriority(Priority priority) {
         this.priority = priority;
     }
 
-    public String getPriority() {
+    public String getPriorityAsString() {
         return this.priority.toString();
     }
 
-    public Priority getEnumPriority() {
-        return this.priority;
+    public UUID getTaskBoardID() {
+        return this.taskBoard.getID();
     }
 
     @Override
@@ -99,24 +86,24 @@ public class Task implements TaskMatcher {
         Task comparableTask = (Task) o;
 
         return title.equals(comparableTask.title)
-                && description.equals(comparableTask.description) && priority.equals(comparableTask.priority)
-                && deadline.equals(comparableTask.deadline) && finished == comparableTask.finished;
+               && description.equals(comparableTask.description) && priority.equals(comparableTask.priority)
+               && deadline.equals(comparableTask.deadline) && finished == comparableTask.finished;
     }
 
     @Override
     public int hashCode() {
         return 11 + title.hashCode() + description.hashCode() + priority.getPriority()
-                + deadline.hashCode() + Boolean.hashCode(finished);
+               + deadline.hashCode() + Boolean.hashCode(finished);
     }
 
     @Override
     public String toString() {
-        return  "[   Task: " + ID
-                + ", Title: " + title
-                + ", Description: " + description
-                + ", Finished: " + finished
-                + ", Priority: " + priority
-                + ", Deadline: " + deadline
-                + ", TaskBoard: " + taskBoard + "    ]";
+        return "[   Task: " + ID
+               + ", Title: " + title
+               + ", Description: " + description
+               + ", Finished: " + finished
+               + ", Priority: " + priority
+               + ", Deadline: " + deadline
+               + ", TaskBoard: " + taskBoard + "    ]";
     }
 }
