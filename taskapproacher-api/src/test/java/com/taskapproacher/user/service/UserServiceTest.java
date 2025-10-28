@@ -190,7 +190,7 @@ public class UserServiceTest {
     }
 
     @Test
-    void findBoardsByUser_ValidUserID_ReturnsTaskBoardResponseList() {
+    void findBoardsByUser_ValidUserID_ReturnsTaskBoardDTOList() {
         UUID userID = UUID.randomUUID();
         User user = createDefaultUser(userID);
 
@@ -210,7 +210,7 @@ public class UserServiceTest {
     }
 
     @Test
-    void findBoardsByUser_ValidUserIDZeroTaskBoards_ReturnsEmptyTaskBoardResponseList() {
+    void findBoardsByUser_ValidUserIDZeroTaskBoards_ReturnsEmptyTaskBoardDTOList() {
         UUID userID = UUID.randomUUID();
         User user = createDefaultUser(userID);
 
@@ -262,7 +262,7 @@ public class UserServiceTest {
     }
 
     @Test
-    void createUser_ValidUser_ReturnsUserResponse() {
+    void createUser_ValidUser_ReturnsUser() {
         User user = createDefaultUser(UUID.randomUUID());
 
         String encodedPassword = "encodedUserPass";
@@ -273,7 +273,7 @@ public class UserServiceTest {
         when(userRepository.isUserExists(ArgumentMatchers.any(User.class))).thenReturn(false);
         when(passwordEncoder.encode(user.getPassword())).thenReturn(encodedPassword);
 
-        UserDTO response = userService.createUser(user);
+        User response = userService.createUser(user);
 
         User capturedUser = captor.getValue();
 
@@ -419,7 +419,7 @@ public class UserServiceTest {
     }
 
     @Test
-    void updateUser_ValidUser_ReturnsUserResponseUserDataChanged() {
+    void updateUser_ValidUser_ReturnsUserDTODataChanged() {
         UUID userID = UUID.randomUUID();
         String newEncodedPassword = "newEncodedPass";
 
@@ -463,7 +463,7 @@ public class UserServiceTest {
     }
 
     @Test
-    void updateUser_UserFieldsAreNull_ReturnsUserResponseUserDataDidNotChanged() {
+    void updateUser_UserFieldsAreNull_ReturnsUserDTODataDidNotChanged() {
         UUID userID = UUID.randomUUID();
 
         User existingUser = createDefaultUser(userID);
@@ -500,7 +500,7 @@ public class UserServiceTest {
     }
 
     @Test
-    void updateUser_UserFieldsAreEmpty_ReturnsUserResponseUserDataDidNotChanged() {
+    void updateUser_UserFieldsAreEmpty_ReturnsUserDTODataDidNotChanged() {
         UUID userID = UUID.randomUUID();
 
         User existingUser = createDefaultUser(userID);
@@ -540,7 +540,7 @@ public class UserServiceTest {
     }
 
     @Test
-    void updateUser_UserFieldsAreTheSame_ReturnsUserResponseUserDataDidNotChanged() {
+    void updateUser_UserFieldsAreTheSame_ReturnsUserDTODataDidNotChanged() {
         UUID userID = UUID.randomUUID();
 
         User existingUser = createDefaultUser(userID);

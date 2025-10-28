@@ -1,12 +1,10 @@
 package com.taskapproacher.auth.model;
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Value;
 
-@Getter
-@Setter
+@Value
 public class RegisterRequest {
-    private String username;
-    private String password;
-    private String email;
+    String username;
+    String password;
+    String email;
 }

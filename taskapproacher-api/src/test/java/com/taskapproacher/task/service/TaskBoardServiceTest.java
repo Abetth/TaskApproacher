@@ -1,8 +1,9 @@
 package com.taskapproacher.task.service;
 
 import com.taskapproacher.common.constant.ExceptionMessage;
-import com.taskapproacher.common.interfaces.matcher.TaskBoardMatcher;
+import com.taskapproacher.common.interfaces.attributes.TaskBoardAttributes;
 import com.taskapproacher.task.constant.Priority;
+import com.taskapproacher.task.mapper.TaskBoardMapper;
 import com.taskapproacher.task.model.Task;
 import com.taskapproacher.task.model.TaskBoard;
 import com.taskapproacher.task.model.TaskBoardDTO;
@@ -43,6 +44,8 @@ public class TaskBoardServiceTest {
     @InjectMocks
     private TaskBoardService taskBoardService;
 
+    private final TaskBoardMapper taskBoardMapper = new TaskBoardMapper();
+
     private Task createDefaultTask(UUID taskID) {
         Task task = new Task();
         task.setID(taskID);
@@ -80,15 +83,8 @@ public class TaskBoardServiceTest {
         return taskBoard;
     }
 
-    private TaskBoardDTO createDefaultTaskBoardDTO(UUID boardID, UUID userID) {
-        TaskBoardDTO dto = new TaskBoardDTO();
-        dto.setID(boardID);
-        dto.setTitle("Test Task Board");
-        dto.setSorted(false);
-        dto.setTasks(null);
-        dto.setUserID(userID);
-
-        return dto;
+    private TaskBoardDTO createDefaultTaskBoardDTO() {
+        return new TaskBoardDTO(null, "Test Task Board", false, null, null);
     }
 
     private User createDefaultUser(UUID userID) {
@@ -105,9 +101,10 @@ public class TaskBoardServiceTest {
 
     /*
     if (expected.get*() != null) is used because in some cases, the normal behavior of these values is to be null for
-    expected, for example, when creating, the ID is null, and when updating, userID may not be passed at all.
+    expected, for example, when creating, the ID is null, and when updating, userID may not be passed at all, it doesn't
+    update anyway.
      */
-    private void assertTaskBoardEquals(TaskBoardMatcher expected, TaskBoardMatcher actual) {
+    private void assertTaskBoardEquals(TaskBoardAttributes expected, TaskBoardAttributes actual) {
         assertAll(() -> {
             if (expected.getID() != null) {
                 assertEquals(expected.getID(), actual.getID());
@@ -171,7 +168,7 @@ public class TaskBoardServiceTest {
     }
 
     @Test
-    void findByTaskBoard_ValidTaskBoardID_ReturnsTaskList() {
+    void findByTaskBoard_ValidTaskBoardID_ReturnsTaskDTOList() {
         UUID boardID = UUID.randomUUID();
 
         TaskBoard taskBoard = new TaskBoard();
@@ -227,11 +224,12 @@ public class TaskBoardServiceTest {
     }
 
     @Test
-    void createTaskBoard_ValidTaskBoard_ReturnsTaskBoardResponse() {
+    void createTaskBoard_ValidTaskBoard_ReturnsTaskBoardDTO() {
         UUID userID = UUID.randomUUID();
 
         User user = createDefaultUser(userID);
-        TaskBoardDTO request = createDefaultTaskBoardDTO(null, null);
+
+        TaskBoardDTO request = createDefaultTaskBoardDTO();
 
         when(userService.findByID(userID)).thenReturn(user);
         when(taskBoardRepository.save(ArgumentMatchers.any(TaskBoard.class)))
@@ -250,8 +248,10 @@ public class TaskBoardServiceTest {
     void createTaskBoard_EmptyTaskBoardTitle_ThrowsIllegalArgumentException() {
         UUID userID = UUID.randomUUID();
 
-        TaskBoardDTO request = createDefaultTaskBoardDTO(null, null);
-        request.setTitle("");
+        TaskBoard taskBoard = createDefaultTaskBoard(null, new User());
+        taskBoard.setTitle("");
+
+        TaskBoardDTO request = taskBoardMapper.mapToTaskBoardDTO(taskBoard);
 
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
             taskBoardService.createTaskBoard(userID, request);
@@ -269,8 +269,10 @@ public class TaskBoardServiceTest {
     void createTaskBoard_NullTaskBoardTitle_ThrowsIllegalArgumentException() {
         UUID userID = UUID.randomUUID();
 
-        TaskBoardDTO request = createDefaultTaskBoardDTO(null, null);
-        request.setTitle(null);
+        TaskBoard taskBoard = createDefaultTaskBoard(null, new User());
+        taskBoard.setTitle(null);
+
+        TaskBoardDTO request = taskBoardMapper.mapToTaskBoardDTO(taskBoard);
 
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
             taskBoardService.createTaskBoard(userID, request);
@@ -285,26 +287,10 @@ public class TaskBoardServiceTest {
     }
 
     @Test
-    void createTaskBoard_InvalidUserID_ThrowsEntityNotFoundException() {
-        UUID userID = UUID.randomUUID();
-
-        TaskBoardDTO request = createDefaultTaskBoardDTO(null, null);
-
-        when(userService.findByID(userID)).thenThrow(EntityNotFoundException.class);
-
-        assertThrows(EntityNotFoundException.class, () -> {
-            taskBoardService.createTaskBoard(userID, request);
-        });
-
-        verify(userService, times(1)).findByID(userID);
-        verify(taskBoardRepository, times(0)).save(ArgumentMatchers.any(TaskBoard.class));
-    }
-
-    @Test
     void createTaskBoard_NullUserID_ThrowsIllegalArgumentException() {
         UUID userID = null;
 
-        TaskBoardDTO request = createDefaultTaskBoardDTO(null, null);
+        TaskBoardDTO request = createDefaultTaskBoardDTO();
 
         when(userService.findByID(userID)).thenThrow(IllegalArgumentException.class);
 
@@ -317,33 +303,32 @@ public class TaskBoardServiceTest {
     }
 
     @Test
-    void updateTaskBoard_ValidTaskBoard_ReturnsTaskBoardResponse() {
+    void updateTaskBoard_ValidTaskBoard_ReturnsTaskBoardDTODataChanged() {
         UUID boardID = UUID.randomUUID();
         UUID userID = UUID.randomUUID();
 
         User user = createDefaultUser(userID);
 
-        TaskBoard taskBoard = new TaskBoard();
-        taskBoard.setID(boardID);
-
-        List<Task> listOfTasks = createDefaultListOfTasks(taskBoard);
-
         TaskBoard existingTaskBoard = createDefaultTaskBoard(boardID, user);
+        List<Task> listOfTasks = createDefaultListOfTasks(existingTaskBoard);
         existingTaskBoard.setTasks(listOfTasks);
 
         TaskBoard copyOfExistingTaskBoard = new TaskBoard();
         BeanUtils.copyProperties(existingTaskBoard, copyOfExistingTaskBoard);
 
-        TaskBoardDTO updateData = createDefaultTaskBoardDTO(boardID, user.getID());
+        TaskBoard updateData = new TaskBoard();
         updateData.setTitle("Board 1");
         updateData.setSorted(true);
+        updateData.setUser(new User());
+
+        TaskBoardDTO request = taskBoardMapper.mapToTaskBoardDTO(updateData);
 
         ArgumentCaptor<TaskBoard> captor = ArgumentCaptor.forClass(TaskBoard.class);
 
         when(taskBoardRepository.findByID(boardID)).thenReturn(Optional.of(copyOfExistingTaskBoard));
         when(taskBoardRepository.update(captor.capture())).thenAnswer(invocation -> invocation.getArgument(0));
 
-        TaskBoardDTO response = taskBoardService.updateTaskBoard(boardID, updateData);
+        TaskBoardDTO response = taskBoardService.updateTaskBoard(boardID, request);
         TaskBoard capturedBoard = captor.getValue();
 
         assertEquals(existingTaskBoard.getID(), capturedBoard.getID());
@@ -365,7 +350,7 @@ public class TaskBoardServiceTest {
         UUID boardID = null;
 
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
-            taskBoardService.updateTaskBoard(boardID, new TaskBoardDTO());
+            taskBoardService.updateTaskBoard(boardID, new TaskBoardDTO(null, null, false, null, null));
         });
 
         String expectedMessage = ExceptionMessage.NULL.toString();
@@ -383,7 +368,7 @@ public class TaskBoardServiceTest {
         when(taskBoardRepository.findByID(boardID)).thenReturn(Optional.empty());
 
         EntityNotFoundException exception = assertThrows(EntityNotFoundException.class, () -> {
-            taskBoardService.updateTaskBoard(boardID, new TaskBoardDTO());
+            taskBoardService.updateTaskBoard(boardID, new TaskBoardDTO(null, null, false, null, null));
         });
 
         String expectedMessage = ExceptionMessage.NOT_FOUND.toString();
@@ -396,32 +381,31 @@ public class TaskBoardServiceTest {
     }
 
     @Test
-    void updateTaskBoard_EmptyTaskBoardTitle_ReturnsTaskBoardResponseWithSameTitle() {
+    void updateTaskBoard_EmptyTaskBoardTitle_ReturnsTaskBoardDTOWithSameTitle() {
         UUID boardID = UUID.randomUUID();
         UUID userID = UUID.randomUUID();
 
         User user = createDefaultUser(userID);
 
-        TaskBoard taskBoard = new TaskBoard();
-        taskBoard.setID(boardID);
-
-        List<Task> listOfTasks = createDefaultListOfTasks(taskBoard);
-
         TaskBoard existingTaskBoard = createDefaultTaskBoard(boardID, user);
+        List<Task> listOfTasks = createDefaultListOfTasks(existingTaskBoard);
         existingTaskBoard.setTasks(listOfTasks);
 
         TaskBoard copyOfExistingTaskBoard = new TaskBoard();
         BeanUtils.copyProperties(existingTaskBoard, copyOfExistingTaskBoard);
 
-        TaskBoardDTO updateData = createDefaultTaskBoardDTO(boardID, user.getID());
+        TaskBoard updateData = new TaskBoard();
         updateData.setTitle("");
+        updateData.setUser(new User());
+
+        TaskBoardDTO request = taskBoardMapper.mapToTaskBoardDTO(updateData);
 
         ArgumentCaptor<TaskBoard> captor = ArgumentCaptor.forClass(TaskBoard.class);
 
         when(taskBoardRepository.findByID(boardID)).thenReturn(Optional.of(copyOfExistingTaskBoard));
         when(taskBoardRepository.update(captor.capture())).thenAnswer(invocation -> invocation.getArgument(0));
 
-        TaskBoardDTO response = taskBoardService.updateTaskBoard(boardID, updateData);
+        TaskBoardDTO response = taskBoardService.updateTaskBoard(boardID, request);
         TaskBoard capturedTaskBoard = captor.getValue();
 
         assertTaskBoardEquals(existingTaskBoard, capturedTaskBoard);
@@ -434,33 +418,31 @@ public class TaskBoardServiceTest {
     }
 
     @Test
-    void updateTaskBoard_NullTaskBoardTitle_ReturnsTaskBoardResponseWithSameTitle() {
+    void updateTaskBoard_NullTaskBoardTitle_ReturnsTaskBoardDTOWithSameTitle() {
         UUID boardID = UUID.randomUUID();
         UUID userID = UUID.randomUUID();
 
         User user = createDefaultUser(userID);
 
-        TaskBoard taskBoard = new TaskBoard();
-        taskBoard.setID(boardID);
-
-        List<Task> listOfTasks = createDefaultListOfTasks(taskBoard);
-
         TaskBoard existingTaskBoard = createDefaultTaskBoard(boardID, user);
-        existingTaskBoard.setID(boardID);
+        List<Task> listOfTasks = createDefaultListOfTasks(existingTaskBoard);
         existingTaskBoard.setTasks(listOfTasks);
 
         TaskBoard copyOfExistingTaskBoard = new TaskBoard();
         BeanUtils.copyProperties(existingTaskBoard, copyOfExistingTaskBoard);
 
-        TaskBoardDTO updateData = createDefaultTaskBoardDTO(boardID, user.getID());
+        TaskBoard updateData = new TaskBoard();
         updateData.setTitle(null);
+        updateData.setUser(new User());
+
+        TaskBoardDTO request = taskBoardMapper.mapToTaskBoardDTO(updateData);
 
         ArgumentCaptor<TaskBoard> captor = ArgumentCaptor.forClass(TaskBoard.class);
 
         when(taskBoardRepository.findByID(boardID)).thenReturn(Optional.of(copyOfExistingTaskBoard));
         when(taskBoardRepository.update(captor.capture())).thenAnswer(invocation -> invocation.getArgument(0));
 
-        TaskBoardDTO response = taskBoardService.updateTaskBoard(boardID, updateData);
+        TaskBoardDTO response = taskBoardService.updateTaskBoard(boardID, request);
         TaskBoard capturedTaskBoard = captor.getValue();
 
         assertTaskBoardEquals(existingTaskBoard, capturedTaskBoard);

@@ -3,7 +3,7 @@ package com.taskapproacher.task.model;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
-import com.taskapproacher.common.interfaces.matcher.TaskBoardMatcher;
+import com.taskapproacher.common.interfaces.attributes.TaskBoardAttributes;
 import com.taskapproacher.task.constant.TaskConstants;
 import com.taskapproacher.user.model.User;
 
@@ -27,7 +27,7 @@ import java.util.UUID;
 @Entity
 @DynamicUpdate
 @Table(name = "task_boards")
-public class TaskBoard implements TaskBoardMatcher {
+public class TaskBoard implements TaskBoardAttributes {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID ID;
@@ -47,6 +47,10 @@ public class TaskBoard implements TaskBoardMatcher {
     @JoinColumn(name = "user_id")
     @JsonBackReference
     private User user;
+
+    public TaskBoard(UUID ID, String title, boolean sorted, List<Task> tasks) {
+        this(ID, title, sorted, tasks, null);
+    }
 
     public UUID getUserID() {
         return this.user.getID();

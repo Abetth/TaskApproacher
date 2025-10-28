@@ -22,7 +22,6 @@ import java.util.UUID;
 
 @Repository
 public class TaskBoardRepository implements GenericRepository<TaskBoard>, RelatedEntityRepository<Task, UUID> {
-
     private final SessionFactory sessionFactory;
 
     @Autowired

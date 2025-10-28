@@ -12,7 +12,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.Set;
 
-public class CustomPasswordEncoder implements PasswordEncoder {
+public final class CustomPasswordEncoder implements PasswordEncoder {
     private final PasswordEncoder passwordEncoder = PasswordEncoderFactories.createDelegatingPasswordEncoder();
     private final Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
 

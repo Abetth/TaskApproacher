@@ -1,23 +1,17 @@
 package com.taskapproacher.task.model;
 
-import com.taskapproacher.common.interfaces.matcher.TaskBoardMatcher;
+import com.taskapproacher.common.interfaces.attributes.TaskBoardAttributes;
 
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 import java.util.List;
 import java.util.UUID;
 
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
-public class TaskBoardDTO implements TaskBoardMatcher {
-    private UUID ID;
-    private String title;
-    private boolean sorted;
-    private List<Task> tasks;
-    private UUID userID;
+@Value
+public class TaskBoardDTO implements TaskBoardAttributes {
+    UUID ID;
+    String title;
+    boolean sorted;
+    List<Task> tasks;
+    UUID userID;
 }

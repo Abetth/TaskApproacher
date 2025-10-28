@@ -1,15 +1,15 @@
-package com.taskapproacher.common.interfaces.matcher;
+package com.taskapproacher.common.interfaces.attributes;
 
-import com.taskapproacher.task.model.TaskBoard;
+import com.taskapproacher.task.constant.Priority;
 
 import java.time.LocalDate;
 import java.util.UUID;
 
-public interface TaskMatcher {
+public interface TaskAttributes {
     UUID getID();
     String getTitle();
     String getDescription();
-    String getPriorityAsString();
+    Priority getPriority();
     LocalDate getDeadline();
     boolean isFinished();
     UUID getTaskBoardID();

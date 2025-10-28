@@ -5,23 +5,11 @@ import com.taskapproacher.task.model.TaskBoardDTO;
 
 public class TaskBoardMapper {
     public TaskBoardDTO mapToTaskBoardDTO(TaskBoard taskBoard) {
-        TaskBoardDTO response = new TaskBoardDTO();
-        response.setID(taskBoard.getID());
-        response.setTitle(taskBoard.getTitle());
-        response.setSorted(taskBoard.isSorted());
-        response.setTasks(taskBoard.getTasks());
-        response.setUserID(taskBoard.getUserID());
-
-        return response;
+        return new TaskBoardDTO(taskBoard.getID(), taskBoard.getTitle(), taskBoard.isSorted(),
+                                taskBoard.getTasks(), taskBoard.getUserID());
     }
 
     public TaskBoard mapToTaskBoardEntity(TaskBoardDTO dto) {
-        TaskBoard taskBoard = new TaskBoard();
-        taskBoard.setID(dto.getID());
-        taskBoard.setTitle(dto.getTitle());
-        taskBoard.setSorted(dto.isSorted());
-        taskBoard.setTasks(dto.getTasks());
-
-        return taskBoard;
+        return new TaskBoard(dto.getID(), dto.getTitle(), dto.isSorted(), dto.getTasks());
     }
 }

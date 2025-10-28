@@ -61,22 +61,22 @@ public class TaskBoardService {
             throw new IllegalArgumentException("Title " + error);
         }
 
-        TaskBoard taskBoardFromRequest = taskBoardMapper.mapToTaskBoardEntity(request);
-        taskBoardFromRequest.setUser(userService.findByID(userID));
+        TaskBoard taskBoard = taskBoardMapper.mapToTaskBoardEntity(request);
+        taskBoard.setUser(userService.findByID(userID));
 
-        return taskBoardMapper.mapToTaskBoardDTO(taskBoardRepository.save(taskBoardFromRequest));
+        return taskBoardMapper.mapToTaskBoardDTO(taskBoardRepository.save(taskBoard));
     }
 
     public TaskBoardDTO updateTaskBoard(UUID taskBoardID, TaskBoardDTO request)
             throws IllegalArgumentException, EntityNotFoundException {
-        TaskBoard updatedBoard = findByID(taskBoardID);
+        TaskBoard taskBoard = findByID(taskBoardID);
 
         if (request.getTitle() != null && !request.getTitle().isEmpty()) {
-            updatedBoard.setTitle(request.getTitle());
+            taskBoard.setTitle(request.getTitle());
         }
-        updatedBoard.setSorted(request.isSorted());
+        taskBoard.setSorted(request.isSorted());
 
-        return taskBoardMapper.mapToTaskBoardDTO(taskBoardRepository.update(updatedBoard));
+        return taskBoardMapper.mapToTaskBoardDTO(taskBoardRepository.update(taskBoard));
     }
 
     public void deleteTaskBoard(UUID taskBoardID) throws IllegalArgumentException {

@@ -93,9 +93,7 @@ public class AuthControllerTest {
         String username = preInsertedUser.getUsername();
         String password = preInsertedUser.getPassword();
 
-        AuthRequest request = new AuthRequest();
-        request.setUsername(username);
-        request.setPassword(password);
+        AuthRequest request = new AuthRequest(username, password);
 
         String path = PATH_TO_API + "login";
 
@@ -119,9 +117,7 @@ public class AuthControllerTest {
     @Test
     @Sql(scripts = {"/data/sql/clearData.sql", "/data/sql/insertUsers.sql"})
     void login_InvalidUserData_ReturnsStatusCodeUnauthorizedAndErrorResponse() throws Exception {
-        AuthRequest request = new AuthRequest();
-        request.setUsername("TestUser");
-        request.setPassword("1211");
+        AuthRequest request = new AuthRequest("TestUser", "1211");
 
         String path = PATH_TO_API + "login";
 
@@ -135,11 +131,10 @@ public class AuthControllerTest {
     @Sql(scripts = "/data/sql/clearData.sql")
     void register_ValidUserData_ReturnsStatusCodeCreatedAndToken() throws Exception {
         String username = "TestUser";
+        String email = "mail@mail.mail";
+        String password = "123pass123";
 
-        RegisterRequest request = new RegisterRequest();
-        request.setUsername(username);
-        request.setEmail("mail@mail.mail");
-        request.setPassword("123pass123");
+        RegisterRequest request = new RegisterRequest(username, email, password);
 
         String path = PATH_TO_API + "register";
 
@@ -166,11 +161,10 @@ public class AuthControllerTest {
     @Sql(scripts = "/data/sql/clearData.sql")
     void register_IllegalUserData_ReturnsStatusCodeBadRequestAndErrorResponse() throws Exception {
         String username = "";
+        String email = "mail@mail.mail";
+        String password = "123pass123";
 
-        RegisterRequest request = new RegisterRequest();
-        request.setUsername(username);
-        request.setEmail("mail@mail.mail");
-        request.setPassword("123pass123");
+        RegisterRequest request = new RegisterRequest(username, email, password);
 
         String path = PATH_TO_API + "register";
 
@@ -184,11 +178,10 @@ public class AuthControllerTest {
     @Sql(scripts = {"/data/sql/clearData.sql", "/data/sql/insertUsers.sql"})
     void register_DuplicateUsername_ReturnsStatusCodeBadRequestAndErrorResponse() throws Exception {
         String username = TestApproacherDataUtils.createPreInsertedUser(EntityNumber.FIRST).getUsername();
+        String email = "mail@mail.mail";
+        String password = "123pass123";
 
-        RegisterRequest request = new RegisterRequest();
-        request.setUsername(username);
-        request.setEmail("mail@mail.mail");
-        request.setPassword("123pass123");
+        RegisterRequest request = new RegisterRequest(username, email, password);
 
         String path = PATH_TO_API + "register";
 
@@ -203,11 +196,9 @@ public class AuthControllerTest {
     void register_DuplicateEmail_ReturnsStatusCodeBadRequestAndErrorResponse() throws Exception {
         String username = "New user";
         String email = TestApproacherDataUtils.createPreInsertedUser(EntityNumber.FIRST).getEmail();
+        String password = "123pass123";
 
-        RegisterRequest request = new RegisterRequest();
-        request.setUsername(username);
-        request.setEmail(email);
-        request.setPassword("123pass123");
+        RegisterRequest request = new RegisterRequest(username, password, email);
 
         String path = PATH_TO_API + "register";
 
@@ -221,11 +212,10 @@ public class AuthControllerTest {
     @Sql(scripts = {"/data/sql/clearData.sql", "/data/sql/insertUsers.sql"})
     void register_InvalidPassword_ReturnsStatusCodeBadRequestAndErrorResponse() throws Exception {
         String username = "Test User";
+        String email = "mail@mail.mail";
+        String password = "111";
 
-        RegisterRequest request = new RegisterRequest();
-        request.setUsername(username);
-        request.setEmail("mail@mail.mail");
-        request.setPassword("111");
+        RegisterRequest request = new RegisterRequest(username, password, email);
 
         String path = PATH_TO_API + "register";
 
@@ -239,11 +229,10 @@ public class AuthControllerTest {
     @Sql(scripts = {"/data/sql/clearData.sql", "/data/sql/insertUsers.sql"})
     void register_InvalidUsername_ReturnsStatusCodeBadRequestAndErrorResponse() throws Exception {
         String username = "T";
+        String email = "ma@mail.mail";
+        String password = "111222333";
 
-        RegisterRequest request = new RegisterRequest();
-        request.setUsername(username);
-        request.setEmail("ma@mail.mail");
-        request.setPassword("111222333");
+        RegisterRequest request = new RegisterRequest(username, email, password);
 
         String path = PATH_TO_API + "register";
 

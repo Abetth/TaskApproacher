@@ -1,5 +1,6 @@
 package com.taskapproacher.common.exception.handler;
 
+import com.fasterxml.jackson.core.JacksonException;
 import com.taskapproacher.common.constant.ExceptionMessage;
 import com.taskapproacher.common.exception.custom.EntityAlreadyExistsException;
 
@@ -19,7 +20,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 @RestControllerAdvice
-public class GlobalExceptionHandler {
+public final class GlobalExceptionHandler {
     @ExceptionHandler(IllegalArgumentException.class)
     public ErrorResponse handleIllegalArgumentException(IllegalArgumentException exception) {
         return ErrorResponse.create(exception, HttpStatus.BAD_REQUEST, exception.getMessage());
@@ -63,5 +64,11 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(ConstraintViolationException.class)
     public ErrorResponse handleConstraintViolationException(ConstraintViolationException exception) {
         return ErrorResponse.create(exception, HttpStatus.BAD_REQUEST, exception.getMessage());
+    }
+
+    @ExceptionHandler(JacksonException.class)
+    public ErrorResponse handleJacksonException(JacksonException exception) {
+        return ErrorResponse.create(exception, HttpStatus.INTERNAL_SERVER_ERROR,
+                                    ExceptionMessage.IMPOSSIBLE_TO_DESERIALIZE.toString());
     }
 }

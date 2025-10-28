@@ -1,6 +1,5 @@
 package com.taskapproacher.task.controller;
 
-import com.taskapproacher.task.model.Task;
 import com.taskapproacher.task.model.TaskDTO;
 import com.taskapproacher.task.service.TaskService;
 
@@ -39,7 +38,7 @@ public class TaskController {
 
     @DeleteMapping("/{taskID}")
     @PreAuthorize("@accessCheckService.hasAccessToTask(#taskID, authentication.principal.ID)")
-    public ResponseEntity<Task> deleteTask(@PathVariable UUID taskID) {
+    public ResponseEntity<TaskDTO> deleteTask(@PathVariable UUID taskID) {
         taskService.deleteTask(taskID);
         return ResponseEntity.noContent().build();
     }

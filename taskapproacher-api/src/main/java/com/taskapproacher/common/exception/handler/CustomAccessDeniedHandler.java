@@ -10,7 +10,6 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.web.access.AccessDeniedHandler;
@@ -19,13 +18,7 @@ import org.springframework.stereotype.Component;
 import java.io.IOException;
 
 @Component
-public class CustomAccessDeniedHandler implements AccessDeniedHandler {
-    private final ErrorResponseUtil errorResponseUtil;
-
-    @Autowired
-    public CustomAccessDeniedHandler(ErrorResponseUtil errorResponseUtil) {
-        this.errorResponseUtil = errorResponseUtil;
-    }
+public final class CustomAccessDeniedHandler implements AccessDeniedHandler {
 
     @Override
     public void handle(HttpServletRequest request, HttpServletResponse response,
@@ -35,13 +28,11 @@ public class CustomAccessDeniedHandler implements AccessDeniedHandler {
 
         Throwable cause = accessDeniedException.getCause();
         if (cause instanceof ExpiredJwtException) {
-            status = HttpStatus.FORBIDDEN.value();
             message = ExceptionMessage.EXPIRED_AUTH.toString();
         } else if (cause instanceof MalformedJwtException) {
-            status = HttpStatus.FORBIDDEN.value();
             message = ExceptionMessage.INVALID_AUTH_TOKEN.toString();
         }
 
-        errorResponseUtil.sendErrorResponse(request, response, status, message);
+        ErrorResponseUtil.sendErrorResponse(request, response, status, message);
     }
 }

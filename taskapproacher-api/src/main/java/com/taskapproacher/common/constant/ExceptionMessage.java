@@ -25,7 +25,7 @@ public enum ExceptionMessage {
                                + " characters, respectively"),
     INVALID_TASK_BOARD_TITLE_LENGTH("Task board title is too long, maximum length is "
                                     + TaskConstants.MAX_TASK_BOARD_TITLE_LENGTH),
-    NO_PRIORITY("There is no such priority");
+    IMPOSSIBLE_TO_DESERIALIZE("Impossible to deserialize data");
 
     private final String message;
 

@@ -6,12 +6,11 @@ import com.taskapproacher.auth.model.AuthRequest;
 import com.taskapproacher.auth.model.AuthResponse;
 import com.taskapproacher.common.constant.EntityNumber;
 import com.taskapproacher.common.constant.ExceptionMessage;
-import com.taskapproacher.common.interfaces.matcher.TaskMatcher;
+import com.taskapproacher.common.interfaces.attributes.TaskAttributes;
 import com.taskapproacher.common.utils.TestApproacherDataUtils;
+import com.taskapproacher.task.constant.Priority;
 import com.taskapproacher.task.constant.TaskConstants;
-import com.taskapproacher.task.mapper.TaskMapper;
 import com.taskapproacher.task.model.Task;
-import com.taskapproacher.task.model.TaskDTO;
 import com.taskapproacher.task.model.TaskBoard;
 import com.taskapproacher.user.model.User;
 
@@ -34,9 +33,7 @@ import org.springframework.test.web.servlet.ResultMatcher;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.request;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -50,22 +47,13 @@ public class TaskControllerTest {
     private MockMvc mockMvc;
     @Autowired
     private ObjectMapper objectMapper;
-
     private final String PATH_TO_API = "/api/task/";
     private final String TIME_ZONE = "Europe/London";
-    private final TaskMapper taskMapper = new TaskMapper();
     private String token;
 
-    private TaskDTO createDefaultTaskDTO(UUID taskBoardID) {
-        TaskDTO dto = new TaskDTO();
-        dto.setTitle("Task 1");
-        dto.setDescription("Task description");
-        dto.setPriority("STANDARD");
-        dto.setDeadline(LocalDate.now());
-        dto.setFinished(false);
-        dto.setTaskBoardID(taskBoardID);
-
-        return dto;
+    private Task createDefaultTask() {
+        return new Task(null,"Task 1", "Task description",
+                           Priority.valueOf("STANDARD"), LocalDate.now(), false, new TaskBoard());
     }
 
     private ResultMatcher[] buildFailedMatchers(HttpStatus status, String path, ExceptionMessage exceptionMessage) {
@@ -83,7 +71,7 @@ public class TaskControllerTest {
         return matchers.toArray(new ResultMatcher[0]);
     }
 
-    private ResultMatcher[] buildSuccessfulMatchers(HttpMethod method, HttpStatus status, TaskMatcher taskMatcher) {
+    private ResultMatcher[] buildSuccessfulMatchers(HttpMethod method, HttpStatus status, TaskAttributes taskAttributes) {
         List<ResultMatcher> matchers = new ArrayList<>();
         int statusCode = status.value();
 
@@ -95,17 +83,17 @@ public class TaskControllerTest {
 
         matchers.add(content().contentType(MediaType.APPLICATION_JSON));
         if (method != HttpMethod.POST) {
-            matchers.add(jsonPath("$.id").value(taskMatcher.getID().toString()));
-            matchers.add(jsonPath("$.taskBoardID").value(taskMatcher.getTaskBoardID().toString()));
+            matchers.add(jsonPath("$.id").value(taskAttributes.getID().toString()));
+            matchers.add(jsonPath("$.taskBoardID").value(taskAttributes.getTaskBoardID().toString()));
         } else {
             matchers.add(jsonPath("$.id").isNotEmpty());
             matchers.add(jsonPath("$.taskBoardID").isNotEmpty());
         }
-        matchers.add(jsonPath("$.title").value(taskMatcher.getTitle()));
-        matchers.add(jsonPath("$.description").value(taskMatcher.getDescription()));
-        matchers.add(jsonPath("$.priority").value(taskMatcher.getPriorityAsString()));
-        matchers.add(jsonPath("$.deadline").value(taskMatcher.getDeadline().toString()));
-        matchers.add(jsonPath("$.finished").value(taskMatcher.isFinished()));
+        matchers.add(jsonPath("$.title").value(taskAttributes.getTitle()));
+        matchers.add(jsonPath("$.description").value(taskAttributes.getDescription()));
+        matchers.add(jsonPath("$.priority").value(taskAttributes.getPriority().toString()));
+        matchers.add(jsonPath("$.deadline").value(taskAttributes.getDeadline().toString()));
+        matchers.add(jsonPath("$.finished").value(taskAttributes.isFinished()));
 
 
         return matchers.toArray(new ResultMatcher[0]);
@@ -136,17 +124,15 @@ public class TaskControllerTest {
     }
 
     private void performSuccessfulRequest(HttpMethod method, HttpStatus status, String token, String path,
-                                          String objectJson, TaskMatcher taskMatcher) throws Exception {
+                                          String objectJson, TaskAttributes taskAttributes) throws Exception {
         MockHttpServletRequestBuilder builder = buildRequest(method, token, path, objectJson);
-        ResultMatcher[] matchers = buildSuccessfulMatchers(method, status, taskMatcher);
+        ResultMatcher[] matchers = buildSuccessfulMatchers(method, status, taskAttributes);
 
         mockMvc.perform(builder).andExpectAll(matchers);
     }
 
     private String getAccessToken(String username, String password) throws Exception {
-        AuthRequest request = new AuthRequest();
-        request.setUsername(username);
-        request.setPassword(password);
+        AuthRequest request = new AuthRequest(username, password);
 
         String path = "/api/auth/login";
 
@@ -173,14 +159,11 @@ public class TaskControllerTest {
     @Test
     @Sql(scripts = {"/data/sql/clearData.sql", "/data/sql/insertUsers.sql", "/data/sql/insertBoards.sql"})
     void anyRequest_NullInPath_ReturnsStatusCodeBadRequestAndErrorResponse() throws Exception {
-        TaskBoard preInsertedTaskBoard = TestApproacherDataUtils.createPreInsertedTaskBoard(EntityNumber.FIRST);
-        UUID taskBoardID = preInsertedTaskBoard.getID();
-
-        TaskDTO request = createDefaultTaskDTO(taskBoardID);
+        Task requestData = createDefaultTask();
 
         String path = PATH_TO_API + "board/" + null;
 
-        String requestJson = objectMapper.writeValueAsString(request);
+        String requestJson = objectMapper.writeValueAsString(requestData);
 
         performFailedRequest(HttpMethod.POST, HttpStatus.BAD_REQUEST, token,
                              path, requestJson, ExceptionMessage.INVALID_DATA_ID);
@@ -192,21 +175,19 @@ public class TaskControllerTest {
         Task preInsertedTask = TestApproacherDataUtils.createPreInsertedTask(EntityNumber.FIRST);
         UUID taskID = preInsertedTask.getID();
 
-        TaskDTO updatedTaskData = taskMapper.mapToTaskDTO(
-                TestApproacherDataUtils.createPreInsertedTask(EntityNumber.FIRST)
-        );
-        updatedTaskData.setTitle("Updated task");
-        updatedTaskData.setDescription("Updated description");
-        updatedTaskData.setPriority("CRITICAL");
+        Task requestData = preInsertedTask;
+        requestData.setTitle("Updated task");
+        requestData.setDescription("Updated description");
+        requestData.setPriority(Priority.valueOf("CRITICAL"));
 
         String path = PATH_TO_API + taskID;
 
-        String updateDataJson = objectMapper.writeValueAsString(updatedTaskData);
+        String requestJson = objectMapper.writeValueAsString(requestData);
 
         String token = null;
 
         performFailedRequest(HttpMethod.PATCH, HttpStatus.FORBIDDEN, token,
-                             path, updateDataJson, ExceptionMessage.INVALID_AUTH_TOKEN);
+                             path, requestJson, ExceptionMessage.INVALID_AUTH_TOKEN);
     }
 
     @Test
@@ -215,14 +196,14 @@ public class TaskControllerTest {
         TaskBoard preInsertedTaskBoard = TestApproacherDataUtils.createPreInsertedTaskBoard(EntityNumber.FIRST);
         UUID taskBoardID = preInsertedTaskBoard.getID();
 
-        TaskDTO request = createDefaultTaskDTO(taskBoardID);
+        Task requestData = createDefaultTask();
 
         String path = PATH_TO_API + "board/" + taskBoardID;
 
-        String requestJson = objectMapper.writeValueAsString(request);
+        String requestJson = objectMapper.writeValueAsString(requestData);
 
         performSuccessfulRequest(HttpMethod.POST, HttpStatus.CREATED, token,
-                                 path, requestJson, request);
+                                 path, requestJson, requestData);
     }
 
     @Test
@@ -230,11 +211,11 @@ public class TaskControllerTest {
     void createTask_NonExistentBoardID_ReturnsStatusCodeBadRequestAndErrorResponse() throws Exception {
         UUID taskBoardID = UUID.randomUUID();
 
-        TaskDTO request = createDefaultTaskDTO(taskBoardID);
+        Task requestData = createDefaultTask();
 
         String path = PATH_TO_API + "board/" + taskBoardID;
 
-        String requestJson = objectMapper.writeValueAsString(request);
+        String requestJson = objectMapper.writeValueAsString(requestData);
 
         performFailedRequest(HttpMethod.POST, HttpStatus.BAD_REQUEST, token,
                              path, requestJson, ExceptionMessage.NOT_FOUND);
@@ -246,11 +227,11 @@ public class TaskControllerTest {
         TaskBoard preInsertedTaskBoard = TestApproacherDataUtils.createPreInsertedTaskBoard(EntityNumber.THIRD);
         UUID taskBoardID = preInsertedTaskBoard.getID();
 
-        TaskDTO request = createDefaultTaskDTO(taskBoardID);
+        Task requestData = createDefaultTask();
 
         String path = PATH_TO_API + "board/" + taskBoardID;
 
-        String requestJson = objectMapper.writeValueAsString(request);
+        String requestJson = objectMapper.writeValueAsString(requestData);
 
         performFailedRequest(HttpMethod.POST, HttpStatus.FORBIDDEN, token,
                              path, requestJson, ExceptionMessage.ACCESS_DENIED);
@@ -262,13 +243,13 @@ public class TaskControllerTest {
         TaskBoard preInsertedTaskBoard = TestApproacherDataUtils.createPreInsertedTaskBoard(EntityNumber.FIRST);
         UUID taskBoardID = preInsertedTaskBoard.getID();
 
-        TaskDTO request = createDefaultTaskDTO(taskBoardID);
+        Task requestData = createDefaultTask();
         String invalidTitle = "A".repeat(TaskConstants.MAX_TASK_TITLE_LENGTH + 20);
-        request.setTitle(invalidTitle);
+        requestData.setTitle(invalidTitle);
 
         String path = PATH_TO_API + "board/" + taskBoardID;
 
-        String requestJson = objectMapper.writeValueAsString(request);
+        String requestJson = objectMapper.writeValueAsString(requestData);
 
         performFailedRequest(HttpMethod.POST, HttpStatus.BAD_REQUEST, token,
                              path, requestJson, ExceptionMessage.INVALID_TASK_FIELDS_LENGTH);
@@ -276,19 +257,43 @@ public class TaskControllerTest {
 
     @Test
     @Sql(scripts = {"/data/sql/clearData.sql", "/data/sql/insertUsers.sql", "/data/sql/insertBoards.sql"})
-    void createTask_IllegalTaskData_ReturnsStatusCodeBadRequestAndErrorResponse() throws Exception {
+    void createTask_IllegalTaskTitle_ReturnsStatusCodeBadRequestAndErrorResponse() throws Exception {
         TaskBoard preInsertedTaskBoard = TestApproacherDataUtils.createPreInsertedTaskBoard(EntityNumber.FIRST);
         UUID taskBoardID = preInsertedTaskBoard.getID();
 
-        TaskDTO request = createDefaultTaskDTO(taskBoardID);
-        request.setTitle("");
+        Task requestData = createDefaultTask();
+        requestData.setTitle("");
 
         String path = PATH_TO_API + "board/" + taskBoardID;
 
-        String requestJson = objectMapper.writeValueAsString(request);
+        String requestJson = objectMapper.writeValueAsString(requestData);
 
         performFailedRequest(HttpMethod.POST, HttpStatus.BAD_REQUEST, token,
                              path, requestJson, ExceptionMessage.EMPTY);
+    }
+
+    @Test
+    @Sql(scripts = {"/data/sql/clearData.sql", "/data/sql/insertUsers.sql", "/data/sql/insertBoards.sql"})
+    void createTask_IllegalTaskPriority_ReturnsStatusCodeBadRequestAndErrorResponse() throws Exception {
+        TaskBoard preInsertedTaskBoard = TestApproacherDataUtils.createPreInsertedTaskBoard(EntityNumber.FIRST);
+        UUID taskBoardID = preInsertedTaskBoard.getID();
+
+        Task requestData = createDefaultTask();
+
+        Map<String, Object> requestMap = new HashMap<>();
+        requestMap.put("title", requestData.getTitle());
+        requestMap.put("description", requestData.getDescription());
+        requestMap.put("priority", "");
+        requestMap.put("deadline", requestData.getDeadline());
+        requestMap.put("finished", requestData.isFinished());
+        requestMap.put("taskBoardID", requestData.getTaskBoardID());
+
+        String path = PATH_TO_API + "board/" + taskBoardID;
+
+        String requestJson = objectMapper.writeValueAsString(requestMap);
+
+        performFailedRequest(HttpMethod.POST, HttpStatus.INTERNAL_SERVER_ERROR, token,
+                             path, requestJson, ExceptionMessage.IMPOSSIBLE_TO_DESERIALIZE);
     }
 
     @Test
@@ -298,19 +303,19 @@ public class TaskControllerTest {
         Task preInsertedTask = TestApproacherDataUtils.createPreInsertedTask(EntityNumber.FIRST);
         UUID taskID = preInsertedTask.getID();
 
-        TaskDTO updatedTaskData = taskMapper.mapToTaskDTO(preInsertedTask);
-        updatedTaskData.setTitle("Updated task");
-        updatedTaskData.setDescription("Updated description");
-        updatedTaskData.setPriority("CRITICAL");
-        updatedTaskData.setDeadline(LocalDate.now().plusDays(10));
-        updatedTaskData.setFinished(true);
+        Task requestData = preInsertedTask;
+        requestData.setTitle("Updated task");
+        requestData.setDescription("Updated description");
+        requestData.setPriority(Priority.valueOf("CRITICAL"));
+        requestData.setDeadline(LocalDate.now().plusDays(10));
+        requestData.setFinished(true);
 
         String path = PATH_TO_API + taskID;
 
-        String updateDataJson = objectMapper.writeValueAsString(updatedTaskData);
+        String requestJson = objectMapper.writeValueAsString(requestData);
 
         performSuccessfulRequest(HttpMethod.PATCH, HttpStatus.OK, token,
-                                 path, updateDataJson, updatedTaskData);
+                                 path, requestJson, requestData);
     }
 
     @Test
@@ -319,11 +324,11 @@ public class TaskControllerTest {
     void updateTask_NonExistentTaskID_ReturnsStatusCodeBadRequestAndErrorResponse() throws Exception {
         UUID taskID = UUID.randomUUID();
 
-        TaskDTO request = new TaskDTO();
+        Task requestData = TestApproacherDataUtils.createPreInsertedTask(EntityNumber.FIRST);
 
         String path = PATH_TO_API + taskID;
 
-        String requestJson = objectMapper.writeValueAsString(request);
+        String requestJson = objectMapper.writeValueAsString(requestData);
 
         performFailedRequest(HttpMethod.PATCH, HttpStatus.BAD_REQUEST, token,
                              path, requestJson, ExceptionMessage.NOT_FOUND);
@@ -336,11 +341,11 @@ public class TaskControllerTest {
         Task preInsertedTask = TestApproacherDataUtils.createPreInsertedTask(EntityNumber.THIRD);
         UUID taskID = preInsertedTask.getID();
 
-        TaskDTO request = taskMapper.mapToTaskDTO(TestApproacherDataUtils.createPreInsertedTask(EntityNumber.FIRST));
+        Task requestData = TestApproacherDataUtils.createPreInsertedTask(EntityNumber.FIRST);
 
         String path = PATH_TO_API + taskID;
 
-        String requestJson = objectMapper.writeValueAsString(request);
+        String requestJson = objectMapper.writeValueAsString(requestData);
 
         performFailedRequest(HttpMethod.PATCH, HttpStatus.FORBIDDEN, token,
                              path, requestJson, ExceptionMessage.ACCESS_DENIED);
@@ -353,12 +358,13 @@ public class TaskControllerTest {
         Task preInsertedTask = TestApproacherDataUtils.createPreInsertedTask(EntityNumber.FIRST);
         UUID taskID = preInsertedTask.getID();
 
-        TaskDTO request = taskMapper.mapToTaskDTO(preInsertedTask);
-        request.setDeadline(LocalDate.now().minusDays(2));
+
+        Task requestData = preInsertedTask;
+        requestData.setDeadline(LocalDate.now().minusDays(2));
 
         String path = PATH_TO_API + taskID;
 
-        String requestJson = objectMapper.writeValueAsString(request);
+        String requestJson = objectMapper.writeValueAsString(requestData);
 
         performFailedRequest(HttpMethod.PATCH, HttpStatus.BAD_REQUEST, token,
                              path, requestJson, ExceptionMessage.BEFORE_CURRENT_DATE);

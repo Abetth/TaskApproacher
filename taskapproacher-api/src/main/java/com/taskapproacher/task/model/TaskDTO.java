@@ -1,28 +1,20 @@
 package com.taskapproacher.task.model;
 
-import com.taskapproacher.common.interfaces.matcher.TaskMatcher;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import com.taskapproacher.common.interfaces.attributes.TaskAttributes;
+import com.taskapproacher.task.constant.Priority;
+
+import lombok.Value;
 
 import java.time.LocalDate;
 import java.util.UUID;
 
-    @AllArgsConstructor
-    @NoArgsConstructor
-    @Getter
-    @Setter
-public class TaskDTO implements TaskMatcher {
-        private UUID ID;
-        private String title;
-        private String description;
-        private String priority;
-        private LocalDate deadline;
-        private boolean finished;
-        private UUID taskBoardID;
-
-        public String getPriorityAsString() {
-            return this.priority;
-        }
+@Value
+public class TaskDTO implements TaskAttributes {
+    UUID ID;
+    String title;
+    String description;
+    Priority priority;
+    LocalDate deadline;
+    boolean finished;
+    UUID taskBoardID;
 }

@@ -2,8 +2,7 @@ package com.taskapproacher.task.model;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 
-import com.taskapproacher.common.constant.ExceptionMessage;
-import com.taskapproacher.common.interfaces.matcher.TaskMatcher;
+import com.taskapproacher.common.interfaces.attributes.TaskAttributes;
 import com.taskapproacher.task.constant.Priority;
 
 import com.taskapproacher.task.constant.TaskConstants;
@@ -26,7 +25,7 @@ import java.util.UUID;
 @Entity
 @DynamicUpdate
 @Table(name = "tasks")
-public class Task implements TaskMatcher {
+public class Task implements TaskAttributes {
     @Id
     @Setter
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -59,20 +58,12 @@ public class Task implements TaskMatcher {
     @JsonBackReference
     private TaskBoard taskBoard;
 
-    public void setPriority(String priority) {
-        try {
-            this.priority = Priority.valueOf(priority);
-        } catch (IllegalArgumentException exception) {
-            throw new IllegalArgumentException(ExceptionMessage.NO_PRIORITY + ": " + priority);
-        }
+    public Task(UUID id, String title, String description, Priority priority, LocalDate deadline, boolean finished) {
+        this(id, title, description, priority, deadline, finished, null);
     }
 
     public void setPriority(Priority priority) {
         this.priority = priority;
-    }
-
-    public String getPriorityAsString() {
-        return this.priority.toString();
     }
 
     public UUID getTaskBoardID() {

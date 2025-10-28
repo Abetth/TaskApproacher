@@ -41,7 +41,7 @@ public class TaskService {
 
     public TaskDTO createTask(UUID boardId, TaskDTO request, String timeZone)
             throws IllegalArgumentException, EntityNotFoundException {
-        TaskBoard boardForTask = taskBoardService.findByID(boardId);
+        TaskBoard taskBoard = taskBoardService.findByID(boardId);
 
         if (request.getTitle() == null || request.getTitle().isEmpty()) {
             ExceptionMessage error = (request.getTitle() == null)
@@ -51,8 +51,8 @@ public class TaskService {
             throw new IllegalArgumentException("Title " + error);
         }
 
-        if (request.getPriorityAsString() == null || request.getPriorityAsString().isEmpty()) {
-            request.setPriority(Priority.STANDARD.toString());
+        if (request.getPriority() == null) {
+            throw new IllegalArgumentException("Priority " + ExceptionMessage.NULL);
         }
 
         if (request.getDeadline() == null) {
@@ -63,43 +63,43 @@ public class TaskService {
             throw new IllegalArgumentException("Task deadline " + ExceptionMessage.BEFORE_CURRENT_DATE);
         }
 
-        Task taskFromRequest = taskMapper.mapToTaskEntity(request);
-        taskFromRequest.setTaskBoard(boardForTask);
+        Task task = taskMapper.mapToTaskEntity(request);
+        task.setTaskBoard(taskBoard);
 
-        return taskMapper.mapToTaskDTO(taskRepository.save(taskFromRequest));
+        return taskMapper.mapToTaskDTO(taskRepository.save(task));
     }
 
     public TaskDTO updateTask(UUID taskID, TaskDTO request, String timeZone)
             throws IllegalArgumentException, EntityNotFoundException {
-        Task updatedTask = findByID(taskID);
+        Task task = findByID(taskID);
 
         if (request.getTitle() != null && !request.getTitle().isEmpty()) {
-            updatedTask.setTitle(request.getTitle());
+            task.setTitle(request.getTitle());
         }
 
         if (request.getDescription() != null && !request.getDescription().isEmpty()) {
-            updatedTask.setDescription(request.getDescription());
+            task.setDescription(request.getDescription());
         }
 
-        if (request.getPriorityAsString() != null && !request.getPriorityAsString().isEmpty()) {
-            updatedTask.setPriority(request.getPriorityAsString());
+        if (request.getPriority() != null) {
+            task.setPriority(request.getPriority());
         }
 
         if (request.getDeadline() != null) {
             if (request.getDeadline().isBefore(ZonedDateTime.now(ZoneId.of(timeZone)).toLocalDate())) {
                 throw new IllegalArgumentException("Task deadline " + ExceptionMessage.BEFORE_CURRENT_DATE);
             } else {
-                updatedTask.setDeadline(request.getDeadline());
+                task.setDeadline(request.getDeadline());
             }
         }
 
-        updatedTask.setFinished(request.isFinished());
+        task.setFinished(request.isFinished());
 
         if (request.getTaskBoardID() != null) {
-            updatedTask.setTaskBoard(taskBoardService.findByID(request.getTaskBoardID()));
+            task.setTaskBoard(taskBoardService.findByID(request.getTaskBoardID()));
         }
 
-        return taskMapper.mapToTaskDTO(taskRepository.update(updatedTask));
+        return taskMapper.mapToTaskDTO(taskRepository.update(task));
     }
 
     public void deleteTask(UUID taskID) throws IllegalArgumentException {

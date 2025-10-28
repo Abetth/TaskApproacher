@@ -1,7 +1,5 @@
 package com.taskapproacher.task.constant;
 
-import java.util.Arrays;
-
 public enum Priority {
     CRITICAL(1),
     HIGHEST(2),
@@ -23,6 +21,4 @@ public enum Priority {
     public Integer getPriority() {
         return priority;
     }
-
-
 }

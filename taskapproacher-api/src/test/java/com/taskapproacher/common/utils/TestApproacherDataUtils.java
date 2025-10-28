@@ -13,7 +13,9 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.UUID;
 
-public class TestApproacherDataUtils {
+public final class TestApproacherDataUtils {
+    private TestApproacherDataUtils() {}
+
     public static User createPreInsertedUser(EntityNumber entityNumber) {
         User user = new User();
 

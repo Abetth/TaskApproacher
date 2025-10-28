@@ -6,12 +6,10 @@ import com.taskapproacher.auth.model.AuthRequest;
 import com.taskapproacher.auth.model.AuthResponse;
 import com.taskapproacher.common.constant.EntityNumber;
 import com.taskapproacher.common.constant.ExceptionMessage;
-import com.taskapproacher.common.interfaces.matcher.TaskBoardMatcher;
+import com.taskapproacher.common.interfaces.attributes.TaskBoardAttributes;
 import com.taskapproacher.common.utils.TestApproacherDataUtils;
-import com.taskapproacher.task.mapper.TaskBoardMapper;
 import com.taskapproacher.task.mapper.TaskMapper;
 import com.taskapproacher.task.model.TaskBoard;
-import com.taskapproacher.task.model.TaskBoardDTO;
 import com.taskapproacher.task.model.TaskDTO;
 import com.taskapproacher.user.model.User;
 
@@ -49,17 +47,11 @@ public class TaskBoardControllerTest {
     @Autowired
     private ObjectMapper objectMapper;
     private final String PATH_TO_API = "/api/board/";
-    private final TaskBoardMapper taskBoardMapper = new TaskBoardMapper();
     private final TaskMapper taskMapper = new TaskMapper();
     private String token;
 
-    private TaskBoardDTO createDefaultTaskBoardDTO(UUID userID) {
-        TaskBoardDTO taskBoard = new TaskBoardDTO();
-        taskBoard.setTitle("Test Board Creation");
-        taskBoard.setSorted(false);
-        taskBoard.setUserID(userID);
-
-        return taskBoard;
+    private TaskBoard createDefaultTaskBoard() {
+        return new TaskBoard(null, "Test Board Creation", false, null, new User());
     }
 
     private List<TaskDTO> createDTOListOfPreInsertedTasks() {
@@ -85,7 +77,7 @@ public class TaskBoardControllerTest {
     }
 
     private ResultMatcher[] buildSuccessfulMatchers(HttpMethod method, HttpStatus status,
-                                                    TaskBoardMatcher taskBoardMatcher) {
+                                                    TaskBoardAttributes taskBoardAttributes) {
         List<ResultMatcher> matchers = new ArrayList<>();
         int statusCode = status.value();
 
@@ -95,17 +87,17 @@ public class TaskBoardControllerTest {
         }
 
         if (method != HttpMethod.POST) {
-            matchers.add(jsonPath("$.id").value(taskBoardMatcher.getID().toString()));
-            matchers.add(jsonPath("$.userID").value(taskBoardMatcher.getUserID().toString()));
+            matchers.add(jsonPath("$.id").value(taskBoardAttributes.getID().toString()));
+            matchers.add(jsonPath("$.userID").value(taskBoardAttributes.getUserID().toString()));
         } else {
             matchers.add(jsonPath("$.id").isNotEmpty());
             matchers.add(jsonPath("$.userID").isNotEmpty());
         }
 
         matchers.add(content().contentType(MediaType.APPLICATION_JSON));
-        matchers.add(jsonPath("$.title").value(taskBoardMatcher.getTitle()));
-        matchers.add(jsonPath("$.sorted").value(taskBoardMatcher.isSorted()));
-        matchers.add(jsonPath("$.tasks").value(taskBoardMatcher.getTasks()));
+        matchers.add(jsonPath("$.title").value(taskBoardAttributes.getTitle()));
+        matchers.add(jsonPath("$.sorted").value(taskBoardAttributes.isSorted()));
+        matchers.add(jsonPath("$.tasks").value(taskBoardAttributes.getTasks()));
 
         return matchers.toArray(new ResultMatcher[0]);
     }
@@ -132,17 +124,15 @@ public class TaskBoardControllerTest {
     }
 
     private void performSuccessfulRequest(HttpMethod method, HttpStatus status, String token, String path,
-                                          String objectJson, TaskBoardMatcher taskBoardMatcher) throws Exception {
-        ResultMatcher[] matchers = buildSuccessfulMatchers(method, status, taskBoardMatcher);
+                                          String objectJson, TaskBoardAttributes taskBoardAttributes) throws Exception {
+        ResultMatcher[] matchers = buildSuccessfulMatchers(method, status, taskBoardAttributes);
         MockHttpServletRequestBuilder builder = buildRequest(method, token, path, objectJson);
 
         mockMvc.perform(builder).andExpectAll(matchers);
     }
 
     private String getAccessToken(String username, String password) throws Exception {
-        AuthRequest request = new AuthRequest();
-        request.setUsername(username);
-        request.setPassword(password);
+        AuthRequest request = new AuthRequest(username, password);
 
         String path = "/api/auth/login";
 
@@ -169,14 +159,14 @@ public class TaskBoardControllerTest {
     @Test
     @Sql(scripts = {"/data/sql/clearData.sql", "/data/sql/insertUsers.sql"})
     void anyRequest_NullInPath_ReturnsStatusCodeBadRequestAndErrorResponse() throws Exception {
-        TaskBoardDTO request = createDefaultTaskBoardDTO(UUID.randomUUID());
+        TaskBoard requestData = createDefaultTaskBoard();
 
         String path = PATH_TO_API + null + "/tasks";
 
-        String taskBoardJson = objectMapper.writeValueAsString(request);
+        String requestJson = objectMapper.writeValueAsString(requestData);
 
         performFailedRequest(HttpMethod.GET, HttpStatus.BAD_REQUEST, token,
-                             path, taskBoardJson, ExceptionMessage.INVALID_DATA_ID);
+                             path, requestJson, ExceptionMessage.INVALID_DATA_ID);
     }
 
     @Test
@@ -185,11 +175,11 @@ public class TaskBoardControllerTest {
         User preInsertedUser = TestApproacherDataUtils.createPreInsertedUser(EntityNumber.FIRST);
         UUID userID = preInsertedUser.getID();
 
-        TaskBoardDTO request = createDefaultTaskBoardDTO(userID);
+        TaskBoard requestData = createDefaultTaskBoard();
 
         String path = PATH_TO_API + userID;
 
-        String requestJson = objectMapper.writeValueAsString(request);
+        String requestJson = objectMapper.writeValueAsString(requestData);
 
         String token = null;
 
@@ -200,7 +190,7 @@ public class TaskBoardControllerTest {
     @Test
     @Sql(scripts = {"/data/sql/clearData.sql", "/data/sql/insertUsers.sql",
             "/data/sql/insertBoards.sql", "/data/sql/insertTasks.sql"})
-    void getTasksByBoard_ValidTaskBoardID_ReturnsStatusCodeOkAndListOfTaskResponse() throws Exception {
+    void getTasksByBoard_ValidTaskBoardID_ReturnsStatusCodeOkAndListOfTasks() throws Exception {
         TaskBoard preInsertedTaskBoard = TestApproacherDataUtils.createPreInsertedTaskBoard(EntityNumber.FIRST);
         UUID taskBoardID = preInsertedTaskBoard.getID();
 
@@ -246,18 +236,18 @@ public class TaskBoardControllerTest {
 
     @Test
     @Sql(scripts = {"/data/sql/clearData.sql", "/data/sql/insertUsers.sql"})
-    void createTaskBoard_ValidTaskBoardData_ReturnsStatusCodeCreatedAndTaskBoardResponse() throws Exception {
+    void createTaskBoard_ValidTaskBoardData_ReturnsStatusCodeCreatedAndCreatedTaskBoard() throws Exception {
         User preInsertedUser = TestApproacherDataUtils.createPreInsertedUser(EntityNumber.FIRST);
         UUID userID = preInsertedUser.getID();
 
-        TaskBoardDTO request = createDefaultTaskBoardDTO(userID);
+        TaskBoard requestData = createDefaultTaskBoard();
 
         String path = PATH_TO_API + userID;
 
-        String requestJson = objectMapper.writeValueAsString(request);
+        String requestJson = objectMapper.writeValueAsString(requestData);
 
         performSuccessfulRequest(HttpMethod.POST, HttpStatus.CREATED, token,
-                                 path, requestJson, request);
+                                 path, requestJson, requestData);
     }
 
     @Test
@@ -265,11 +255,11 @@ public class TaskBoardControllerTest {
     void createTaskBoard_InvalidUserID_ReturnsStatusCodeForbiddenAndErrorResponse() throws Exception {
         UUID userID = UUID.randomUUID();
 
-        TaskBoardDTO requestBoard = createDefaultTaskBoardDTO(userID);
+        TaskBoard requestData = createDefaultTaskBoard();
 
         String path = PATH_TO_API + userID;
 
-        String requestJson = objectMapper.writeValueAsString(requestBoard);
+        String requestJson = objectMapper.writeValueAsString(requestData);
 
         performFailedRequest(HttpMethod.POST, HttpStatus.FORBIDDEN, token,
                              path, requestJson, ExceptionMessage.ACCESS_DENIED);
@@ -281,12 +271,12 @@ public class TaskBoardControllerTest {
         User preInsertedUser = TestApproacherDataUtils.createPreInsertedUser(EntityNumber.FIRST);
         UUID userID = preInsertedUser.getID();
 
-        TaskBoardDTO request = createDefaultTaskBoardDTO(userID);
-        request.setTitle("");
+        TaskBoard requestData = createDefaultTaskBoard();
+        requestData.setTitle("");
 
         String path = PATH_TO_API + userID;
 
-        String requestJson = objectMapper.writeValueAsString(request);
+        String requestJson = objectMapper.writeValueAsString(requestData);
 
         performFailedRequest(HttpMethod.POST, HttpStatus.BAD_REQUEST, token,
                              path, requestJson, ExceptionMessage.EMPTY);
@@ -294,20 +284,20 @@ public class TaskBoardControllerTest {
 
     @Test
     @Sql(scripts = {"/data/sql/clearData.sql", "/data/sql/insertUsers.sql", "/data/sql/insertBoards.sql"})
-    void updateTaskBoard_ValidTaskBoardData_ReturnsStatusCodeOkAndTaskBoardResponse() throws Exception {
+    void updateTaskBoard_ValidTaskBoardData_ReturnsStatusCodeOkAndUpdatedTaskBoard() throws Exception {
         TaskBoard preInsertedTaskBoard = TestApproacherDataUtils.createPreInsertedTaskBoard(EntityNumber.FIRST);
         UUID taskBoardID = preInsertedTaskBoard.getID();
 
-        TaskBoardDTO updatedTaskBoardData = taskBoardMapper.mapToTaskBoardDTO(preInsertedTaskBoard);
-        updatedTaskBoardData.setTitle("Updated title");
-        updatedTaskBoardData.setSorted(true);
+        TaskBoard requestData = preInsertedTaskBoard;
+        requestData.setTitle("Updated title");
+        requestData.setSorted(true);
 
         String path = PATH_TO_API + taskBoardID;
 
-        String updateDataJson = objectMapper.writeValueAsString(updatedTaskBoardData);
+        String requestJson = objectMapper.writeValueAsString(requestData);
 
         performSuccessfulRequest(HttpMethod.PATCH, HttpStatus.OK, token,
-                                 path, updateDataJson, updatedTaskBoardData);
+                                 path, requestJson, requestData);
     }
 
     @Test
@@ -315,14 +305,14 @@ public class TaskBoardControllerTest {
     void updateTaskBoard_NonExistentTaskBoardID_ReturnsStatusCodeBadRequestAndErrorResponse() throws Exception {
         UUID taskBoardID = UUID.randomUUID();
 
-        TaskBoardDTO updatedTaskBoardData = new TaskBoardDTO();
+        TaskBoard requestData = createDefaultTaskBoard();
 
         String path = PATH_TO_API + taskBoardID;
 
-        String updateDataJson = objectMapper.writeValueAsString(updatedTaskBoardData);
+        String requestJson = objectMapper.writeValueAsString(requestData);
 
         performFailedRequest(HttpMethod.PATCH, HttpStatus.BAD_REQUEST, token,
-                             path, updateDataJson, ExceptionMessage.NOT_FOUND);
+                             path, requestJson, ExceptionMessage.NOT_FOUND);
     }
 
     @Test
@@ -331,16 +321,14 @@ public class TaskBoardControllerTest {
         TaskBoard preInsertedTaskBoard = TestApproacherDataUtils.createPreInsertedTaskBoard(EntityNumber.THIRD);
         UUID taskBoardID = preInsertedTaskBoard.getID();
 
-        TaskBoardDTO updatedTaskBoardData = taskBoardMapper.mapToTaskBoardDTO(
-                TestApproacherDataUtils.createPreInsertedTaskBoard(EntityNumber.FIRST)
-        );
+        TaskBoard requestData = TestApproacherDataUtils.createPreInsertedTaskBoard(EntityNumber.FIRST);
 
         String path = PATH_TO_API + taskBoardID;
 
-        String updateDataJson = objectMapper.writeValueAsString(updatedTaskBoardData);
+        String requestJson = objectMapper.writeValueAsString(requestData);
 
         performFailedRequest(HttpMethod.PATCH, HttpStatus.FORBIDDEN, token,
-                             path, updateDataJson, ExceptionMessage.ACCESS_DENIED);
+                             path, requestJson, ExceptionMessage.ACCESS_DENIED);
     }
 
     @Test

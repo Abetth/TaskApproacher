@@ -41,7 +41,8 @@ public class User implements UserDetails {
     @Size(min = UserConstants.MIN_USERNAME_LENGTH, max = UserConstants.MAX_USERNAME_LENGTH)
     private String username;
 
-    // PasswordConstants is used to provide single constant per app. Can be duplicated in UserConstants if needed.
+    // PasswordConstants is used to provide a single constant for the entire system.
+    // Can be duplicated in UserConstants if needed.
     @Column(nullable = false, name = "user_password")
     @Size(min = PasswordConstants.MIN_LENGTH)
     private String password;
@@ -55,6 +56,18 @@ public class User implements UserDetails {
     @OneToMany(fetch = FetchType.EAGER, mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference
     private List<TaskBoard> taskBoards;
+
+    public User(String username, String password, String email, Role role) {
+        this(null, username, password, email, role, null);
+    }
+
+    public User(UUID id, String username, String email, Role role) {
+        this(id, username, null, email, role, null);
+    }
+
+    public User(String username, String password, String email) {
+        this(null, username, password, email, null, null);
+    }
 
     @Override
     public boolean equals(Object o) {
@@ -74,8 +87,8 @@ public class User implements UserDetails {
     @Override
     public String toString() {
         return "[   User: " + ID + "\n"
-                + "Username: " + username + "\n"
-                + "E-mail: " + email + "    ]";
+               + "Username: " + username + "\n"
+               + "E-mail: " + email + "    ]";
     }
 
     @Override

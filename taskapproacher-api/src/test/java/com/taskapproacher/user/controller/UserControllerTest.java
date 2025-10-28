@@ -128,9 +128,7 @@ public class UserControllerTest {
     }
 
     private String getAccessToken(String username, String password) throws Exception {
-        AuthRequest request = new AuthRequest();
-        request.setUsername(username);
-        request.setPassword(password);
+        AuthRequest request = new AuthRequest(username, password);
 
         String path = "/api/auth/login";
 
@@ -182,7 +180,7 @@ public class UserControllerTest {
 
     @Test
     @Sql(scripts = {"/data/sql/clearData.sql", "/data/sql/insertUsers.sql"})
-    void getUserProfile_ValidUserAuthentication_ReturnsStatusCodeOkAndResponseUser() throws Exception {
+    void getUserProfile_ValidUserAuthentication_ReturnsStatusCodeOkAndUserData() throws Exception {
         String path = PATH_TO_API + "/profile";
 
         User preInsertedUser = TestApproacherDataUtils.createPreInsertedUser(EntityNumber.FIRST);
@@ -223,7 +221,7 @@ public class UserControllerTest {
 
     @Test
     @Sql(scripts = {"/data/sql/clearData.sql", "/data/sql/insertUsers.sql"})
-    void updateUser_ValidUserData_ReturnsStatusCodeOkAndUserResponse() throws Exception {
+    void updateUser_ValidUserData_ReturnsStatusCodeOkAndUpdatedUser() throws Exception {
         User preInsertedUser = TestApproacherDataUtils.createPreInsertedUser(EntityNumber.FIRST);
         UUID userID = preInsertedUser.getID();
 
@@ -244,7 +242,7 @@ public class UserControllerTest {
 
     @Test
     @Sql(scripts = {"/data/sql/clearData.sql", "/data/sql/insertUsers.sql"})
-    void updateUser_EmptyUserData_ReturnsStatusCodeOkAndUserResponse() throws Exception {
+    void updateUser_EmptyUserData_ReturnsStatusCodeOkAndUpdatedUser() throws Exception {
         User preInsertedUser = TestApproacherDataUtils.createPreInsertedUser(EntityNumber.FIRST);
         UUID userID = preInsertedUser.getID();
 

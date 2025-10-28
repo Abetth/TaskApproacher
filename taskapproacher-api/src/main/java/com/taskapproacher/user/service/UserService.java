@@ -69,7 +69,7 @@ public class UserService {
         return taskBoards.stream().map(taskBoardMapper::mapToTaskBoardDTO).collect(Collectors.toList());
     }
 
-    public UserDTO createUser(User user) throws IllegalArgumentException, EntityAlreadyExistsException {
+    public User createUser(User user) throws IllegalArgumentException, EntityAlreadyExistsException {
         if (user.getUsername() == null || user.getUsername().isEmpty()) {
             ExceptionMessage error = (user.getUsername() == null) ? ExceptionMessage.NULL : ExceptionMessage.EMPTY;
             throw new IllegalArgumentException("Username " + error);
@@ -83,16 +83,13 @@ public class UserService {
             throw new IllegalArgumentException("User password " + error);
         }
 
-        User createdUser = new User();
-        createdUser.setUsername(user.getUsername());
-        createdUser.setEmail(user.getEmail());
-        createdUser.setPassword(passwordEncoder.encode(user.getPassword()));
-        createdUser.setRole(Role.USER);
+        String userPasswordEncoded = passwordEncoder.encode(user.getPassword());
+        User createdUser = new User(user.getUsername(), userPasswordEncoded, user.getEmail(), Role.USER);
 
         if (userRepository.isUserExists(createdUser)) {
             throw new EntityAlreadyExistsException("User " + ExceptionMessage.ALREADY_EXISTS);
         } else {
-            return userMapper.mapToUserResponse(userRepository.save(createdUser));
+            return userRepository.save(createdUser);
         }
     }
 

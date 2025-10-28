@@ -1,11 +1,9 @@
 package com.taskapproacher.auth.model;
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Value;
 
-@Getter
-@Setter
+@Value
 public class AuthRequest {
-    private String username;
-    private String password;
+    String username;
+    String password;
 }
